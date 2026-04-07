@@ -28,6 +28,7 @@ import DevSettings from "./pages/DevSettings";
 import MyArea from "./pages/MyArea";
 import QuoteSignature from "./pages/QuoteSignature";
 import ServiceOrders from "./pages/ServiceOrders";
+import DroneServices from "./pages/DroneServices";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -62,6 +63,7 @@ const App = () => (
             <Route path="/agenda" element={<ProtectedRoute><Agenda /></ProtectedRoute>} />
             <Route path="/my-area" element={<ProtectedRoute><MyArea /></ProtectedRoute>} />
             <Route path="/service-orders" element={<ProtectedRoute><ServiceOrders /></ProtectedRoute>} />
+            <Route path="/drone" element={<ProtectedRoute><DroneServices /></ProtectedRoute>} />
             <Route path="/dev" element={<ProtectedRoute allowedRoles={['DEV']}><DevSettings /></ProtectedRoute>} />
             
             <Route path="*" element={<NotFound />} />

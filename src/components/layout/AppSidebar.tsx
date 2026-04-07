@@ -22,6 +22,7 @@ import {
   ClipboardList,
   Filter,
   ChevronDown,
+  Plane,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
@@ -46,6 +47,7 @@ const navItems: NavItem[] = [
   { title: 'Projetos', href: '/projects', icon: FolderKanban },
   { title: 'Vendas', href: '/sales', icon: ShoppingCart, roles: ['MASTER', 'ENGENHEIRO', 'VENDEDOR', 'FINANCEIRO', 'COMPRAS'] },
   { title: 'OS', href: '/service-orders', icon: ClipboardList },
+  { title: 'Drone', href: '/drone', icon: Plane },
   { title: 'Agenda', href: '/agenda', icon: Calendar },
   { title: 'Fornecedores', href: '/suppliers', icon: Building2, roles: ['MASTER', 'DEV'] },
   { title: 'Estoque', href: '/inventory', icon: Package, roles: ['MASTER', 'DEV', 'COMPRAS'] },

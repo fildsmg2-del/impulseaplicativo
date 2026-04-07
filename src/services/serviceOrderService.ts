@@ -149,13 +149,16 @@ export const serviceOrderService = {
       `)
       .order('deadline_date', { ascending: true, nullsFirst: false });
 
-    if (user.role === 'TECNICO') {
-      query = query.eq('assigned_to', user.id);
+    const { data, error } = await query;
+    if (error) {
+      console.error('ServiceOrder fetch error:', error);
+      throw error;
     }
 
-    const { data, error } = await query;
-
-    if (error) throw error;
+    if (!data?.length) {
+      console.log('ServiceOrder fetch returned 0 results for user:', user.id, 'role:', user.role);
+    }
+    
     return (data || []).map(parseServiceOrder);
   },
 

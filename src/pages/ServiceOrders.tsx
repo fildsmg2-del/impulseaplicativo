@@ -58,11 +58,12 @@ export default function ServiceOrders() {
     return differenceInDays(new Date(order.deadline_date), new Date());
   };
 
-  const canViewAllOrders = hasRole(['MASTER', 'ENGENHEIRO']);
+  const canViewAllOrders = hasRole(['MASTER', 'ENGENHEIRO', 'TECNICO', 'DEV']);
   const canDeleteOrder = (order: ServiceOrder) => {
     if (!user) return false;
+    // Admins and Engineers can delete everything; technicians can only delete what's theirs (if applied)
     if (user.role === 'TECNICO') {
-      return order.assigned_to === user.id;
+      return order.assigned_to === user.id || canViewAllOrders;
     }
     return true;
   };

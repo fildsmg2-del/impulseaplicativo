@@ -165,16 +165,16 @@ export function TransactionFormModal({ type, open, onOpenChange, onSubmit, trans
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl p-0 overflow-hidden bg-slate-50 dark:bg-slate-900 border-none shadow-2xl">
-        <DialogHeader className="p-6 bg-white dark:bg-slate-800 border-b flex flex-row items-center justify-between">
+      <DialogContent className="max-w-4xl p-0 overflow-hidden bg-slate-50 dark:bg-slate-900 border-none shadow-2xl max-h-[95vh] flex flex-col">
+        <DialogHeader className="p-6 bg-white dark:bg-slate-800 border-b flex flex-row items-center justify-between flex-shrink-0">
           <DialogTitle className="text-xl font-bold flex items-center gap-2">
             <div className={`w-2 h-6 rounded-full ${type === 'RECEITA' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
             {transaction ? 'Editar' : 'Novo'} {type === 'RECEITA' ? 'Recebimento' : 'Pagamento'}
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSave}>
-          <ScrollArea className="max-h-[80vh]">
+        <form onSubmit={handleSave} className="flex flex-col flex-1 overflow-hidden">
+          <ScrollArea className="flex-1">
             <div className="p-8 space-y-8">
               
               {/* Seção 1: Informações Básicas */}
@@ -247,21 +247,13 @@ export function TransactionFormModal({ type, open, onOpenChange, onSubmit, trans
                     />
                   </div>
                   <div className="col-span-6 space-y-2">
-                    <Label className="text-slate-500">Descrição / Observações *</Label>
-                    <div className="space-y-2">
-                        <Input 
-                          placeholder="Ex: Venda de Kit Solar" 
-                          value={formData.description}
-                          onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                          required
-                        />
-                        <Textarea 
-                            placeholder="Observações adicionais..." 
-                            className="min-h-[60px]"
-                            value={formData.notes}
-                            onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-                        />
-                    </div>
+                    <Label className="text-slate-500">Descrição do Lançamento *</Label>
+                    <Input 
+                      placeholder="Ex: Venda de Kit Solar" 
+                      value={formData.description}
+                      onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                      required
+                    />
                   </div>
                 </div>
 
@@ -463,10 +455,12 @@ export function TransactionFormModal({ type, open, onOpenChange, onSubmit, trans
                   <TabsTrigger value="anexo" className="rounded-none border-b-2 border-transparent data-[state=active]:border-impulse-gold data-[state=active]:bg-transparent px-2 font-bold text-slate-400 data-[state=active]:text-slate-900 h-10">Anexo</TabsTrigger>
                 </TabsList>
                 <TabsContent value="observacoes" className="pt-4">
-                  <div className="p-4 bg-amber-50 rounded-lg border border-amber-100 flex gap-3 text-amber-700 text-sm">
-                      <Info className="h-5 w-5 flex-shrink-0" />
-                      <p>As observações principais agora podem ser editadas diretamente na seção "Informações do Lançamento" acima.</p>
-                  </div>
+                  <Textarea 
+                    placeholder="Descreva observações detalhadas sobre este lançamento..." 
+                    className="min-h-[120px] bg-white border-slate-200"
+                    value={formData.notes}
+                    onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+                  />
                 </TabsContent>
                 <TabsContent value="anexo" className="pt-4">
                    <div className="border-2 border-dashed border-slate-200 rounded-xl p-8 text-center bg-slate-50 space-y-4">
@@ -502,7 +496,7 @@ export function TransactionFormModal({ type, open, onOpenChange, onSubmit, trans
             </div>
           </ScrollArea>
 
-          <DialogFooter className="p-6 bg-white dark:bg-slate-800 border-t flex items-center justify-between sm:justify-between">
+          <DialogFooter className="p-6 bg-white dark:bg-slate-800 border-t flex items-center justify-between sm:justify-between flex-shrink-0">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="rounded-xl px-6">Voltar</Button>
             <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-10 h-11 text-lg font-bold">
                 Salvar

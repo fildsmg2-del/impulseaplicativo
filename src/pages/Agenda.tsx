@@ -16,7 +16,7 @@ import { activityService, Activity, ActivityInput } from "@/services/activitySer
 import { serviceOrderService, ServiceOrder } from "@/services/serviceOrderService";
 import { ActivityModal } from "@/components/agenda/ActivityModal";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/use-auth";
 import { useNavigate } from "react-router-dom";
 import jsPDF from "jspdf";
 

@@ -6,12 +6,17 @@ import { transactionService, FinancialSummary } from '@/services/transactionServ
 import { CashFlowChart } from '@/components/financial/CashFlowChart';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { useRealtimeInvalidation } from '@/hooks/useRealtimeInvalidation';
 
 export default function Financial() {
   const navigate = useNavigate();
+  
+  // Realtime updates
+  useRealtimeInvalidation('transactions', [['transactions-summary']]);
+
   const { data: summary, isLoading } = useQuery<FinancialSummary>({
     queryKey: ['transactions-summary'],
-    queryFn: transactionService.getSummary,
+    queryFn: () => transactionService.getSummary(),
   });
 
   const formatCurrency = (value: number) => {

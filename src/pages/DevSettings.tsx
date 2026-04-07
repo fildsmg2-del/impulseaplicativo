@@ -157,12 +157,30 @@ export default function DevSettings() {
         <Tabs defaultValue="all" className="space-y-4">
           <TabsList className="flex-wrap">
             <TabsTrigger value="all">Todas</TabsTrigger>
+            <TabsTrigger value="audit">Audit Log</TabsTrigger>
             {CATEGORIES.map((cat) => (
               <TabsTrigger key={cat.value} value={cat.value}>
                 {cat.label}
               </TabsTrigger>
             ))}
           </TabsList>
+
+          <TabsContent value="audit">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Monitor className="h-5 w-5 text-impulse-gold" />
+                  Logs de Auditoria
+                </CardTitle>
+                <CardDescription>
+                  Acompanhe as ações realizadas pelos usuários no sistema
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <AuditLogViewer />
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           <TabsContent value="all">
             <div className="grid gap-4">

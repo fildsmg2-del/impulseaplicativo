@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { AlertCircle, Clock, DollarSign, Package, Bell, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
@@ -14,171 +14,141 @@ interface Alert {
   count?: number;
 }
 
+async function fetchAlerts(): Promise<Alert[]> {
+  const alertsList: Alert[] = [];
+  const today = new Date().toISOString().split('T')[0];
+  const nextWeek = new Date();
+  nextWeek.setDate(nextWeek.getDate() + 7);
+  const fifteenDaysAgo = new Date();
+  fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 15);
+
+  const [
+    { data: delayedProjects },
+    { data: overdueTransactions },
+    { data: upcomingPayments },
+    { data: lowStockProducts },
+    { data: expiringQuotes },
+  ] = await Promise.all([
+    supabase
+      .from('projects')
+      .select('id')
+      .not('status', 'eq', 'POS_VENDA')
+      .not('estimated_end_date', 'is', null)
+      .lt('estimated_end_date', today),
+    supabase
+      .from('transactions')
+      .select('id, amount')
+      .eq('status', 'PENDENTE')
+      .lt('due_date', today),
+    supabase
+      .from('transactions')
+      .select('id, amount')
+      .eq('status', 'PENDENTE')
+      .gte('due_date', today)
+      .lte('due_date', nextWeek.toISOString().split('T')[0]),
+    supabase
+      .from('products')
+      .select('id, quantity, min_quantity')
+      .eq('active', true),
+    supabase
+      .from('quotes')
+      .select('id')
+      .eq('status', 'SENT')
+      .lt('created_at', fifteenDaysAgo.toISOString()),
+  ]);
+
+  if (delayedProjects && delayedProjects.length > 0) {
+    alertsList.push({
+      id: 'delayed-projects',
+      type: 'error',
+      category: 'project',
+      title: 'Projetos Atrasados',
+      message: `${delayedProjects.length} projeto(s) ultrapassaram a data prevista de conclusão`,
+      link: '/projects',
+      count: delayedProjects.length,
+    });
+  }
+
+  if (overdueTransactions && overdueTransactions.length > 0) {
+    const totalOverdue = overdueTransactions.reduce((sum, t) => sum + Number(t.amount), 0);
+    alertsList.push({
+      id: 'overdue-payments',
+      type: 'error',
+      category: 'payment',
+      title: 'Pagamentos Atrasados',
+      message: `${overdueTransactions.length} transação(ões) vencida(s) totalizando R$ ${totalOverdue.toLocaleString('pt-BR')}`,
+      link: '/financial',
+      count: overdueTransactions.length,
+    });
+  }
+
+  if (upcomingPayments && upcomingPayments.length > 0) {
+    alertsList.push({
+      id: 'upcoming-payments',
+      type: 'warning',
+      category: 'payment',
+      title: 'Vencimentos Próximos',
+      message: `${upcomingPayments.length} pagamento(s) vencem nos próximos 7 dias`,
+      link: '/financial',
+      count: upcomingPayments.length,
+    });
+  }
+
+  const lowStock = lowStockProducts?.filter(p => p.quantity <= (p.min_quantity || 0)) || [];
+  if (lowStock.length > 0) {
+    alertsList.push({
+      id: 'low-stock',
+      type: 'warning',
+      category: 'stock',
+      title: 'Estoque Baixo',
+      message: `${lowStock.length} produto(s) abaixo do estoque mínimo`,
+      link: '/inventory',
+      count: lowStock.length,
+    });
+  }
+
+  if (expiringQuotes && expiringQuotes.length > 0) {
+    alertsList.push({
+      id: 'expiring-quotes',
+      type: 'info',
+      category: 'quote',
+      title: 'Orçamentos Pendentes',
+      message: `${expiringQuotes.length} orçamento(s) enviado(s) há mais de 15 dias sem resposta`,
+      link: '/quotes',
+      count: expiringQuotes.length,
+    });
+  }
+
+  return alertsList;
+}
+
+const getAlertIcon = (category: Alert['category']) => {
+  switch (category) {
+    case 'project': return Clock;
+    case 'payment': return DollarSign;
+    case 'stock': return Package;
+    case 'quote': return AlertCircle;
+    default: return Bell;
+  }
+};
+
+const getAlertStyles = (type: Alert['type']) => {
+  switch (type) {
+    case 'error':
+      return { bg: 'bg-destructive/5 hover:bg-destructive/10', border: 'border-destructive/20', icon: 'text-destructive', dot: 'bg-destructive' };
+    case 'warning':
+      return { bg: 'bg-warning/5 hover:bg-warning/10', border: 'border-warning/20', icon: 'text-warning', dot: 'bg-warning' };
+    default:
+      return { bg: 'bg-impulse-gold/5 hover:bg-impulse-gold/10', border: 'border-impulse-gold/20', icon: 'text-impulse-gold', dot: 'bg-impulse-gold' };
+  }
+};
+
 export function SmartAlerts() {
-  const [alerts, setAlerts] = useState<Alert[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    loadAlerts();
-  }, []);
-
-  const loadAlerts = async () => {
-    try {
-      const alertsList: Alert[] = [];
-
-      // 1. Check delayed projects
-      const { data: delayedProjects } = await supabase
-        .from('projects')
-        .select('id, status, estimated_end_date')
-        .not('status', 'eq', 'POS_VENDA')
-        .not('estimated_end_date', 'is', null)
-        .lt('estimated_end_date', new Date().toISOString().split('T')[0]);
-
-      if (delayedProjects && delayedProjects.length > 0) {
-        alertsList.push({
-          id: 'delayed-projects',
-          type: 'error',
-          category: 'project',
-          title: 'Projetos Atrasados',
-          message: `${delayedProjects.length} projeto(s) ultrapassaram a data prevista de conclusão`,
-          link: '/projects',
-          count: delayedProjects.length,
-        });
-      }
-
-      // 2. Check pending payments (overdue transactions)
-      const { data: overdueTransactions } = await supabase
-        .from('transactions')
-        .select('id, type, amount')
-        .eq('status', 'PENDENTE')
-        .lt('due_date', new Date().toISOString().split('T')[0]);
-
-      if (overdueTransactions && overdueTransactions.length > 0) {
-        const totalOverdue = overdueTransactions.reduce((sum, t) => sum + Number(t.amount), 0);
-        alertsList.push({
-          id: 'overdue-payments',
-          type: 'error',
-          category: 'payment',
-          title: 'Pagamentos Atrasados',
-          message: `${overdueTransactions.length} transação(ões) vencida(s) totalizando R$ ${totalOverdue.toLocaleString('pt-BR')}`,
-          link: '/financial',
-          count: overdueTransactions.length,
-        });
-      }
-
-      // 3. Check pending payments due soon (next 7 days)
-      const nextWeek = new Date();
-      nextWeek.setDate(nextWeek.getDate() + 7);
-      
-      const { data: upcomingPayments } = await supabase
-        .from('transactions')
-        .select('id, type, amount')
-        .eq('status', 'PENDENTE')
-        .gte('due_date', new Date().toISOString().split('T')[0])
-        .lte('due_date', nextWeek.toISOString().split('T')[0]);
-
-      if (upcomingPayments && upcomingPayments.length > 0) {
-        alertsList.push({
-          id: 'upcoming-payments',
-          type: 'warning',
-          category: 'payment',
-          title: 'Vencimentos Próximos',
-          message: `${upcomingPayments.length} pagamento(s) vencem nos próximos 7 dias`,
-          link: '/financial',
-          count: upcomingPayments.length,
-        });
-      }
-
-      // 4. Check low stock products
-      const { data: lowStockProducts } = await supabase
-        .from('products')
-        .select('id, name, quantity, min_quantity')
-        .eq('active', true);
-
-      const lowStock = lowStockProducts?.filter(p => p.quantity <= (p.min_quantity || 0)) || [];
-      
-      if (lowStock.length > 0) {
-        alertsList.push({
-          id: 'low-stock',
-          type: 'warning',
-          category: 'stock',
-          title: 'Estoque Baixo',
-          message: `${lowStock.length} produto(s) abaixo do estoque mínimo`,
-          link: '/inventory',
-          count: lowStock.length,
-        });
-      }
-
-      // 5. Check expiring quotes (sent more than 15 days ago)
-      const fifteenDaysAgo = new Date();
-      fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 15);
-      
-      const { data: expiringQuotes } = await supabase
-        .from('quotes')
-        .select('id')
-        .eq('status', 'SENT')
-        .lt('created_at', fifteenDaysAgo.toISOString());
-
-      if (expiringQuotes && expiringQuotes.length > 0) {
-        alertsList.push({
-          id: 'expiring-quotes',
-          type: 'info',
-          category: 'quote',
-          title: 'Orçamentos Pendentes',
-          message: `${expiringQuotes.length} orçamento(s) enviado(s) há mais de 15 dias sem resposta`,
-          link: '/quotes',
-          count: expiringQuotes.length,
-        });
-      }
-
-      setAlerts(alertsList);
-    } catch (error) {
-      console.error('Error loading alerts:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getAlertIcon = (category: Alert['category']) => {
-    switch (category) {
-      case 'project':
-        return Clock;
-      case 'payment':
-        return DollarSign;
-      case 'stock':
-        return Package;
-      case 'quote':
-        return AlertCircle;
-      default:
-        return Bell;
-    }
-  };
-
-  const getAlertStyles = (type: Alert['type']) => {
-    switch (type) {
-      case 'error':
-        return {
-          bg: 'bg-destructive/5 hover:bg-destructive/10',
-          border: 'border-destructive/20',
-          icon: 'text-destructive',
-          dot: 'bg-destructive',
-        };
-      case 'warning':
-        return {
-          bg: 'bg-warning/5 hover:bg-warning/10',
-          border: 'border-warning/20',
-          icon: 'text-warning',
-          dot: 'bg-warning',
-        };
-      default:
-        return {
-          bg: 'bg-impulse-gold/5 hover:bg-impulse-gold/10',
-          border: 'border-impulse-gold/20',
-          icon: 'text-impulse-gold',
-          dot: 'bg-impulse-gold',
-        };
-    }
-  };
+  const { data: alerts = [], isLoading: loading } = useQuery({
+    queryKey: ['smart-alerts'],
+    queryFn: fetchAlerts,
+    staleTime: 5 * 60 * 1000,
+  });
 
   if (loading) {
     return (

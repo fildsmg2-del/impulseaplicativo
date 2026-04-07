@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { FolderKanban, FileText, Wrench, Loader2, ChevronRight, AlertTriangle, Clock, CheckCircle } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { SmartAlerts } from '@/components/dashboard/SmartAlerts';
@@ -6,6 +7,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { supabase } from '@/integrations/supabase/client';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { useRealtimeInvalidation } from '@/hooks/useRealtimeInvalidation';
 
 interface DashboardSummary {
   projects: {
@@ -25,70 +27,55 @@ interface DashboardSummary {
   };
 }
 
+async function fetchDashboardSummary(): Promise<DashboardSummary> {
+  const today = new Date().toISOString().split('T')[0];
+
+  const [{ data: projects }, { data: quotes }, { data: serviceOrders }] = await Promise.all([
+    supabase.from('projects').select('id, status, estimated_end_date'),
+    supabase.from('quotes').select('id, status'),
+    supabase.from('service_orders').select('id, status, deadline_date'),
+  ]);
+
+  const projectsInProgress = projects?.filter(p => p.status !== 'POS_VENDA') || [];
+  const projectsDelayed = projectsInProgress.filter(p =>
+    p.estimated_end_date && p.estimated_end_date < today
+  );
+
+  const pendingQuotes = quotes?.filter(q => q.status === 'SENT' || q.status === 'DRAFT') || [];
+  const approvedQuotes = quotes?.filter(q => q.status === 'APPROVED') || [];
+
+  const pendingOS = serviceOrders?.filter(os => os.status !== 'CONCLUIDO' && os.status !== 'CANCELADO') || [];
+  const overdueOS = pendingOS.filter(os =>
+    os.deadline_date && os.deadline_date < today
+  );
+
+  return {
+    projects: {
+      total: projects?.length || 0,
+      inProgress: projectsInProgress.length,
+      delayed: projectsDelayed.length,
+    },
+    quotes: {
+      total: quotes?.length || 0,
+      pending: pendingQuotes.length,
+      approved: approvedQuotes.length,
+    },
+    serviceOrders: {
+      total: serviceOrders?.length || 0,
+      pending: pendingOS.length,
+      overdue: overdueOS.length,
+    },
+  };
+}
+
 export default function Dashboard() {
   const { user } = useAuth();
-  const [summary, setSummary] = useState<DashboardSummary | null>(null);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadDashboardData();
-  }, []);
-
-  const loadDashboardData = async () => {
-    try {
-      const today = new Date().toISOString().split('T')[0];
-
-      // Fetch projects summary
-      const { data: projects } = await supabase
-        .from('projects')
-        .select('id, status, estimated_end_date');
-
-      const projectsInProgress = projects?.filter(p => p.status !== 'POS_VENDA') || [];
-      const projectsDelayed = projectsInProgress.filter(p => 
-        p.estimated_end_date && p.estimated_end_date < today
-      );
-
-      // Fetch quotes summary
-      const { data: quotes } = await supabase
-        .from('quotes')
-        .select('id, status');
-
-      const pendingQuotes = quotes?.filter(q => q.status === 'SENT' || q.status === 'DRAFT') || [];
-      const approvedQuotes = quotes?.filter(q => q.status === 'APPROVED') || [];
-
-      // Fetch service orders summary
-      const { data: serviceOrders } = await supabase
-        .from('service_orders')
-        .select('id, status, deadline_date');
-
-      const pendingOS = serviceOrders?.filter(os => os.status !== 'CONCLUIDO' && os.status !== 'CANCELADO') || [];
-      const overdueOS = pendingOS.filter(os => 
-        os.deadline_date && os.deadline_date < today
-      );
-
-      setSummary({
-        projects: {
-          total: projects?.length || 0,
-          inProgress: projectsInProgress.length,
-          delayed: projectsDelayed.length,
-        },
-        quotes: {
-          total: quotes?.length || 0,
-          pending: pendingQuotes.length,
-          approved: approvedQuotes.length,
-        },
-        serviceOrders: {
-          total: serviceOrders?.length || 0,
-          pending: pendingOS.length,
-          overdue: overdueOS.length,
-        },
-      });
-    } catch (error) {
-      console.error('Error loading dashboard:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data: summary, isLoading: loading } = useQuery({
+    queryKey: ['dashboard-summary'],
+    queryFn: fetchDashboardSummary,
+    staleTime: 5 * 60 * 1000,
+  });
 
   if (loading) {
     return (

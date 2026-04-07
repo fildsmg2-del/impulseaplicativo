@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { X, Building2, User, Phone, Mail, MapPin, FileText, Upload, Eye, Edit, MessageCircle, ClipboardList, FolderOpen, Wrench, Plus, Download, Loader2, ExternalLink, Trash2 } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -34,9 +34,6 @@ interface ClientDetailSheetProps {
   client: ClientWithExtras | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  projects: Project[];
-  quotes: Quote[];
-  serviceOrders: ServiceOrder[];
   onEdit: (client: ClientWithExtras) => void;
   onWhatsApp: (client: ClientWithExtras) => void;
   onRefresh: () => void;
@@ -46,9 +43,6 @@ export function ClientDetailSheet({
   client,
   open,
   onOpenChange,
-  projects,
-  quotes,
-  serviceOrders,
   onEdit,
   onWhatsApp,
   onRefresh,
@@ -56,8 +50,37 @@ export function ClientDetailSheet({
   const [activeTab, setActiveTab] = useState('info');
   const [uploading, setUploading] = useState<'cpf_rg' | 'bills' | null>(null);
   const [downloadingDoc, setDownloadingDoc] = useState<string | null>(null);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [quotes, setQuotes] = useState<Quote[]>([]);
+  const [serviceOrders, setServiceOrders] = useState<ServiceOrder[]>([]);
+  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const billsInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (open && client?.id) {
+      loadClientDetails(client.id);
+    }
+  }, [open, client?.id]);
+
+  const loadClientDetails = async (clientId: string) => {
+    setIsLoadingDetails(true);
+    try {
+      const [projectsData, quotesData, serviceOrdersData] = await Promise.all([
+        supabase.from('projects').select('*').eq('client_id', clientId),
+        supabase.from('quotes').select('*').eq('client_id', clientId),
+        supabase.from('service_orders').select('*, service_type_info:service_types(name)').eq('client_id', clientId),
+      ]);
+
+      setProjects((projectsData.data || []) as Project[]);
+      setQuotes((quotesData.data || []) as Quote[]);
+      setServiceOrders((serviceOrdersData.data || []) as any[]);
+    } catch (error) {
+      console.error('Error loading client details:', error);
+    } finally {
+      setIsLoadingDetails(false);
+    }
+  };
 
   if (!client) return null;
 

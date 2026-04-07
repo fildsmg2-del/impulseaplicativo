@@ -1,10 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Plus, Search, MoreHorizontal, Building2, User, Phone, Mail, FileText, X, Trash2, Edit, MessageCircle, ChevronRight } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { clientService, Client, CreateClientData } from '@/services/clientService';
-import { projectService, Project } from '@/services/projectService';
-import { quoteService, Quote } from '@/services/quoteService';
-import { serviceOrderService, ServiceOrder } from '@/services/serviceOrderService';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -16,6 +14,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { auditLogService } from '@/services/auditLogService';
 import { ClientDetailSheet } from '@/components/clients/ClientDetailSheet';
 import { Badge } from '@/components/ui/badge';
+import { useRealtimeInvalidation } from '@/hooks/useRealtimeInvalidation';
 
 interface ClientWithExtras extends Client {
   projects_count?: number;
@@ -28,53 +27,46 @@ interface ClientWithExtras extends Client {
 
 export default function Clients() {
   const { hasRole } = useAuth();
+  
+  // Realtime updates
+  useRealtimeInvalidation('clients', [['clients-list']]);
+  useRealtimeInvalidation('projects', [['clients-list']]);
+  useRealtimeInvalidation('quotes', [['clients-list']]);
+  useRealtimeInvalidation('service_orders', [['clients-list']]);
+
   const [search, setSearch] = useState('');
-  const [clients, setClients] = useState<ClientWithExtras[]>([]);
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [quotes, setQuotes] = useState<Quote[]>([]);
-  const [serviceOrders, setServiceOrders] = useState<ServiceOrder[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [filterType, setFilterType] = useState<'all' | 'CPF' | 'CNPJ'>('all');
   const [showModal, setShowModal] = useState(false);
   const [showDetailSheet, setShowDetailSheet] = useState(false);
   const [selectedClient, setSelectedClient] = useState<ClientWithExtras | null>(null);
   const [editingClient, setEditingClient] = useState<CreateClientData | null>(null);
-  const [filterType, setFilterType] = useState<'all' | 'CPF' | 'CNPJ'>('all');
   const [clientToDelete, setClientToDelete] = useState<ClientWithExtras | null>(null);
 
   const canDelete = hasRole(['MASTER', 'DEV']);
 
-  const loadData = useCallback(async () => {
-    try {
-      const [clientsData, projectsData, quotesData, serviceOrdersData] = await Promise.all([
+  const { data: clients = [], isLoading, refetch } = useQuery({
+    queryKey: ['clients-list'],
+    queryFn: async () => {
+      const [clientsData, { data: projectCounts }, { data: quoteCounts }, { data: soCounts }] = await Promise.all([
         clientService.getAll(),
-        projectService.getAll(),
-        quoteService.getAll(),
-        serviceOrderService.getAll(),
+        supabase.from('projects').select('client_id'),
+        supabase.from('quotes').select('client_id'),
+        supabase.from('service_orders').select('client_id'),
       ]);
-      
-      // Count projects, quotes and service orders per client
-      const clientsWithCounts = clientsData.map(client => ({
-        ...client,
-        projects_count: projectsData.filter(p => p.client_id === client.id).length,
-        quotes_count: quotesData.filter(q => q.client_id === client.id).length,
-        service_orders_count: serviceOrdersData.filter(so => so.client_id === client.id).length,
-      }));
-      
-      setClients(clientsWithCounts as ClientWithExtras[]);
-      setProjects(projectsData);
-      setQuotes(quotesData);
-      setServiceOrders(serviceOrdersData);
-    } catch (error) {
-      console.error('Error loading data:', error);
-      toast.error('Erro ao carregar clientes');
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
 
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
+      return clientsData.map(client => ({
+        ...client,
+        projects_count: projectCounts?.filter(p => p.client_id === client.id).length || 0,
+        quotes_count: quoteCounts?.filter(q => q.client_id === client.id).length || 0,
+        service_orders_count: soCounts?.filter(s => s.client_id === client.id).length || 0,
+      })) as ClientWithExtras[];
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const loadData = useCallback(() => {
+    refetch();
+  }, [refetch]);
 
   const handleOpenModal = (client?: ClientWithExtras) => {
     if (client) {
@@ -423,9 +415,7 @@ export default function Clients() {
         client={selectedClient}
         open={showDetailSheet}
         onOpenChange={setShowDetailSheet}
-        projects={projects}
-        quotes={quotes}
-        serviceOrders={serviceOrders}
+
         onEdit={(client) => {
           setShowDetailSheet(false);
           handleOpenModal(client);

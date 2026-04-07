@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Plus, Search, MoreHorizontal, Building2, User, Phone, Mail, FileText, X, Trash2, Edit, MessageCircle, ChevronRight } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { clientService, Client, CreateClientData } from '@/services/clientService';
@@ -42,11 +42,7 @@ export default function Clients() {
 
   const canDelete = hasRole(['MASTER', 'DEV']);
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const [clientsData, projectsData, quotesData, serviceOrdersData] = await Promise.all([
         clientService.getAll(),
@@ -73,7 +69,11 @@ export default function Clients() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const handleOpenModal = (client?: ClientWithExtras) => {
     if (client) {
@@ -226,7 +226,7 @@ export default function Clients() {
   // Reset page when filters change
   useEffect(() => {
     resetPage();
-  }, [search, filterType]);
+  }, [search, filterType, resetPage]);
 
   return (
     <AppLayout>

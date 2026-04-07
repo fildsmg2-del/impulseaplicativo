@@ -166,7 +166,7 @@ export default function Suppliers() {
 
   useEffect(() => {
     resetPage();
-  }, [search]);
+  }, [search, resetPage]);
 
   return (
     <AppLayout>

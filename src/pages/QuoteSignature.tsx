@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { Check, FileText, MapPin, Zap, DollarSign, CheckCircle, Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -61,13 +61,7 @@ export default function QuoteSignature() {
   const [signing, setSigning] = useState(false);
   const [success, setSuccess] = useState(false);
 
-  useEffect(() => {
-    if (token) {
-      loadQuote();
-    }
-  }, [token]);
-
-  const loadQuote = async () => {
+  const loadQuote = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -114,7 +108,15 @@ export default function QuoteSignature() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token]);
+
+  useEffect(() => {
+    if (token) {
+      loadQuote();
+    }
+  }, [token, loadQuote]);
+
+
 
   const handleSign = async (signatureData: string) => {
     try {

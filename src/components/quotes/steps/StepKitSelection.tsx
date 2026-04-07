@@ -69,15 +69,17 @@ export function StepKitSelection({
           if (kit.min_consumption_kwh && searchValue < kit.min_consumption_kwh) return false;
           if (kit.max_consumption_kwh && searchValue > kit.max_consumption_kwh) return false;
           break;
-        case 'potencia':
+        case 'potencia': {
           const minPower = kit.total_power_kwp * 0.8;
           const maxPower = kit.total_power_kwp * 1.2;
           if (searchValue < minPower || searchValue > maxPower) return false;
           break;
-        case 'modulos':
+        }
+        case 'modulos': {
           const moduleCount = kit.items.filter(i => i.category === 'MODULO').reduce((sum, i) => sum + i.quantity, 0);
           if (Math.abs(searchValue - moduleCount) > 2) return false;
           break;
+        }
         case 'area':
           if (kit.min_area_m2 && searchValue < kit.min_area_m2) return false;
           if (kit.max_area_m2 && searchValue > kit.max_area_m2) return false;

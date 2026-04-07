@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Zap, Plus, Trash2, Upload, FileText, X, Settings, Edit } from 'lucide-react';
 import { QuoteFormData } from '../QuoteWizard';
 import { supabase } from '@/integrations/supabase/client';
@@ -74,32 +74,32 @@ export function StepConsumption({ formData, updateFormData }: StepConsumptionPro
   const [fioB, setFioB] = useState(formData.fio_b || 0.25721);
   const [tariff, setTariff] = useState(formData.tariff || 0.85);
 
-  useEffect(() => {
-    const loadSettings = async () => {
-      try {
-        const settings = await quoteSettingsService.getSettings();
-        const hasTariff = formData.tariff !== undefined && formData.tariff > 0;
-        const hasFioB = formData.fio_b !== undefined && formData.fio_b > 0;
+  const loadSettings = useCallback(async () => {
+    try {
+      const settings = await quoteSettingsService.getSettings();
+      const hasTariff = formData.tariff !== undefined && formData.tariff > 0;
+      const hasFioB = formData.fio_b !== undefined && formData.fio_b > 0;
 
-        if (!hasTariff) {
-          setTariff(settings.defaultTariff);
-        }
-        if (!hasFioB) {
-          setFioB(settings.defaultFioB);
-        }
-        if (!hasTariff || !hasFioB) {
-          updateFormData({
-            tariff: hasTariff ? formData.tariff : settings.defaultTariff,
-            fio_b: hasFioB ? formData.fio_b : settings.defaultFioB,
-          });
-        }
-      } catch (error) {
-        console.error('Error loading quote settings:', error);
+      if (!hasTariff) {
+        setTariff(settings.defaultTariff);
       }
-    };
+      if (!hasFioB) {
+        setFioB(settings.defaultFioB);
+      }
+      if (!hasTariff || !hasFioB) {
+        updateFormData({
+          tariff: hasTariff ? formData.tariff : settings.defaultTariff,
+          fio_b: hasFioB ? formData.fio_b : settings.defaultFioB,
+        });
+      }
+    } catch (error) {
+      console.error('Error loading quote settings:', error);
+    }
+  }, [formData.tariff, formData.fio_b, updateFormData]);
 
+  useEffect(() => {
     loadSettings();
-  }, [formData.fio_b, formData.tariff, updateFormData]);
+  }, [loadSettings]);
 
   // Sync local state from formData when editing existing quote
   useEffect(() => {
@@ -152,7 +152,7 @@ export function StepConsumption({ formData, updateFormData }: StepConsumptionPro
       compensated_energy_tax: compensatedEnergyTax,
       availability_cost: availabilityCost,
     });
-  }, [monthlyBills, tariff, fioB, tariffGroup, subgroup, simultaneityFactor, compensatedEnergyTax, availabilityCost, isInitialized]);
+  }, [monthlyBills, tariff, fioB, tariffGroup, subgroup, simultaneityFactor, compensatedEnergyTax, availabilityCost, isInitialized, formData.average_monthly_kwh, updateFormData]);
 
   const handleBillChange = (index: number, value: string) => {
     const newBills = [...tempMonthlyBills];

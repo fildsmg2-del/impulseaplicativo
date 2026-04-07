@@ -15,12 +15,19 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
+interface ElectricityBill {
+  url: string;
+  path: string;
+  name: string;
+  uploaded_at: string;
+}
+
 interface ClientWithExtras extends Client {
   projects_count?: number;
   quotes_count?: number;
   service_orders_count?: number;
   cpf_rg_url?: string;
-  electricity_bills?: any[];
+  electricity_bills?: ElectricityBill[];
 }
 
 interface ClientDetailSheetProps {
@@ -141,7 +148,7 @@ export function ClientDetailSheet({
       }
       
       // Remove from database
-      const updatedBills = currentBills.filter((_: any, i: number) => i !== billIndex);
+      const updatedBills = currentBills.filter((_, i: number) => i !== billIndex);
       await supabase
         .from('clients')
         .update({ electricity_bills: updatedBills })
@@ -387,7 +394,7 @@ export function ClientDetailSheet({
                 </div>
                 {(client.electricity_bills || []).length > 0 && (
                   <div className="space-y-2">
-                    {(client.electricity_bills || []).map((bill: any, index: number) => (
+                    {(client.electricity_bills || []).map((bill: ElectricityBill, index: number) => (
                       <div 
                         key={index} 
                         className="flex items-center justify-between p-3 bg-muted/50 rounded-lg border border-border"

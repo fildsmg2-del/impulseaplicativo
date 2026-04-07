@@ -208,16 +208,18 @@ export const kitService = {
             if (kit.min_consumption_kwh && value < kit.min_consumption_kwh) return false;
             if (kit.max_consumption_kwh && value > kit.max_consumption_kwh) return false;
             break;
-          case 'potencia':
+          case 'potencia': {
             // Allow 20% tolerance
             const minPower = kit.total_power_kwp * 0.8;
             const maxPower = kit.total_power_kwp * 1.2;
             if (value < minPower || value > maxPower) return false;
             break;
-          case 'modulos':
+          }
+          case 'modulos': {
             const moduleCount = kit.items.filter(i => i.category === 'MODULO').reduce((sum, i) => sum + i.quantity, 0);
             if (value !== moduleCount) return false;
             break;
+          }
           case 'area':
             if (kit.min_area_m2 && value < kit.min_area_m2) return false;
             if (kit.max_area_m2 && value > kit.max_area_m2) return false;

@@ -224,7 +224,7 @@ export default function Inventory() {
 
   useEffect(() => {
     resetPage();
-  }, [search, categoryFilter]);
+  }, [search, categoryFilter, resetPage]);
 
   const lowStockProducts = products.filter(p => p.quantity <= p.min_quantity && p.active);
 

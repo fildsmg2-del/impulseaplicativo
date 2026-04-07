@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Check, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -69,44 +69,16 @@ export function QuoteWizard({ quoteId, preselectedClientId, onClose }: QuoteWiza
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    loadClients();
-    if (quoteId) {
-      loadQuote(quoteId);
-    }
-  }, [quoteId]);
-
-  // Preselect client when creating new quote from client page
-  useEffect(() => {
-    if (preselectedClientId && clients.length > 0 && !quoteId) {
-      const preselectedClient = clients.find(c => c.id === preselectedClientId);
-      if (preselectedClient) {
-        setFormData(prev => ({
-          ...prev,
-          client_id: preselectedClientId,
-          client: preselectedClient,
-          address_street: preselectedClient.street || '',
-          address_number: preselectedClient.number || '',
-          address_complement: preselectedClient.complement || '',
-          address_neighborhood: preselectedClient.neighborhood || '',
-          address_city: preselectedClient.city || '',
-          address_state: preselectedClient.state || '',
-          address_zip_code: preselectedClient.zip_code || '',
-        }));
-      }
-    }
-  }, [preselectedClientId, clients, quoteId]);
-
-  const loadClients = async () => {
+  const loadClients = useCallback(async () => {
     try {
       const data = await clientService.getAll();
       setClients(data);
     } catch (error) {
       console.error('Error loading clients:', error);
     }
-  };
+  }, []);
 
-  const loadQuote = async (id: string) => {
+  const loadQuote = useCallback(async (id: string) => {
     try {
       const quote = await quoteService.getById(id);
       if (quote) {
@@ -136,11 +108,18 @@ export function QuoteWizard({ quoteId, preselectedClientId, onClose }: QuoteWiza
         variant: 'destructive',
       });
     }
-  };
+  }, [toast]);
 
-  const updateFormData = (data: Partial<QuoteFormData>) => {
+  useEffect(() => {
+    loadClients();
+    if (quoteId) {
+      loadQuote(quoteId);
+    }
+  }, [quoteId, loadClients, loadQuote]);
+
+  const updateFormData = useCallback((data: Partial<QuoteFormData>) => {
     setFormData((prev) => ({ ...prev, ...data }));
-  };
+  }, []);
 
   const saveQuote = async (): Promise<Quote | null> => {
     // Prevent duplicate saves

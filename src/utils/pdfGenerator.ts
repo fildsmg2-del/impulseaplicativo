@@ -77,7 +77,7 @@ function drawModernTable(
   
   // Header row with dark teal
   doc.setFillColor(...impulseDark);
-  let totalWidth = colWidths.reduce((a, b) => a + b, 0);
+  const totalWidth = colWidths.reduce((a, b) => a + b, 0);
   doc.rect(startX, currentY, totalWidth, headerHeight, 'F');
   
   // Header text
@@ -218,10 +218,7 @@ export async function generateQuotePDF(formData: QuoteFormData): Promise<void> {
   try {
     doc.addImage(logoImpulse, 'PNG', margin, margin, 55, 28);
   } catch (e) {
-    doc.setTextColor(...white);
-    doc.setFontSize(24);
-    doc.setFont('helvetica', 'bold');
-    doc.text('IMPULSE', margin + 5, 35);
+    // Fallback if logo fails to load
   }
   
   // Gold accent line
@@ -241,7 +238,7 @@ export async function generateQuotePDF(formData: QuoteFormData): Promise<void> {
   try {
     doc.addImage(solarSystemCover, 'JPEG', pageWidth * 0.35, 105, pageWidth * 0.58, 80);
   } catch (e) {
-    // Fallback design element
+    // Fallback design element if image fails
     doc.setFillColor(...impulseGold);
     doc.circle(pageWidth * 0.7, 145, 25, 'F');
   }
@@ -283,7 +280,9 @@ export async function generateQuotePDF(formData: QuoteFormData): Promise<void> {
   // Header with logo
   try {
     doc.addImage(logoImpulse, 'PNG', margin, margin, 40, 20);
-  } catch (e) {}
+  } catch (e) {
+    // Logo loading failed, continuing without logo
+  }
   
   yPos = 45;
   yPos = drawSectionHeader(doc, 'QUEM SOMOS', yPos, pageWidth, margin);
@@ -361,7 +360,9 @@ export async function generateQuotePDF(formData: QuoteFormData): Promise<void> {
   
   try {
     doc.addImage(logoImpulse, 'PNG', margin, margin, 40, 20);
-  } catch (e) {}
+  } catch (e) {
+    // Logo loading failed, continuing without logo
+  }
   
   yPos = 45;
   yPos = drawSectionHeader(doc, 'SISTEMA FOTOVOLTAICO PROPOSTO', yPos, pageWidth, margin);
@@ -443,7 +444,9 @@ export async function generateQuotePDF(formData: QuoteFormData): Promise<void> {
   
   try {
     doc.addImage(logoImpulse, 'PNG', margin, margin, 40, 20);
-  } catch (e) {}
+  } catch (e) {
+    // Logo loading failed, continuing without logo
+  }
   
   yPos = 45;
   yPos = drawSectionHeader(doc, 'ANÁLISE FINANCEIRA DO INVESTIMENTO', yPos, pageWidth, margin);
@@ -547,7 +550,9 @@ export async function generateQuotePDF(formData: QuoteFormData): Promise<void> {
   
   try {
     doc.addImage(logoImpulse, 'PNG', margin, margin, 40, 20);
-  } catch (e) {}
+  } catch (e) {
+    // Logo loading failed, continuing without logo
+  }
   
   yPos = 45;
   yPos = drawSectionHeader(doc, 'PROJEÇÃO DE FLUXO DE CAIXA - 25 ANOS', yPos, pageWidth, margin);
@@ -647,7 +652,9 @@ export async function generateQuotePDF(formData: QuoteFormData): Promise<void> {
   
   try {
     doc.addImage(logoImpulse, 'PNG', margin, margin, 40, 20);
-  } catch (e) {}
+  } catch (e) {
+    // Logo loading failed, continuing without logo
+  }
   
   yPos = 45;
   
@@ -731,7 +738,9 @@ export async function generateQuotePDF(formData: QuoteFormData): Promise<void> {
   
   try {
     doc.addImage(logoImpulse, 'PNG', margin, margin, 40, 20);
-  } catch (e) {}
+  } catch (e) {
+    // Logo loading failed, continuing without logo
+  }
   
   yPos = 45;
   yPos = drawSectionHeader(doc, 'ESCOPO E IMPLANTAÇÃO DO PROJETO', yPos, pageWidth, margin);
@@ -810,7 +819,9 @@ export async function generateQuotePDF(formData: QuoteFormData): Promise<void> {
   
   try {
     doc.addImage(logoImpulse, 'PNG', margin, margin, 40, 20);
-  } catch (e) {}
+  } catch (e) {
+    // Logo loading failed, continuing without logo
+  }
   
   yPos = 45;
   yPos = drawSectionHeader(doc, 'CONDIÇÕES COMERCIAIS', yPos, pageWidth, margin);

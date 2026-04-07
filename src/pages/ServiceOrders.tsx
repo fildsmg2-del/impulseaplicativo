@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { format, isPast, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -106,6 +106,25 @@ export default function ServiceOrders() {
 
   const overdueCount = visibleOrders.filter(isOrderOverdue).length;
 
+  const loadServiceOrders = useCallback(async () => {
+    try {
+      setLoading(true);
+      const data = user
+        ? await serviceOrderService.getForUser({ id: user.id, role: user.role })
+        : await serviceOrderService.getAll();
+      setServiceOrders(data);
+    } catch (error) {
+      console.error('Error loading service orders:', error);
+      toast({
+        title: 'Erro',
+        description: 'Erro ao carregar ordens de serviço',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [user, toast]);
+
   useEffect(() => {
     if (!user) {
       setServiceOrders([]);
@@ -114,7 +133,7 @@ export default function ServiceOrders() {
     }
 
     loadServiceOrders();
-  }, [user]);
+  }, [user, loadServiceOrders]);
 
   // Check for new OS with client or OS ID in URL
   useEffect(() => {
@@ -146,26 +165,9 @@ export default function ServiceOrders() {
         setSearchParams({});
       }
     }
-  }, [searchParams, loading, serviceOrders]);
+  }, [searchParams, loading, serviceOrders, setSearchParams]);
 
-  const loadServiceOrders = async () => {
-    try {
-      setLoading(true);
-      const data = user
-        ? await serviceOrderService.getForUser({ id: user.id, role: user.role })
-        : await serviceOrderService.getAll();
-      setServiceOrders(data);
-    } catch (error) {
-      console.error('Error loading service orders:', error);
-      toast({
-        title: 'Erro',
-        description: 'Erro ao carregar ordens de serviço',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+
 
   const handleCreate = () => {
     setSelectedOrder(null);

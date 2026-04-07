@@ -1,0 +1,213 @@
+
+> vite_react_shadcn_ts@0.0.0 lint
+> eslint .
+
+
+C:\Users\Admin\Downloads\impulse\impulseaplicativo\src\components\clients\ClientDetailSheet.tsx
+   23:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  144:52  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  390:66  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Admin\Downloads\impulse\impulseaplicativo\src\components\financial\CashFlowChart.tsx
+   25:6   warning  React Hook useEffect has a missing dependency: 'loadCashFlow'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+   99:54  error    Unexpected any. Specify a different type                                                                         @typescript-eslint/no-explicit-any
+  105:29  error    Unexpected any. Specify a different type                                                                         @typescript-eslint/no-explicit-any
+
+C:\Users\Admin\Downloads\impulse\impulseaplicativo\src\components\inventory\KitManager.tsx
+  113:6  warning  React Hook useEffect has a missing dependency: 'resetPage'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Admin\Downloads\impulse\impulseaplicativo\src\components\inventory\StockMovementHistory.tsx
+  50:72  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Admin\Downloads\impulse\impulseaplicativo\src\components\layout\AppSidebar.tsx
+  62:52  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Admin\Downloads\impulse\impulseaplicativo\src\components\projects\ProjectModal.tsx
+  225:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  442:54  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  513:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  514:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Admin\Downloads\impulse\impulseaplicativo\src\components\quotes\QuoteWizard.tsx
+  77:6  warning  React Hook useEffect has a missing dependency: 'loadQuote'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Admin\Downloads\impulse\impulseaplicativo\src\components\quotes\steps\StepConsumption.tsx
+  155:6  warning  React Hook useEffect has missing dependencies: 'formData.average_monthly_kwh' and 'updateFormData'. Either include them or remove the dependency array. If 'updateFormData' changes too often, find the parent component that defines it and wrap that definition in useCallback  react-hooks/exhaustive-deps
+
+C:\Users\Admin\Downloads\impulse\impulseaplicativo\src\components\quotes\steps\StepDimensioning.tsx
+  33:6  warning  React Hook useEffect has a missing dependency: 'calculateDimensioning'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Admin\Downloads\impulse\impulseaplicativo\src\components\quotes\steps\StepKitSelection.tsx
+  73:11  error  Unexpected lexical declaration in case block  no-case-declarations
+  74:11  error  Unexpected lexical declaration in case block  no-case-declarations
+  78:11  error  Unexpected lexical declaration in case block  no-case-declarations
+
+C:\Users\Admin\Downloads\impulse\impulseaplicativo\src\components\quotes\steps\StepLocation.tsx
+   47:6  warning  React Hook useEffect has missing dependencies: 'formData.address_neighborhood', 'formData.address_zip_code', 'formData.latitude', and 'formData.longitude'. Either include them or remove the dependency array. If 'setMapUrl' needs the current value of 'formData.latitude', you can also switch to useReducer instead of useState and read 'formData.latitude' in the reducer  react-hooks/exhaustive-deps
+  129:6  warning  React Hook useEffect has missing dependencies: 'formData.address_state', 'formData.address_zip_code', and 'geocodeAddress'. Either include them or remove the dependency array                                                                                                                                                                                                    react-hooks/exhaustive-deps
+
+C:\Users\Admin\Downloads\impulse\impulseaplicativo\src\components\quotes\steps\StepPayback.tsx
+   44:6  warning  React Hook useEffect has a missing dependency: 'loadBanks'. Either include it or remove the dependency array                react-hooks/exhaustive-deps
+   97:6  warning  React Hook useEffect has a missing dependency: 'financingOptions.length'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  102:6  warning  React Hook useEffect has a missing dependency: 'calculatePayback'. Either include it or remove the dependency array         react-hooks/exhaustive-deps
+
+C:\Users\Admin\Downloads\impulse\impulseaplicativo\src\components\quotes\steps\StepPricing.tsx
+  70:6  warning  React Hook useEffect has missing dependencies: 'formData.labor_cost' and 'updateFormData'. Either include them or remove the dependency array. If 'updateFormData' changes too often, find the parent component that defines it and wrap that definition in useCallback  react-hooks/exhaustive-deps
+
+C:\Users\Admin\Downloads\impulse\impulseaplicativo\src\components\sales\SaleModal.tsx
+  47:6  warning  React Hook useEffect has a missing dependency: 'loadData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Admin\Downloads\impulse\impulseaplicativo\src\components\ui\badge.tsx
+  29:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\Admin\Downloads\impulse\impulseaplicativo\src\components\ui\button.tsx
+  47:18  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\Admin\Downloads\impulse\impulseaplicativo\src\components\ui\command.tsx
+  24:11  error  An interface declaring no members is equivalent to its supertype  @typescript-eslint/no-empty-object-type
+
+C:\Users\Admin\Downloads\impulse\impulseaplicativo\src\components\ui\form.tsx
+  129:10  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\Admin\Downloads\impulse\impulseaplicativo\src\components\ui\navigation-menu.tsx
+  111:3  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\Admin\Downloads\impulse\impulseaplicativo\src\components\ui\sidebar.tsx
+  636:3  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\Admin\Downloads\impulse\impulseaplicativo\src\components\ui\sonner.tsx
+  27:19  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\Admin\Downloads\impulse\impulseaplicativo\src\components\ui\textarea.tsx
+  5:18  error  An interface declaring no members is equivalent to its supertype  @typescript-eslint/no-empty-object-type
+
+C:\Users\Admin\Downloads\impulse\impulseaplicativo\src\components\ui\toggle.tsx
+  37:18  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\Admin\Downloads\impulse\impulseaplicativo\src\contexts\AuthContext.tsx
+  177:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\Admin\Downloads\impulse\impulseaplicativo\src\pages\Agenda.tsx
+  67:6  warning  React Hook useEffect has a missing dependency: 'loadMonthData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Admin\Downloads\impulse\impulseaplicativo\src\pages\Clients.tsx
+   25:23  error    Unexpected any. Specify a different type                                                                      @typescript-eslint/no-explicit-any
+  229:6   warning  React Hook useEffect has a missing dependency: 'resetPage'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Admin\Downloads\impulse\impulseaplicativo\src\pages\DevSettings.tsx
+  49:6  warning  React Hook useEffect has a missing dependency: 'loadSettings'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Admin\Downloads\impulse\impulseaplicativo\src\pages\Employees.tsx
+  38:6  warning  React Hook useEffect has a missing dependency: 'loadEmployees'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Admin\Downloads\impulse\impulseaplicativo\src\pages\Inventory.tsx
+  227:6  warning  React Hook useEffect has a missing dependency: 'resetPage'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Admin\Downloads\impulse\impulseaplicativo\src\pages\MyArea.tsx
+   96:38  error    Unexpected any. Specify a different type                                                                          @typescript-eslint/no-explicit-any
+   97:36  error    Unexpected any. Specify a different type                                                                          @typescript-eslint/no-explicit-any
+  128:6   warning  React Hook useEffect has a missing dependency: 'fetchProjects'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  145:38  error    Unexpected any. Specify a different type                                                                          @typescript-eslint/no-explicit-any
+  146:36  error    Unexpected any. Specify a different type                                                                          @typescript-eslint/no-explicit-any
+  151:38  error    Unexpected any. Specify a different type                                                                          @typescript-eslint/no-explicit-any
+  152:36  error    Unexpected any. Specify a different type                                                                          @typescript-eslint/no-explicit-any
+  174:19  error    Unexpected any. Specify a different type                                                                          @typescript-eslint/no-explicit-any
+  176:19  error    Unexpected any. Specify a different type                                                                          @typescript-eslint/no-explicit-any
+  183:19  error    Unexpected any. Specify a different type                                                                          @typescript-eslint/no-explicit-any
+  185:19  error    Unexpected any. Specify a different type                                                                          @typescript-eslint/no-explicit-any
+  224:36  error    Unexpected any. Specify a different type                                                                          @typescript-eslint/no-explicit-any
+  225:34  error    Unexpected any. Specify a different type                                                                          @typescript-eslint/no-explicit-any
+  234:17  error    Unexpected any. Specify a different type                                                                          @typescript-eslint/no-explicit-any
+  236:17  error    Unexpected any. Specify a different type                                                                          @typescript-eslint/no-explicit-any
+  316:33  error    Unexpected any. Specify a different type                                                                          @typescript-eslint/no-explicit-any
+  318:33  error    Unexpected any. Specify a different type                                                                          @typescript-eslint/no-explicit-any
+
+C:\Users\Admin\Downloads\impulse\impulseaplicativo\src\pages\MyProfile.tsx
+  102:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Admin\Downloads\impulse\impulseaplicativo\src\pages\Projects.tsx
+  100:6  warning  React Hook useEffect has a missing dependency: 'setSearchParams'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Admin\Downloads\impulse\impulseaplicativo\src\pages\QuoteSignature.tsx
+   68:6   warning  React Hook useEffect has a missing dependency: 'loadQuote'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  148:19  error    Unexpected any. Specify a different type                                                                      @typescript-eslint/no-explicit-any
+
+C:\Users\Admin\Downloads\impulse\impulseaplicativo\src\pages\Quotes.tsx
+   69:6  warning  React Hook useEffect has missing dependencies: 'handleOpenWizard' and 'setSearchParams'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  172:6  warning  React Hook useEffect has a missing dependency: 'resetPage'. Either include it or remove the dependency array                                 react-hooks/exhaustive-deps
+
+C:\Users\Admin\Downloads\impulse\impulseaplicativo\src\pages\Sales.tsx
+  65:6  warning  React Hook useEffect has a missing dependency: 'loadData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Admin\Downloads\impulse\impulseaplicativo\src\pages\ServiceOrders.tsx
+  117:6  warning  React Hook useEffect has a missing dependency: 'loadServiceOrders'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  149:6  warning  React Hook useEffect has a missing dependency: 'setSearchParams'. Either include it or remove the dependency array    react-hooks/exhaustive-deps
+
+C:\Users\Admin\Downloads\impulse\impulseaplicativo\src\pages\Settings.tsx
+   69:6    warning  React Hook useEffect has a missing dependency: 'loadData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  208:21   error    Unexpected any. Specify a different type                                                                     @typescript-eslint/no-explicit-any
+  639:87   error    Unexpected any. Specify a different type                                                                     @typescript-eslint/no-explicit-any
+  702:114  error    Unexpected any. Specify a different type                                                                     @typescript-eslint/no-explicit-any
+
+C:\Users\Admin\Downloads\impulse\impulseaplicativo\src\pages\Suppliers.tsx
+  169:6  warning  React Hook useEffect has a missing dependency: 'resetPage'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\Admin\Downloads\impulse\impulseaplicativo\src\services\auditLogService.ts
+  51:26  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  65:54  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  74:59  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  99:54  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Admin\Downloads\impulse\impulseaplicativo\src\services\clientService.ts
+   93:43  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  100:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Admin\Downloads\impulse\impulseaplicativo\src\services\dashboardService.ts
+  137:46  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  188:59  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  192:46  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  195:53  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  203:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Admin\Downloads\impulse\impulseaplicativo\src\services\kitService.ts
+  213:13  error  Unexpected lexical declaration in case block  no-case-declarations
+  214:13  error  Unexpected lexical declaration in case block  no-case-declarations
+  218:13  error  Unexpected lexical declaration in case block  no-case-declarations
+
+C:\Users\Admin\Downloads\impulse\impulseaplicativo\src\services\saleService.ts
+   62:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   97:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  126:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Admin\Downloads\impulse\impulseaplicativo\src\services\serviceOrderService.ts
+  104:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  184:62  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  212:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Admin\Downloads\impulse\impulseaplicativo\src\services\serviceTypeService.ts
+  25:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  61:71  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  73:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Admin\Downloads\impulse\impulseaplicativo\src\utils\pdfGenerator.ts
+   80:7   error  'totalWidth' is never reassigned. Use 'const' instead  prefer-const
+  286:15  error  Empty block statement                                  no-empty
+  364:15  error  Empty block statement                                  no-empty
+  446:15  error  Empty block statement                                  no-empty
+  550:15  error  Empty block statement                                  no-empty
+  650:15  error  Empty block statement                                  no-empty
+  734:15  error  Empty block statement                                  no-empty
+  813:15  error  Empty block statement                                  no-empty
+
+C:\Users\Admin\Downloads\impulse\impulseaplicativo\src\utils\serviceOrderPdfGenerator.ts
+  194:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Admin\Downloads\impulse\impulseaplicativo\supabase\functions\send-sale-email\index.ts
+  209:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\Admin\Downloads\impulse\impulseaplicativo\tailwind.config.ts
+  129:13  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+✖ 107 problems (72 errors, 35 warnings)
+  1 error and 0 warnings potentially fixable with the `--fix` option.
+

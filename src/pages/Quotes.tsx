@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Plus, Search, FileText, Clock, CheckCircle, XCircle, ArrowRight, Trash2, CheckSquare, Square } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
@@ -41,9 +41,32 @@ export default function Quotes() {
 
   const [preselectedClientId, setPreselectedClientId] = useState<string | undefined>();
 
+  const loadData = useCallback(async () => {
+    try {
+      const [quotesData, clientsData] = await Promise.all([
+        quoteService.getAll(),
+        clientService.getAll(),
+      ]);
+      setQuotes(quotesData);
+      const clientsMap: Record<string, Client> = {};
+      clientsData.forEach((c) => (clientsMap[c.id] = c));
+      setClients(clientsMap);
+    } catch (error) {
+      console.error('Error loading data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const handleOpenWizard = useCallback((quoteId?: string) => {
+    if (!canOpenWizard) return;
+    setEditingQuoteId(quoteId);
+    setShowWizard(true);
+  }, [canOpenWizard]);
+
   useEffect(() => {
     loadData();
-  }, []);
+  }, [loadData]);
 
   // Check for quote ID or new quote with client in URL
   useEffect(() => {
@@ -66,30 +89,9 @@ export default function Quotes() {
         setSearchParams({});
       }
     }
-  }, [searchParams, isLoading, quotes, canOpenWizard]);
+  }, [searchParams, isLoading, quotes, canOpenWizard, handleOpenWizard, setSearchParams]);
 
-  const loadData = async () => {
-    try {
-      const [quotesData, clientsData] = await Promise.all([
-        quoteService.getAll(),
-        clientService.getAll(),
-      ]);
-      setQuotes(quotesData);
-      const clientsMap: Record<string, Client> = {};
-      clientsData.forEach((c) => (clientsMap[c.id] = c));
-      setClients(clientsMap);
-    } catch (error) {
-      console.error('Error loading data:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
-  const handleOpenWizard = (quoteId?: string) => {
-    if (!canOpenWizard) return;
-    setEditingQuoteId(quoteId);
-    setShowWizard(true);
-  };
 
   const handleCloseWizard = () => {
     setShowWizard(false);
@@ -169,7 +171,7 @@ export default function Quotes() {
 
   useEffect(() => {
     resetPage();
-  }, [search, statusFilter]);
+  }, [search, statusFilter, resetPage]);
 
   return (
     <AppLayout>

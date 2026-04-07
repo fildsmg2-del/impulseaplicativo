@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Calendar, DollarSign, CreditCard, Trash2, Plus } from 'lucide-react';
 import { QuoteFormData } from '../QuoteWizard';
 import { cn } from '@/lib/utils';
@@ -38,12 +38,7 @@ export function StepPayback({ formData, updateFormData }: StepPaybackProps) {
   const [showCashflowModal, setShowCashflowModal] = useState(false);
   const [cashFlowFilter, setCashFlowFilter] = useState<'sem_financiamento' | string>('sem_financiamento');
 
-  // Load banks from database
-  useEffect(() => {
-    loadBanks();
-  }, []);
-
-  const loadBanks = async () => {
+  const loadBanks = useCallback(async () => {
     try {
       const data = await financingBankService.getAll();
       setBanks(data);
@@ -79,7 +74,12 @@ export function StepPayback({ formData, updateFormData }: StepPaybackProps) {
     } catch (error) {
       console.error('Error loading banks:', error);
     }
-  };
+  }, [formData.total]);
+
+  // Load banks from database
+  useEffect(() => {
+    loadBanks();
+  }, [loadBanks]);
 
   // Recalculate when formData changes
   useEffect(() => {
@@ -94,14 +94,9 @@ export function StepPayback({ formData, updateFormData }: StepPaybackProps) {
         return { ...opt, amount, installmentValue };
       }));
     }
-  }, [formData.total]);
+  }, [formData.total, financingOptions.length]);
 
-  // Calculate payback based on real data
-  useEffect(() => {
-    calculatePayback();
-  }, [formData.total, formData.estimated_generation_kwh, formData.tariff, selectedBank, financingOptions]);
-
-  const calculatePayback = () => {
+  const calculatePayback = useCallback(() => {
     const total = formData.total || 0;
     const monthlyGeneration = formData.estimated_generation_kwh || 0;
     const tariff = formData.tariff || 0;
@@ -164,7 +159,12 @@ export function StepPayback({ formData, updateFormData }: StepPaybackProps) {
         payment_type: 'avista',
       });
     }
-  };
+  }, [formData.total, formData.estimated_generation_kwh, formData.tariff, selectedBank, financingOptions, updateFormData]);
+
+  // Calculate payback based on real data
+  useEffect(() => {
+    calculatePayback();
+  }, [calculatePayback]);
 
   const updateFinancingOption = (id: string, field: keyof FinancingOption, value: number) => {
     setFinancingOptions(opts => opts.map(opt => {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
@@ -62,9 +62,27 @@ export default function Agenda() {
   const navigate = useNavigate();
   const isMaster = hasRole(["MASTER", "DEV"]);
 
+  const loadMonthData = useCallback(async () => {
+    try {
+      const start = format(startOfMonth(selectedDate), "yyyy-MM-dd");
+      const end = format(endOfMonth(selectedDate), "yyyy-MM-dd");
+      
+      const [activitiesData, osData] = await Promise.all([
+        activityService.getByDateRange(start, end),
+        serviceOrderService.getAll(),
+      ]);
+      
+      setActivities(activitiesData);
+      setServiceOrders(osData);
+    } catch (error) {
+      console.error("Error loading data:", error);
+      toast({ title: "Erro ao carregar dados", variant: "destructive" });
+    }
+  }, [selectedDate, toast]);
+
   useEffect(() => {
     loadMonthData();
-  }, [selectedDate]);
+  }, [loadMonthData]);
 
   useEffect(() => {
     // Combine activities and service orders for the selected day
@@ -102,23 +120,7 @@ export default function Agenda() {
     setDayItems([...activityItems, ...osItems]);
   }, [activities, serviceOrders, selectedDate]);
 
-  const loadMonthData = async () => {
-    try {
-      const start = format(startOfMonth(selectedDate), "yyyy-MM-dd");
-      const end = format(endOfMonth(selectedDate), "yyyy-MM-dd");
-      
-      const [activitiesData, osData] = await Promise.all([
-        activityService.getByDateRange(start, end),
-        serviceOrderService.getAll(),
-      ]);
-      
-      setActivities(activitiesData);
-      setServiceOrders(osData);
-    } catch (error) {
-      console.error("Error loading data:", error);
-      toast({ title: "Erro ao carregar dados", variant: "destructive" });
-    }
-  };
+
 
   const handleSave = async (data: ActivityInput) => {
     try {

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -78,7 +78,7 @@ export default function MyArea() {
   const userRole = user?.role || 'VENDEDOR';
   const userId = user?.id;
 
-  const fetchProjects = async () => {
+  const fetchProjects = useCallback(async () => {
     setLoading(true);
     try {
       const allProjects = await projectService.getAll();
@@ -121,11 +121,11 @@ export default function MyArea() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [hasRole, userRole, userId]);
 
   useEffect(() => {
     fetchProjects();
-  }, [userRole, userId]);
+  }, [fetchProjects]);
 
   const filteredAndSortedProjects = useMemo(() => {
     let result = [...projects];

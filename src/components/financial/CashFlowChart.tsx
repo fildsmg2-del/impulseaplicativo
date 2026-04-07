@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { TrendingUp, TrendingDown, Calendar } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,11 +20,7 @@ export function CashFlowChart() {
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState<'3' | '6' | '12'>('6');
 
-  useEffect(() => {
-    loadCashFlow();
-  }, [period]);
-
-  const loadCashFlow = async () => {
+  const loadCashFlow = useCallback(async () => {
     try {
       const months = parseInt(period);
       const startDate = startOfMonth(new Date());
@@ -76,7 +72,11 @@ export function CashFlowChart() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [period]);
+
+  useEffect(() => {
+    loadCashFlow();
+  }, [loadCashFlow]);
 
   const totals = useMemo(() => {
     return data.reduce(

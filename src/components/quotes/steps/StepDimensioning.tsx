@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { Sun, Calculator } from 'lucide-react';
 import { QuoteFormData } from '../QuoteWizard';
 
@@ -26,13 +26,7 @@ export function StepDimensioning({ formData, updateFormData }: StepDimensioningP
   const monthlyConsumption = formData.average_monthly_kwh || 0;
   const modulePower = 585; // Default module power in Watts
 
-  useEffect(() => {
-    if (monthlyConsumption > 0) {
-      calculateDimensioning();
-    }
-  }, [monthlyConsumption, state]);
-
-  const calculateDimensioning = () => {
+  const calculateDimensioning = useCallback(() => {
     // System sizing calculation
     // Daily consumption = Monthly consumption / 30
     // Required power (kWp) = Daily consumption / (Irradiation * Performance ratio)
@@ -59,7 +53,13 @@ export function StepDimensioning({ formData, updateFormData }: StepDimensioningP
       inverter_power_kw: inverterPowerKw,
       estimated_generation_kwh: Math.round(monthlyGeneration),
     });
-  };
+  }, [monthlyConsumption, irradiation, modulePower, updateFormData]);
+
+  useEffect(() => {
+    if (monthlyConsumption > 0) {
+      calculateDimensioning();
+    }
+  }, [monthlyConsumption, calculateDimensioning]);
 
   const recommendedPower = formData.recommended_power_kwp || 0;
   const modulesQty = formData.modules_quantity || 0;

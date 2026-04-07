@@ -97,7 +97,7 @@ export default function Projects() {
         setSearchParams({});
       }
     }
-  }, [searchParams, loading, projects, canOpenProjectModal]);
+  }, [searchParams, loading, projects, canOpenProjectModal, setSearchParams]);
 
   const filteredProjects = projects.filter((project) => {
     const clientName = project.client_id ? clientNames[project.client_id] || '' : '';

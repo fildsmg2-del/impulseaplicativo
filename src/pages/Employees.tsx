@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -33,11 +33,7 @@ export default function Employees() {
     next_vacation_date: '',
   });
 
-  useEffect(() => {
-    loadEmployees();
-  }, []);
-
-  const loadEmployees = async () => {
+  const loadEmployees = useCallback(async () => {
     setLoading(true);
     try {
       const data = await getEmployees();
@@ -52,7 +48,13 @@ export default function Employees() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
+
+  useEffect(() => {
+    loadEmployees();
+  }, [loadEmployees]);
+
+
 
   const filteredEmployees = employees.filter(
     emp => emp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||

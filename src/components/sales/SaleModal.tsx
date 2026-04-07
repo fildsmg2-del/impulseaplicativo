@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { X, FileText, Download, Edit, Save, CheckCircle, XCircle, DollarSign, Clock, User, Building2, Calendar, Package, PenTool, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -42,11 +42,7 @@ export function SaleModal({ saleId, onClose }: SaleModalProps) {
   const { toast } = useToast();
   const { hasRole } = useAuth();
 
-  useEffect(() => {
-    loadData();
-  }, [saleId]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setIsLoading(true);
       const [saleData, companyData] = await Promise.all([
@@ -74,7 +70,11 @@ export function SaleModal({ saleId, onClose }: SaleModalProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [saleId, toast]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const handleSave = async () => {
     try {

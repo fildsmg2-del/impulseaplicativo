@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -64,11 +64,7 @@ export default function Settings() {
     role: 'VENDEDOR'
   });
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     try {
       const [settings, usersData, quoteSettings] = await Promise.all([
@@ -94,7 +90,13 @@ export default function Settings() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+
 
   const handleCompanyChange = (field: keyof CompanySettings, value: string) => {
     setCompanyData(prev => ({ ...prev, [field]: value }));

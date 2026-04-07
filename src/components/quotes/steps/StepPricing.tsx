@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { DollarSign, Calculator, TrendingUp, Lock, Plus, Trash2 } from 'lucide-react';
 import { QuoteFormData } from '../QuoteWizard';
 import { Slider } from '@/components/ui/slider';
@@ -44,20 +44,21 @@ export function StepPricing({ formData, updateFormData }: StepPricingProps) {
   const additionalItems = formData.additional_cost_items || [];
   const additional = additionalItems.reduce((sum, item) => sum + (item.value || 0), 0);
 
+  const loadSettings = useCallback(async () => {
+    try {
+      const settings = await quoteSettingsService.getSettings();
+      setLaborCostPerPanel(settings.laborCostPerPanel);
+    } catch (error) {
+      console.error('Error loading quote settings:', error);
+    } finally {
+      setLoadingSettings(false);
+    }
+  }, []);
+
   // Load labor cost per panel setting
   useEffect(() => {
-    const loadSettings = async () => {
-      try {
-        const settings = await quoteSettingsService.getSettings();
-        setLaborCostPerPanel(settings.laborCostPerPanel);
-      } catch (error) {
-        console.error('Error loading quote settings:', error);
-      } finally {
-        setLoadingSettings(false);
-      }
-    };
     loadSettings();
-  }, []);
+  }, [loadSettings]);
 
   // Auto-calculate labor cost when modules quantity changes
   useEffect(() => {
@@ -67,7 +68,7 @@ export function StepPricing({ formData, updateFormData }: StepPricingProps) {
         updateFormData({ labor_cost: newLaborCost });
       }
     }
-  }, [modulesQuantity, laborCostPerPanel, loadingSettings]);
+  }, [modulesQuantity, laborCostPerPanel, loadingSettings, formData.labor_cost, updateFormData]);
   
   // Calculate costs
   const totalCost = equipment + labor + additional;

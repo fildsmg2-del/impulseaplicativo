@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { MapPin, Search, User, Sun, Navigation } from 'lucide-react';
 import { QuoteFormData } from '../QuoteWizard';
 import { Client, clientService } from '@/services/clientService';
@@ -38,13 +38,10 @@ export function StepLocation({ formData, updateFormData, clients }: StepLocation
   // Update map when address changes
   useEffect(() => {
     if (formData.address_city && formData.address_state) {
-      const address = encodeURIComponent(
-        `${formData.address_street || ''}, ${formData.address_number || ''}, ${formData.address_neighborhood || ''}, ${formData.address_city}, ${formData.address_state}, ${formData.address_zip_code || ''}, Brasil`
-      );
       // Using OpenStreetMap embed (free, no API key required)
       setMapUrl(`https://www.openstreetmap.org/export/embed.html?bbox=${encodeURIComponent(`-50,-25,-40,-15`)}&layer=mapnik&marker=${encodeURIComponent(`${formData.latitude || -19.5},${formData.longitude || -43.5}`)}`);
     }
-  }, [formData.address_city, formData.address_state, formData.address_street, formData.address_number]);
+  }, [formData.address_city, formData.address_state, formData.address_street, formData.address_number, formData.latitude, formData.longitude, formData.address_neighborhood, formData.address_zip_code]);
 
   const handleClientSelect = async (clientId: string) => {
     setSelectedClientId(clientId);
@@ -85,7 +82,7 @@ export function StepLocation({ formData, updateFormData, clients }: StepLocation
     }
   };
 
-  const geocodeAddress = async (street?: string, number?: string, neighborhood?: string, city?: string, state?: string, zipCode?: string) => {
+  const geocodeAddress = useCallback(async (street?: string, number?: string, neighborhood?: string, city?: string, state?: string, zipCode?: string) => {
     try {
       const fullAddress = [
         number ? `${street}, ${number}` : street,
@@ -109,7 +106,7 @@ export function StepLocation({ formData, updateFormData, clients }: StepLocation
     } catch (e) {
       console.error('Geocoding error:', e);
     }
-  };
+  }, [updateFormData]);
 
   // Re-geocode when address fields change
   useEffect(() => {
@@ -126,7 +123,7 @@ export function StepLocation({ formData, updateFormData, clients }: StepLocation
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [formData.address_street, formData.address_number, formData.address_neighborhood, formData.address_city]);
+  }, [formData.address_street, formData.address_number, formData.address_neighborhood, formData.address_city, formData.address_state, formData.address_zip_code, geocodeAddress]);
 
   const fullAddress = `${formData.address_city || ''}, ${formData.address_state || ''}, ${formData.address_zip_code || ''}`;
 

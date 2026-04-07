@@ -23,8 +23,9 @@ import { UserRole } from '@/types';
 
 export default function Settings() {
   const { toast } = useToast();
-  const { hasRole } = useAuth();
+  const { user, hasRole } = useAuth();
   const isMaster = hasRole(['MASTER']);
+  const isDev = hasRole(['DEV']);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [savingUser, setSavingUser] = useState(false);
@@ -253,7 +254,7 @@ export default function Settings() {
       </div>
 
       <Tabs defaultValue="company" className="space-y-6">
-        <TabsList className="grid w-full max-w-3xl grid-cols-5">
+        <TabsList className="grid w-full max-w-4xl grid-cols-6">
           <TabsTrigger value="company" className="gap-2">
             <Building2 className="h-4 w-4" />
             Empresa
@@ -570,8 +571,13 @@ export default function Settings() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {users.map((user) => (
-                    <TableRow key={user.id}>
+                  {users
+                    .filter(u => {
+                      if (user?.role === 'MASTER') return u.role !== 'DEV';
+                      return true;
+                    })
+                    .map((user) => (
+                      <TableRow key={user.id}>
                       <TableCell className="font-medium">{user.name}</TableCell>
                       <TableCell>{user.email}</TableCell>
                       <TableCell>
@@ -671,7 +677,7 @@ export default function Settings() {
                   <SelectItem value="FINANCEIRO">Financeiro</SelectItem>
                   <SelectItem value="COMPRAS">Compras</SelectItem>
                   <SelectItem value="MASTER">Master</SelectItem>
-                  <SelectItem value="DEV">Desenvolvedor</SelectItem>
+                  {isDev && <SelectItem value="DEV">Desenvolvedor</SelectItem>}
                 </SelectContent>
               </Select>
             </div>
@@ -734,7 +740,7 @@ export default function Settings() {
                   <SelectItem value="FINANCEIRO">Financeiro</SelectItem>
                   <SelectItem value="COMPRAS">Compras</SelectItem>
                   <SelectItem value="MASTER">Master</SelectItem>
-                  <SelectItem value="DEV">Desenvolvedor</SelectItem>
+                  {isDev && <SelectItem value="DEV">Desenvolvedor</SelectItem>}
                 </SelectContent>
               </Select>
             </div>

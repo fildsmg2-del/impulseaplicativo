@@ -5,6 +5,7 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
@@ -46,6 +47,7 @@ export default function FinancialReceivables() {
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   
   const [isSummaryExpanded, setIsSummaryExpanded] = useState(false);
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
   const [filters, setFilters] = useState<{
     startDate: Date;
     endDate: Date;
@@ -248,10 +250,7 @@ export default function FinancialReceivables() {
                     setSelectedIds([]);
                 }
                 if (action === 'delete') {
-                    if (confirm('Excluir selecionados?')) {
-                        selectedIds.forEach(id => deleteMutation.mutate(id));
-                        setSelectedIds([]);
-                    }
+                    setBulkDeleteOpen(true);
                 }
             }}
         />
@@ -390,6 +389,30 @@ export default function FinancialReceivables() {
             </div>
         </div>
       </div>
+
+      <AlertDialog open={bulkDeleteOpen} onOpenChange={setBulkDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir selecionados</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir {selectedIds.length} lançamento(s)? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive hover:bg-destructive/90"
+              onClick={() => {
+                selectedIds.forEach(id => deleteMutation.mutate(id));
+                setSelectedIds([]);
+                setBulkDeleteOpen(false);
+              }}
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AppLayout>
   );
 }

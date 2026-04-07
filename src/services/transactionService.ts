@@ -162,7 +162,7 @@ export const transactionService = {
             due_date: dueDate.toISOString().split('T')[0],
             installment_number: i,
             total_installments: installments,
-            parent_id: i === 1 ? undefined : createdTransactions[0].id, // First one is parent if we want hierarchical, or use a separate grouping UUID
+            parent_id: i === 1 ? undefined : parentId,
             created_by: user?.id,
             amount: transaction.amount / installments
         };
@@ -192,7 +192,7 @@ export const transactionService = {
     return createdTransactions;
   },
 
-  async createBatchMany(transactions: any[]): Promise<void> {
+  async createBatchMany(transactions: CreateTransactionData[]): Promise<void> {
     const { data: { user } } = await supabase.auth.getUser();
     
     const formatted = transactions.map(t => ({

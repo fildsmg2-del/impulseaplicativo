@@ -61,8 +61,9 @@ export async function createUser(userData: CreateUserData): Promise<void> {
   }
 
   // Call edge function to create user (uses admin API, won't affect current session)
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   const response = await fetch(
-    'https://mkyqzinteimagjerzfvz.supabase.co/functions/v1/create-user',
+    `${supabaseUrl}/functions/v1/create-user`,
     {
       method: 'POST',
       headers: {

@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { Plus, Pencil, Trash2, Clock, ArrowUp, ArrowDown } from 'lucide-react';
@@ -17,6 +18,7 @@ interface ServiceTypeManagerProps {
 export function ServiceTypeManager({ isMaster }: ServiceTypeManagerProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingType, setEditingType] = useState<ServiceType | null>(null);
+  const [typeToDelete, setTypeToDelete] = useState<ServiceType | null>(null);
   const [formData, setFormData] = useState<CreateServiceTypeData>({
     name: '',
     deadline_days: 5,
@@ -138,8 +140,8 @@ export function ServiceTypeManager({ isMaster }: ServiceTypeManagerProps) {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
+    <>
+      <div className="space-y-4">
         <div>
           <h3 className="text-lg font-medium">Tipos de Serviço</h3>
           <p className="text-sm text-muted-foreground">
@@ -205,11 +207,7 @@ export function ServiceTypeManager({ isMaster }: ServiceTypeManagerProps) {
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => {
-                        if (confirm('Deseja excluir este tipo de serviço?')) {
-                          deleteMutation.mutate(type.id);
-                        }
-                      }}
+                      onClick={() => setTypeToDelete(type)}
                       disabled={!isMaster}
                     >
                       <Trash2 className="h-4 w-4 text-destructive" />
@@ -337,5 +335,29 @@ export function ServiceTypeManager({ isMaster }: ServiceTypeManagerProps) {
         </DialogContent>
       </Dialog>
     </div>
+
+    <AlertDialog open={!!typeToDelete} onOpenChange={(open) => !open && setTypeToDelete(null)}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Excluir Tipo de Serviço</AlertDialogTitle>
+          <AlertDialogDescription>
+            Tem certeza que deseja excluir o tipo "{typeToDelete?.name}"? Esta ação não pode ser desfeita.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogAction
+            className="bg-destructive hover:bg-destructive/90"
+            onClick={() => {
+              if (typeToDelete) deleteMutation.mutate(typeToDelete.id);
+              setTypeToDelete(null);
+            }}
+          >
+            Excluir
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }

@@ -6,14 +6,14 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { Loader2, FolderKanban, User, Calendar, ArrowRight, Search, Filter } from 'lucide-react';
-import { Project, projectService } from '@/services/projectService';
-import { clientService } from '@/services/clientService';
+import { projectService } from '@/services/projectService';
 import { useAuth } from '@/hooks/use-auth';
 import { ProjectModal } from '@/components/projects/ProjectModal';
 import { calculateProjectProgress } from '@/components/projects/projectStagesConfig';
 import { useProjectStages } from '@/hooks/useProjectStages';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { supabase } from '@/integrations/supabase/client';
 import {
   ToggleGroup,
   ToggleGroupItem,
@@ -104,18 +104,16 @@ export default function MyArea() {
 
       setProjects(filteredProjects);
 
-      const clientIds = [...new Set(filteredProjects.map(p => p.client_id).filter(Boolean))];
-      const names: Record<string, string> = {};
-      
-      for (const clientId of clientIds) {
-        if (clientId) {
-          const client = await clientService.getById(clientId);
-          if (client) {
-            names[clientId] = client.name;
-          }
-        }
+      const clientIds = [...new Set(filteredProjects.map(p => p.client_id).filter(Boolean))] as string[];
+      if (clientIds.length > 0) {
+        const { data: clientsData } = await supabase
+          .from('clients')
+          .select('id, name')
+          .in('id', clientIds);
+        const names: Record<string, string> = {};
+        (clientsData || []).forEach(c => { names[c.id] = c.name; });
+        setClientNames(names);
       }
-      setClientNames(names);
     } catch (error) {
       console.error('Error fetching projects:', error);
     } finally {

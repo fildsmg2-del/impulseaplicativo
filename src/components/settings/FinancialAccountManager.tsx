@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Label } from '@/components/ui/label';
 import { accountService, FinancialAccount, CreateAccountData } from '@/services/accountService';
 import { bankService } from '@/services/bankService';
@@ -18,6 +19,7 @@ export function FinancialAccountManager() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editingAccount, setEditingAccount] = useState<FinancialAccount | null>(null);
+  const [accountToDelete, setAccountToDelete] = useState<FinancialAccount | null>(null);
   const [formData, setFormData] = useState<CreateAccountData>({
     name: '',
     type: 'CORRENTE',
@@ -131,12 +133,16 @@ export function FinancialAccountManager() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Tem certeza que deseja excluir esta conta?')) return;
-    
+  const handleDelete = async (account: FinancialAccount) => {
+    setAccountToDelete(account);
+  };
+
+  const confirmDelete = async () => {
+    if (!accountToDelete) return;
     try {
-      await accountService.delete(id);
+      await accountService.delete(accountToDelete.id);
       toast({ title: 'Sucesso', description: 'Conta excluída com sucesso' });
+      setAccountToDelete(null);
       loadAccounts();
     } catch (error) {
       toast({
@@ -156,8 +162,8 @@ export function FinancialAccountManager() {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
+    <>
+      <div className="space-y-4">
         <div>
           <h3 className="text-lg font-medium">Contas e Caixas</h3>
           <p className="text-sm text-muted-foreground">Gerencie seus bancos e caixas para lançamentos financeiros</p>
@@ -201,7 +207,7 @@ export function FinancialAccountManager() {
                   <Button variant="ghost" size="icon" onClick={() => handleOpenDialog(account)}>
                     <Pencil className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={() => handleDelete(account.id)}>
+                  <Button variant="ghost" size="icon" onClick={() => handleDelete(account)}>
                     <Trash2 className="h-4 w-4 text-destructive" />
                   </Button>
                 </div>
@@ -342,6 +348,27 @@ export function FinancialAccountManager() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+
+      <AlertDialog open={!!accountToDelete} onOpenChange={(open) => !open && setAccountToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir Conta</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir a conta "{accountToDelete?.name}"? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive hover:bg-destructive/90"
+              onClick={confirmDelete}
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

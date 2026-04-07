@@ -156,7 +156,7 @@ export const serviceOrderService = {
     }
 
     if (!data?.length) {
-      console.log('ServiceOrder fetch returned 0 results for user:', user.id, 'role:', user.role);
+      // No results returned
     }
     
     return (data || []).map(parseServiceOrder);

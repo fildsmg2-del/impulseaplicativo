@@ -24,7 +24,7 @@ import { UserRole } from '@/types';
 export default function Settings() {
   const { toast } = useToast();
   const { user, hasRole } = useAuth();
-  const isMaster = hasRole(['MASTER']);
+  const isMaster = hasRole(['MASTER', 'DEV']);
   const isDev = hasRole(['DEV']);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);

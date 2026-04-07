@@ -11,6 +11,7 @@ import { droneService, DroneService, DroneServiceStatus } from '@/services/drone
 import { DroneServiceModal } from '@/components/drone/DroneServiceModal';
 import { pdfService } from '@/services/pdfService';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -28,6 +29,7 @@ export default function DroneServices() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedService, setSelectedService] = useState<DroneService | null>(null);
+  const [serviceToDelete, setServiceToDelete] = useState<string | null>(null);
 
   const { data: services = [], isLoading } = useQuery({
     queryKey: ['drone-services', statusFilter, search],
@@ -51,9 +53,7 @@ export default function DroneServices() {
   };
 
   const handleDelete = (id: string) => {
-    if (confirm('Tem certeza que deseja excluir esta OS?')) {
-      deleteMutation.mutate(id);
-    }
+    setServiceToDelete(id);
   };
 
   return (
@@ -208,6 +208,29 @@ export default function DroneServices() {
           service={selectedService}
           onSuccess={() => queryClient.invalidateQueries({ queryKey: ['drone-services'] })}
         />
+
+        <AlertDialog open={!!serviceToDelete} onOpenChange={(open) => !open && setServiceToDelete(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Excluir OS de Drone</AlertDialogTitle>
+              <AlertDialogDescription>
+                Tem certeza que deseja excluir esta ordem de serviço? Esta ação não pode ser desfeita.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                className="bg-destructive hover:bg-destructive/90"
+                onClick={() => {
+                  if (serviceToDelete) deleteMutation.mutate(serviceToDelete);
+                  setServiceToDelete(null);
+                }}
+              >
+                Excluir
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </AppLayout>
   );

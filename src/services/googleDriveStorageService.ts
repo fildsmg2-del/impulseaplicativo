@@ -6,8 +6,8 @@ export interface GoogleDriveUploadResult {
   fileId: string;
 }
 
-const SUPABASE_URL = "https://mkyqzinteimagjerzfvz.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1reXF6aW50ZWltYWdqZXJ6ZnZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU2MzQwNDksImV4cCI6MjA4MTIxMDA0OX0.5EK0gYw13sVqEMJZbsbKJsI6WCE8w3vau52VlO-uGuo";
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 export const googleDriveStorageService = {
   async upload(file: File, folder: string): Promise<GoogleDriveUploadResult> {

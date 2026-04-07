@@ -1,15 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sun, Mail, Lock, LogIn, Loader2, TrendingUp } from 'lucide-react';
+import { Sun, Mail, Lock, LogIn, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
 import logoImpulse from '@/assets/logo-impulse.png';
-
-interface LoginStats {
-  totalProjects: number;
-  totalPowerKwp: number;
-}
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -17,7 +11,6 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [isPageLoading, setIsPageLoading] = useState(true);
   const [imageLoaded, setImageLoaded] = useState(false);
-  const [stats, setStats] = useState<LoginStats>({ totalProjects: 0, totalPowerKwp: 0 });
   const { login, isAuthenticated, isProfileLoaded } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -30,33 +23,11 @@ export default function Login() {
   }, [isAuthenticated, isProfileLoaded, navigate]);
 
   useEffect(() => {
-    loadStats();
-    // Simulate minimum loading time for smooth animation
     const timer = setTimeout(() => {
       setIsPageLoading(false);
     }, 800);
     return () => clearTimeout(timer);
   }, []);
-
-  const loadStats = async () => {
-    try {
-      const { data: projects, error } = await supabase
-        .from('projects')
-        .select('power_kwp, status');
-
-      if (!error && projects) {
-        const completedProjects = projects.filter(p => p.status === 'POS_VENDA');
-        const totalPower = completedProjects.reduce((sum, p) => sum + (p.power_kwp || 0), 0);
-        
-        setStats({
-          totalProjects: projects.length,
-          totalPowerKwp: totalPower,
-        });
-      }
-    } catch (error) {
-      console.error('Error loading stats:', error);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

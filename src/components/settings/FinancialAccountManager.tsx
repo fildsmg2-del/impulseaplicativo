@@ -162,8 +162,8 @@ export function FinancialAccountManager() {
   }
 
   return (
-    <>
-      <div className="space-y-4">
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
         <div>
           <h3 className="text-lg font-medium">Contas e Caixas</h3>
           <p className="text-sm text-muted-foreground">Gerencie seus bancos e caixas para lançamentos financeiros</p>
@@ -322,14 +322,14 @@ export function FinancialAccountManager() {
             </div>
 
             <div className="space-y-2">
-                <Label htmlFor="initial-balance">Saldo Inicial (R$)</Label>
-                <Input
-                  id="initial-balance"
-                  type="number"
-                  step="0.01"
-                  value={formData.initial_balance || 0}
-                  onChange={(e) => setFormData({ ...formData, initial_balance: parseFloat(e.target.value) || 0 })}
-                />
+              <Label htmlFor="initial-balance">Saldo Inicial (R$)</Label>
+              <Input
+                id="initial-balance"
+                type="number"
+                step="0.01"
+                value={formData.initial_balance || 0}
+                onChange={(e) => setFormData({ ...formData, initial_balance: parseFloat(e.target.value) || 0 })}
+              />
             </div>
             <div className="flex items-center space-x-2">
               <Switch
@@ -348,7 +348,6 @@ export function FinancialAccountManager() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      </div>
 
       <AlertDialog open={!!accountToDelete} onOpenChange={(open) => !open && setAccountToDelete(null)}>
         <AlertDialogContent>
@@ -369,6 +368,6 @@ export function FinancialAccountManager() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </div>
   );
 }

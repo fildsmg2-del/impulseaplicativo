@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS public.drone_services (
     client_address_street TEXT,
     client_address_number TEXT,
     client_address_neighborhood TEXT,
+    client_address_complement TEXT,
     client_address_city TEXT,
     client_address_state TEXT,
     service_description TEXT NOT NULL,

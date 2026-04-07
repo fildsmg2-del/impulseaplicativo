@@ -11,6 +11,7 @@ export interface DroneService {
   client_address_street?: string;
   client_address_number?: string;
   client_address_neighborhood?: string;
+  client_address_complement?: string;
   client_address_city?: string;
   client_address_state?: string;
   service_description: string;
@@ -35,6 +36,7 @@ export interface CreateDroneServiceData {
   client_address_street?: string;
   client_address_number?: string;
   client_address_neighborhood?: string;
+  client_address_complement?: string;
   client_address_city?: string;
   client_address_state?: string;
   service_description: string;

@@ -1,13 +1,16 @@
 import { useState } from 'react';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { ChevronLeft, ChevronRight, Search, Landmark, Filter, CheckSquare, Download } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search, Landmark, Filter, CheckSquare, Download, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Badge } from '@/components/ui/badge';
 import { useQuery } from '@tanstack/react-query';
 import { accountService } from '@/services/accountService';
+import { FINANCIAL_CATEGORIES, PAYMENT_METHODS } from '@/constants/financialConstants';
 
 interface FinancialHeaderProps {
   type: 'RECEITA' | 'DESPESA';
@@ -16,12 +19,18 @@ interface FinancialHeaderProps {
       endDate: Date;
       search: string;
       accountId: string;
+      status?: string;
+      category?: string;
+      paymentMethod?: string;
   };
   onFilterChange: (filters: {
       startDate: Date;
       endDate: Date;
       search: string;
       accountId: string;
+      status?: string;
+      category?: string;
+      paymentMethod?: string;
   }) => void;
   summary: {
       vencidos: number;
@@ -115,10 +124,70 @@ export function FinancialHeader({ type, filters, onFilterChange, summary, select
           </Select>
         </div>
 
-        <Button variant="outline" className="gap-2 h-10 text-primary">
-          <Filter className="h-4 w-4" />
-          Mais filtros
-        </Button>
+        <Popover>
+            <PopoverTrigger asChild>
+                <Button variant="outline" className={`gap-2 h-10 ${filters.status || filters.category || filters.paymentMethod ? 'border-primary text-primary bg-primary/5' : 'text-slate-600'}`}>
+                  <Filter className="h-4 w-4" />
+                  Mais filtros
+                  {(filters.status || filters.category || filters.paymentMethod) && (
+                      <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-[10px] bg-primary text-white">Ativo</Badge>
+                  )}
+                </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80 p-4 space-y-4" align="end">
+                <div className="flex items-center justify-between border-b pb-2">
+                    <h4 className="font-bold text-sm uppercase tracking-tight">Filtros Adicionais</h4>
+                    <Button variant="ghost" size="sm" onClick={() => onFilterChange({ ...filters, status: undefined, category: undefined, paymentMethod: undefined })} className="h-7 text-xs text-rose-500">Limpar</Button>
+                </div>
+                
+                <div className="space-y-3">
+                    <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase">Situação</label>
+                        <Select value={filters.status || 'all'} onValueChange={(v) => onFilterChange({ ...filters, status: v === 'all' ? undefined : v })}>
+                            <SelectTrigger className="h-9 text-xs">
+                                <SelectValue placeholder="Todas" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">Todas</SelectItem>
+                                <SelectItem value="PENDENTE">Em Aberto</SelectItem>
+                                <SelectItem value="PAGO">Liquidados</SelectItem>
+                                <SelectItem value="ATRASADO">Vencidos</SelectItem>
+                                <SelectItem value="CANCELADO">Cancelados</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase">Categoria</label>
+                        <div className="relative">
+                            <Input 
+                                list="header-categories"
+                                className="h-9 text-xs" 
+                                placeholder="Filtrar por categoria..." 
+                                value={filters.category || ''}
+                                onChange={(e) => onFilterChange({ ...filters, category: e.target.value || undefined })}
+                            />
+                            <datalist id="header-categories">
+                                {[...FINANCIAL_CATEGORIES.RECEITA, ...FINANCIAL_CATEGORIES.DESPESA].map(c => <option key={c} value={c} />)}
+                            </datalist>
+                        </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase">Forma de Pagamento</label>
+                        <Select value={filters.paymentMethod || 'all'} onValueChange={(v) => onFilterChange({ ...filters, paymentMethod: v === 'all' ? undefined : v })}>
+                            <SelectTrigger className="h-9 text-xs">
+                                <SelectValue placeholder="Todas" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">Todas</SelectItem>
+                                {PAYMENT_METHODS.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+            </PopoverContent>
+        </Popover>
 
         {onExport && (
           <Button variant="outline" onClick={onExport} className="gap-2 h-10 border-emerald-600/50 text-emerald-600 hover:bg-emerald-50">

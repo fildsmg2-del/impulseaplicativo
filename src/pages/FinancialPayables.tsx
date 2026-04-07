@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Plus, Edit, Trash2, CheckCircle2, MoreHorizontal } from 'lucide-react';
+import { Plus, Edit, Trash2, CheckCircle2, MoreHorizontal, ChevronUp, ChevronDown } from 'lucide-react';
 import { transactionService, Transaction, CreateTransactionData, TransactionStatus } from '@/services/transactionService';
 import { supplierService } from '@/services/supplierService';
 import { accountService } from '@/services/accountService';
@@ -43,11 +43,23 @@ export default function FinancialPayables() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   
-  const [filters, setFilters] = useState({
+  const [isSummaryExpanded, setIsSummaryExpanded] = useState(false);
+  const [filters, setFilters] = useState<{
+    startDate: Date;
+    endDate: Date;
+    search: string;
+    accountId: string;
+    status?: string;
+    category?: string;
+    paymentMethod?: string;
+  }>({
     startDate: startOfMonth(new Date()),
     endDate: endOfMonth(new Date()),
     search: '',
-    accountId: 'all'
+    accountId: 'all',
+    status: undefined,
+    category: undefined,
+    paymentMethod: undefined,
   });
 
   const [formData, setFormData] = useState<CreateTransactionData>({
@@ -168,10 +180,15 @@ export default function FinancialPayables() {
 
   // Calculations
   const filteredTransactions = useMemo(() => {
-    return transactions.filter(t => 
-        t.description.toLowerCase().includes(filters.search.toLowerCase())
-    );
-  }, [transactions, filters.search]);
+    return transactions.filter(t => {
+        const matchesSearch = t.description.toLowerCase().includes(filters.search.toLowerCase());
+        const matchesStatus = !filters.status || t.status === filters.status;
+        const matchesCategory = !filters.category || t.category?.toLowerCase() === filters.category.toLowerCase();
+        const matchesPayment = !filters.paymentMethod || t.payment_method === filters.paymentMethod;
+        
+        return matchesSearch && matchesStatus && matchesCategory && matchesPayment;
+    });
+  }, [transactions, filters]);
 
   const summary = useMemo(() => {
     const s = { vencidos: 0, hoje: 0, aVencer: 0, liquidados: 0, total: 0 };
@@ -322,16 +339,51 @@ export default function FinancialPayables() {
                 </TableBody>
             </Table>
             
-            {/* Table Footer / Summary */}
-            <div className="bg-muted/20 p-4 border-t flex justify-between items-center text-sm">
-                <div>
-                    <span className="font-bold">Totais do período</span>
-                    <p className="text-muted-foreground text-xs">{format(filters.startDate, 'dd/MM/yyyy')} a {format(filters.endDate, 'dd/MM/yyyy')}</p>
+            {/* Table Footer / Summary (Expandable) */}
+            <div className="bg-white dark:bg-slate-800 border-t shadow-[0_-4px_12px_-4px_rgba(0,0,0,0.1)]">
+                <div 
+                    className="p-4 flex justify-between items-center cursor-pointer hover:bg-slate-50 transition-colors"
+                    onClick={() => setIsSummaryExpanded(!isSummaryExpanded)}
+                >
+                    <div className="flex flex-col">
+                        <span className="font-bold text-slate-800 dark:text-slate-100">Totais do período</span>
+                        <p className="text-slate-400 text-xs font-medium">
+                            {format(filters.startDate, 'dd/MM/yyyy')} a {format(filters.endDate, 'dd/MM/yyyy')}
+                        </p>
+                    </div>
+                    <div className="flex items-center gap-8">
+                        <div className="text-right">
+                             <span className="text-slate-400 text-[10px] uppercase font-bold tracking-tighter block mb-0.5">Totais do período (R$)</span>
+                             <span className="text-2xl font-black text-slate-900 dark:text-white leading-none">
+                                 {formatCurrency(summary.total)}
+                             </span>
+                        </div>
+                        <div className={`p-1 rounded-full bg-slate-100 text-slate-500 transition-transform duration-300 ${isSummaryExpanded ? 'rotate-180' : ''}`}>
+                            <ChevronUp className="h-5 w-5" />
+                        </div>
+                    </div>
                 </div>
-                <div className="text-right">
-                     <span className="text-muted-foreground text-xs uppercase font-bold tracking-tighter block">Totais do período (R$)</span>
-                     <span className="text-xl font-black text-foreground">{formatCurrency(summary.total)}</span>
-                </div>
+
+                {isSummaryExpanded && (
+                    <div className="px-6 pb-6 pt-2 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 animate-in slide-in-from-top-4 duration-300">
+                        <div className="space-y-1 p-3 rounded-lg bg-orange-50/50 border border-orange-100">
+                            <span className="text-[10px] font-bold text-orange-600 uppercase">Em aberto (A vencer) (R$):</span>
+                            <p className="text-lg font-bold text-slate-700">{formatCurrency(summary.aVencer)}</p>
+                        </div>
+                        <div className="space-y-1 p-3 rounded-lg bg-emerald-50/50 border border-emerald-100">
+                            <span className="text-[10px] font-bold text-emerald-600 uppercase">Em aberto (Vence hoje) (R$):</span>
+                            <p className="text-lg font-bold text-slate-700">{formatCurrency(summary.hoje)}</p>
+                        </div>
+                        <div className="space-y-1 p-3 rounded-lg bg-rose-50/50 border border-rose-100">
+                            <span className="text-[10px] font-bold text-rose-600 uppercase">Em aberto (Vencido) (R$):</span>
+                            <p className="text-lg font-bold text-slate-700">{formatCurrency(summary.vencidos)}</p>
+                        </div>
+                        <div className="space-y-1 p-3 rounded-lg bg-blue-50/50 border border-blue-100">
+                            <span className="text-[10px] font-bold text-blue-600 uppercase">Pagos (R$):</span>
+                            <p className="text-lg font-bold text-slate-700">{formatCurrency(summary.liquidados)}</p>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
       </div>

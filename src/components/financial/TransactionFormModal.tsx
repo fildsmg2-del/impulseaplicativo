@@ -9,14 +9,16 @@ import { Switch } from '@/components/ui/switch';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Plus, Trash2, HelpCircle, Info, Calculator } from 'lucide-react';
+import { Plus, Trash2, HelpCircle, Info, Calculator, Check } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { clientService } from '@/services/clientService';
 import { supplierService } from '@/services/supplierService';
 import { accountService } from '@/services/accountService';
 import { costCenterService } from '@/services/costCenterService';
+import { storageService } from '@/services/storageService';
 import { FINANCIAL_CATEGORIES, PAYMENT_METHODS } from '@/constants/financialConstants';
 import { CreateTransactionData, Transaction, TransactionSplit } from '@/services/transactionService';
+import { toast } from 'sonner';
 
 interface TransactionFormModalProps {
   type: 'RECEITA' | 'DESPESA';
@@ -41,10 +43,17 @@ export function TransactionFormModal({ type, open, onOpenChange, onSubmit, trans
     notes: '',
     status: 'PENDENTE',
     installments: 1,
-    splits: []
+    splits: [],
+    client_name_manual: '',
+    supplier_name_manual: '',
+    attachment_url: ''
   });
 
   const [useSplit, setUseSplit] = useState(false);
+  const [isManualName, setIsManualName] = useState(false);
+  const [showQuickRegister, setShowQuickRegister] = useState(false);
+  const [quickRegData, setQuickRegData] = useState({ name: '', document: '' });
+  const [isUploading, setIsUploading] = useState(false);
   const [useNSU, setUseNSU] = useState(false);
 
   // Queries
@@ -57,13 +66,67 @@ export function TransactionFormModal({ type, open, onOpenChange, onSubmit, trans
     if (transaction) {
       setFormData({
         ...transaction,
-        installments: 1, // Reset installments for edit
-        splits: [], // Splits would need a separate query if we wanted to edit them
+        installments: 1,
+        splits: [],
+        client_name_manual: transaction.client_name_manual || '',
+        supplier_name_manual: transaction.supplier_name_manual || '',
+        attachment_url: transaction.attachment_url || ''
       } as any);
+      if (transaction.client_name_manual || transaction.supplier_name_manual) {
+          setIsManualName(true);
+      }
     } else {
         setFormData(prev => ({ ...prev, type }));
     }
   }, [transaction, type]);
+
+  const handleQuickRegister = async () => {
+      try {
+          if (!quickRegData.name) {
+              toast.error('Nome é obrigatório');
+              return;
+          }
+          if (type === 'RECEITA') {
+              const res = await clientService.create({
+                  name: quickRegData.name,
+                  document: quickRegData.document,
+                  document_type: quickRegData.document.length > 11 ? 'CNPJ' : 'CPF',
+                  email: '',
+                  phone: ''
+              });
+              setFormData(prev => ({ ...prev, client_id: res.id }));
+              toast.success('Cliente cadastrado!');
+          } else {
+              const res = await supplierService.create({
+                  name: quickRegData.name,
+                  document: quickRegData.document,
+                  document_type: quickRegData.document.length > 11 ? 'CNPJ' : 'CPF'
+              });
+              setFormData(prev => ({ ...prev, supplier_id: res.id }));
+              toast.success('Fornecedor cadastrado!');
+          }
+          setShowQuickRegister(false);
+          setQuickRegData({ name: '', document: '' });
+      } catch (err) {
+          toast.error('Erro ao cadastrar');
+      }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      try {
+          setIsUploading(true);
+          const result = await storageService.upload(file, 'financial_proofs');
+          setFormData(prev => ({ ...prev, attachment_url: result.url }));
+          toast.success('Comprovante enviado!');
+      } catch (err) {
+          toast.error('Erro no upload');
+      } finally {
+          setIsUploading(false);
+      }
+  };
 
   const addSplit = () => {
     setFormData(prev => ({
@@ -121,19 +184,58 @@ export function TransactionFormModal({ type, open, onOpenChange, onSubmit, trans
                 </h3>
                 <div className="grid grid-cols-12 gap-6 bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
                   <div className="col-span-4 space-y-2">
-                    <Label className="text-slate-500">{type === 'RECEITA' ? 'Cliente' : 'Fornecedor'}</Label>
-                    <Select 
-                      value={type === 'RECEITA' ? formData.client_id : formData.supplier_id} 
-                      onValueChange={(v) => setFormData(prev => ({ ...prev, [type === 'RECEITA' ? 'client_id' : 'supplier_id']: v }))}
-                    >
-                      <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
-                      <SelectContent>
-                        {type === 'RECEITA' 
-                          ? clients.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)
-                          : suppliers.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)
-                        }
-                      </SelectContent>
-                    </Select>
+                    <div className="flex items-center justify-between">
+                        <Label className="text-slate-500">{type === 'RECEITA' ? 'Cliente' : 'Fornecedor'}</Label>
+                        <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-bold text-slate-400 uppercase">Avulso</span>
+                            <Switch checked={isManualName} onCheckedChange={(val) => {
+                                setIsManualName(val);
+                                if (val) {
+                                    setFormData(prev => ({ ...prev, client_id: '', supplier_id: '' }));
+                                }
+                            }} className="scale-75 h-4 w-8" />
+                        </div>
+                    </div>
+                    
+                    {!isManualName ? (
+                        <div className="flex gap-2">
+                            <div className="flex-1">
+                                <Select 
+                                  value={type === 'RECEITA' ? formData.client_id : formData.supplier_id} 
+                                  onValueChange={(v) => setFormData(prev => ({ ...prev, [type === 'RECEITA' ? 'client_id' : 'supplier_id']: v }))}
+                                >
+                                  <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                                  <SelectContent>
+                                    {type === 'RECEITA' 
+                                      ? clients.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)
+                                      : suppliers.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)
+                                    }
+                                  </SelectContent>
+                                </Select>
+                            </div>
+                            <Button type="button" variant="outline" size="icon" onClick={() => setShowQuickRegister(true)} className="flex-shrink-0">
+                                <Plus className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    ) : (
+                        <Input 
+                            placeholder={`Digite o nome do ${type === 'RECEITA' ? 'cliente' : 'fornecedor'}`}
+                            value={type === 'RECEITA' ? formData.client_name_manual : formData.supplier_name_manual}
+                            onChange={(e) => setFormData(prev => ({ ...prev, [type === 'RECEITA' ? 'client_name_manual' : 'supplier_name_manual']: e.target.value }))}
+                        />
+                    )}
+
+                    {showQuickRegister && (
+                        <div className="mt-4 p-4 border rounded-lg bg-slate-50 space-y-3">
+                            <h4 className="text-xs font-bold uppercase">Cadastro Rápido</h4>
+                            <Input placeholder="Nome" value={quickRegData.name} onChange={(e) => setQuickRegData({...quickRegData, name: e.target.value})} />
+                            <Input placeholder="CPF/CNPJ" value={quickRegData.document} onChange={(e) => setQuickRegData({...quickRegData, document: e.target.value})} />
+                            <div className="flex gap-2">
+                                <Button type="button" size="sm" variant="ghost" onClick={() => setShowQuickRegister(false)}>Cancelar</Button>
+                                <Button type="button" size="sm" onClick={handleQuickRegister}>Salvar</Button>
+                            </div>
+                        </div>
+                    )}
                   </div>
                   <div className="col-span-2 space-y-2">
                     <Label className="text-slate-500">Data de competência *</Label>
@@ -144,27 +246,40 @@ export function TransactionFormModal({ type, open, onOpenChange, onSubmit, trans
                       required
                     />
                   </div>
-                  <div className="col-span-4 space-y-2">
-                    <Label className="text-slate-500">Descrição *</Label>
-                    <Input 
-                      placeholder="Ex: Venda de Kit Solar" 
-                      value={formData.description}
-                      onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                      required
-                    />
-                  </div>
-                  <div className="col-span-2 space-y-2">
-                    <Label className="text-slate-500">Valor *</Label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-2.5 text-slate-400 text-sm font-bold">R$</span>
-                      <Input 
-                        type="number" step="0.01" className="pl-9 font-bold text-lg" 
-                        value={formData.amount}
-                        onChange={(e) => setFormData(prev => ({ ...prev, amount: Number(e.target.value) }))}
-                        required
-                      />
+                  <div className="col-span-6 space-y-2">
+                    <Label className="text-slate-500">Descrição / Observações *</Label>
+                    <div className="space-y-2">
+                        <Input 
+                          placeholder="Ex: Venda de Kit Solar" 
+                          value={formData.description}
+                          onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                          required
+                        />
+                        <Textarea 
+                            placeholder="Observações adicionais..." 
+                            className="min-h-[60px]"
+                            value={formData.notes}
+                            onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+                        />
                     </div>
                   </div>
+                </div>
+
+                <div className="grid grid-cols-12 gap-6 mt-4">
+                     <div className="col-span-4 offset-col-8">
+                        <div className="space-y-2">
+                            <Label className="text-slate-500 font-bold block">Valor Total do Lançamento *</Label>
+                            <div className="relative">
+                              <span className="absolute left-3 top-2.5 text-slate-400 text-sm font-bold">R$</span>
+                              <Input 
+                                type="number" step="0.01" className="pl-9 font-bold text-2xl h-14 bg-emerald-50/30 border-emerald-100" 
+                                value={formData.amount}
+                                onChange={(e) => setFormData(prev => ({ ...prev, amount: Number(e.target.value) }))}
+                                required
+                              />
+                            </div>
+                        </div>
+                     </div>
                 </div>
               </div>
 
@@ -185,12 +300,18 @@ export function TransactionFormModal({ type, open, onOpenChange, onSubmit, trans
                     <div className="grid grid-cols-3 gap-6">
                       <div className="space-y-2">
                         <Label className="text-slate-500 flex items-center gap-1">Categoria * <HelpCircle className="h-3 w-3" /></Label>
-                        <Select value={formData.category} onValueChange={(v) => setFormData(prev => ({ ...prev, category: v }))}>
-                          <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
-                          <SelectContent>
-                            {categories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
-                          </SelectContent>
-                        </Select>
+                        <div className="relative">
+                            <Input 
+                                list="categories-list"
+                                value={formData.category}
+                                onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
+                                placeholder="Selecione ou digite..."
+                                required
+                            />
+                            <datalist id="categories-list">
+                                {categories.map(cat => <option key={cat} value={cat} />)}
+                            </datalist>
+                        </div>
                       </div>
                       <div className="space-y-2">
                         <Label className="text-slate-500">Centro de custo</Label>
@@ -342,16 +463,39 @@ export function TransactionFormModal({ type, open, onOpenChange, onSubmit, trans
                   <TabsTrigger value="anexo" className="rounded-none border-b-2 border-transparent data-[state=active]:border-impulse-gold data-[state=active]:bg-transparent px-2 font-bold text-slate-400 data-[state=active]:text-slate-900 h-10">Anexo</TabsTrigger>
                 </TabsList>
                 <TabsContent value="observacoes" className="pt-4">
-                  <Textarea 
-                    placeholder="Descreva observações relevantes sobre esse lançamento financeiro" 
-                    className="min-h-[100px] border-slate-200"
-                    value={formData.notes}
-                    onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-                  />
+                  <div className="p-4 bg-amber-50 rounded-lg border border-amber-100 flex gap-3 text-amber-700 text-sm">
+                      <Info className="h-5 w-5 flex-shrink-0" />
+                      <p>As observações principais agora podem ser editadas diretamente na seção "Informações do Lançamento" acima.</p>
+                  </div>
                 </TabsContent>
                 <TabsContent value="anexo" className="pt-4">
-                   <div className="border-2 border-dashed border-slate-200 rounded-xl p-8 text-center bg-slate-50">
-                        <p className="text-slate-400 text-sm">Clique ou arraste um arquivo para anexar ao lançamento</p>
+                   <div className="border-2 border-dashed border-slate-200 rounded-xl p-8 text-center bg-slate-50 space-y-4">
+                        {formData.attachment_url ? (
+                            <div className="flex flex-col items-center gap-4">
+                                <Check className="h-10 w-10 text-emerald-500" />
+                                <div>
+                                    <p className="font-bold">Comprovante Anexado!</p>
+                                    <a href={formData.attachment_url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-500 underline">Visualizar Arquivo</a>
+                                </div>
+                                <Button type="button" variant="ghost" size="sm" onClick={() => setFormData(prev => ({...prev, attachment_url: ''}))} className="text-rose-500">Remover</Button>
+                            </div>
+                        ) : (
+                            <>
+                                <p className="text-slate-400 text-sm">Clique para anexar o comprovante de pagamento</p>
+                                <Input 
+                                    type="file" 
+                                    className="hidden" 
+                                    id="file-upload" 
+                                    onChange={handleFileUpload}
+                                    disabled={isUploading}
+                                />
+                                <Button type="button" variant="outline" disabled={isUploading} asChild>
+                                    <label htmlFor="file-upload" className="cursor-pointer">
+                                        {isUploading ? 'Enviando...' : 'Selecionar Arquivo'}
+                                    </label>
+                                </Button>
+                            </>
+                        )}
                    </div>
                 </TabsContent>
               </Tabs>

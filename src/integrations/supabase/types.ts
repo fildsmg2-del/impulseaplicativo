@@ -1305,8 +1305,10 @@ export type Database = {
         Row: {
           account_id: string | null
           amount: number
+          attachment_url: string | null
           category: string | null
           client_id: string | null
+          client_name_manual: string | null
           competence_date: string | null
           cost_center: string | null
           created_at: string
@@ -1325,6 +1327,7 @@ export type Database = {
           reference_code: string | null
           status: Database["public"]["Enums"]["transaction_status"]
           supplier_id: string | null
+          supplier_name_manual: string | null
           total_installments: number | null
           type: Database["public"]["Enums"]["transaction_type"]
           updated_at: string
@@ -1332,8 +1335,10 @@ export type Database = {
         Insert: {
           account_id?: string | null
           amount: number
+          attachment_url?: string | null
           category?: string | null
           client_id?: string | null
+          client_name_manual?: string | null
           competence_date?: string | null
           cost_center?: string | null
           created_at?: string
@@ -1352,6 +1357,7 @@ export type Database = {
           reference_code?: string | null
           status?: Database["public"]["Enums"]["transaction_status"]
           supplier_id?: string | null
+          supplier_name_manual?: string | null
           total_installments?: number | null
           type: Database["public"]["Enums"]["transaction_type"]
           updated_at?: string
@@ -1359,8 +1365,10 @@ export type Database = {
         Update: {
           account_id?: string | null
           amount?: number
+          attachment_url?: string | null
           category?: string | null
           client_id?: string | null
+          client_name_manual?: string | null
           competence_date?: string | null
           cost_center?: string | null
           created_at?: string
@@ -1379,6 +1387,7 @@ export type Database = {
           reference_code?: string | null
           status?: Database["public"]["Enums"]["transaction_status"]
           supplier_id?: string | null
+          supplier_name_manual?: string | null
           total_installments?: number | null
           type?: Database["public"]["Enums"]["transaction_type"]
           updated_at?: string

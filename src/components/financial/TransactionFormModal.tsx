@@ -174,7 +174,7 @@ export function TransactionFormModal({ type, open, onOpenChange, onSubmit, trans
         </DialogHeader>
 
         <form onSubmit={handleSave} className="flex flex-col flex-1 overflow-hidden">
-          <ScrollArea className="flex-1">
+          <div className="flex-1 overflow-y-auto">
             <div className="p-8 space-y-8">
               
               {/* Seção 1: Informações Básicas */}
@@ -494,7 +494,7 @@ export function TransactionFormModal({ type, open, onOpenChange, onSubmit, trans
                 </TabsContent>
               </Tabs>
             </div>
-          </ScrollArea>
+          </div>
 
           <DialogFooter className="p-6 bg-white dark:bg-slate-800 border-t flex items-center justify-between sm:justify-between flex-shrink-0">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="rounded-xl px-6">Voltar</Button>

@@ -40,6 +40,7 @@ import { getCompanySettings } from '@/services/companySettingsService';
 import { projectActivityLogService, ProjectActivityLog } from '@/services/projectActivityLogService';
 import { storageService } from '@/services/storageService';
 import { useAuth } from '@/hooks/use-auth';
+import { UserRole } from '@/types';
 import {
   getStageChecklist,
   getStageProgress,
@@ -666,6 +667,11 @@ export function ProjectModal({ project, open, onOpenChange, onSave, preselectedC
             {STAGE_TAB_ORDER.map((stage) => {
               const isCurrent = isCurrentStage(stage.key);
               const isCompleted = isCompletedStage(stage.key);
+              
+              // NEW: Restrict Financeiro tab to MASTER, DEV, FINANCEIRO
+              if (stage.key === 'FINANCEIRO' && !hasRole(['MASTER', 'DEV', 'FINANCEIRO'])) {
+                return null;
+              }
               
               return (
                 <TabsTrigger 

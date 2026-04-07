@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
+import { UserRole } from '@/types';
 import { ServiceOrder, ServiceOrderAttachmentSummary, ServiceOrderChecklistItem, serviceOrderService } from '@/services/serviceOrderService';
 import { ServiceOrderLog, serviceOrderLogService } from '@/services/serviceOrderLogService';
 import { clientService, Client } from '@/services/clientService';
@@ -53,9 +54,8 @@ const ROLE_SECTOR_ACCESS: Record<string, string> = {
 const SECTOR_TABS = [
   { key: 'INFO', label: 'Info', hasFullContent: true },
   { key: 'ANEXOS', label: 'Anexos', hasFullContent: false },
-  { key: 'FINANCEIRO', label: 'Financeiro', hasFullContent: false },
+  { key: 'FINANCEIRO', label: 'Financeiro', hasFullContent: false, roles: ['MASTER', 'DEV', 'FINANCEIRO'] as UserRole[] },
   { key: 'TECNICO', label: 'Técnico', hasFullContent: true },
-  { key: 'FINANCEIRO', label: 'Financeiro', hasFullContent: false },
   { key: 'ENGENHEIRO', label: 'Engenheiro', hasFullContent: false },
   { key: 'COMPRAS', label: 'Compras', hasFullContent: false },
   { key: 'POS_VENDA', label: 'Pós-Venda', hasFullContent: false },
@@ -77,7 +77,7 @@ export function ServiceOrderModal({
   prefilledNotes,
 }: ServiceOrderModalProps) {
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, hasRole } = useAuth();
   const [loading, setLoading] = useState(false);
   const [clients, setClients] = useState<{ id: string; name: string }[]>([]);
   const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
@@ -614,11 +614,16 @@ export function ServiceOrderModal({
         <div className="flex-1 overflow-y-auto space-y-6 pr-2">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="grid w-full grid-cols-8">
-              {SECTOR_TABS.map((tab) => (
-                <TabsTrigger key={tab.key} value={tab.key} className="text-xs">
-                  {tab.label}
-                </TabsTrigger>
-              ))}
+              {SECTOR_TABS.map((tab) => {
+                // If tab has specific roles required, check them
+                if (tab.roles && !hasRole(tab.roles)) return null;
+                
+                return (
+                  <TabsTrigger key={tab.key} value={tab.key} className="text-xs">
+                    {tab.label}
+                  </TabsTrigger>
+                );
+              })}
             </TabsList>
 
             {/* INFO Tab - Shows all info consolidated */}

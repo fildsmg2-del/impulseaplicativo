@@ -249,8 +249,8 @@ export function DroneServiceModal({ open, onOpenChange, service, onSuccess }: Dr
           )}
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="flex-1 overflow-hidden flex flex-col min-h-0">
-          <Tabs defaultValue="client" className="w-full flex-1 flex flex-col overflow-hidden">
+        <form onSubmit={handleSubmit} className="overflow-hidden flex flex-col min-h-0">
+          <Tabs defaultValue="client" className="w-full flex flex-col overflow-hidden">
             <div className="px-5 bg-white dark:bg-slate-800 border-b flex-shrink-0">
               <TabsList className="bg-transparent rounded-none justify-start gap-4 h-10 p-0">
                 <TabsTrigger value="client" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 px-1 text-xs font-bold text-slate-400 data-[state=active]:text-blue-700 h-9 flex gap-1.5">
@@ -265,7 +265,7 @@ export function DroneServiceModal({ open, onOpenChange, service, onSuccess }: Dr
               </TabsList>
             </div>
 
-            <div className="flex-1 overflow-y-auto min-h-0">
+            <div className="overflow-y-auto min-h-0 max-h-[65vh]">
 
               {/* TAB 1: CLIENTE */}
               <TabsContent value="client" className="p-4 m-0 space-y-3">

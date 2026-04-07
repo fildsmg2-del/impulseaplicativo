@@ -5,6 +5,14 @@ export type DroneServiceStatus = 'PENDENTE' | 'TECNICO' | 'REVISAO' | 'FINALIZAD
 export interface DroneService {
   id: string;
   client_name: string;
+  client_document?: string;
+  client_phone?: string;
+  client_cep?: string;
+  client_address_street?: string;
+  client_address_number?: string;
+  client_address_neighborhood?: string;
+  client_address_city?: string;
+  client_address_state?: string;
   service_description: string;
   area_hectares?: number;
   product_used?: string;
@@ -21,6 +29,14 @@ export interface DroneService {
 
 export interface CreateDroneServiceData {
   client_name: string;
+  client_document?: string;
+  client_phone?: string;
+  client_cep?: string;
+  client_address_street?: string;
+  client_address_number?: string;
+  client_address_neighborhood?: string;
+  client_address_city?: string;
+  client_address_state?: string;
   service_description: string;
   area_hectares?: number;
   product_used?: string;
@@ -43,7 +59,7 @@ export const droneService = {
       query = query.eq('status', filters.status);
     }
     if (filters?.search) {
-      query = query.ilike('client_name', `%${filters.search}%`);
+      query = query.or(`client_name.ilike.%${filters.search}%,client_document.ilike.%${filters.search}%`);
     }
 
     const { data, error } = await query;

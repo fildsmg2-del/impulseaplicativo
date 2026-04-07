@@ -5,9 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Plus, Search, Filter, MoreHorizontal, Edit, Trash2, MapPin, Plane, Ruler, Calendar, CheckCircle2, Clock, AlertCircle } from 'lucide-react';
+import { Plus, Search, Filter, MoreHorizontal, Edit, Trash2, MapPin, Plane, Ruler, Calendar, CheckCircle2, Clock, AlertCircle, FileText } from 'lucide-react';
 import { droneService, DroneService, DroneServiceStatus } from '@/services/droneService';
 import { DroneServiceModal } from '@/components/drone/DroneServiceModal';
+import { pdfService } from '@/services/pdfService';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -141,6 +142,9 @@ export default function DroneServices() {
                                         <DropdownMenuContent align="end" className="w-32">
                                             <DropdownMenuItem onClick={() => handleEdit(service)} className="gap-2 cursor-pointer">
                                                 <Edit className="h-4 w-4" /> Editar
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => pdfService.generateDetailedDronePDF(service)} className="gap-2 cursor-pointer text-emerald-600">
+                                                <FileText className="h-4 w-4" /> PDF
                                             </DropdownMenuItem>
                                             <DropdownMenuItem onClick={() => handleDelete(service.id)} className="gap-2 cursor-pointer text-rose-600">
                                                 <Trash2 className="h-4 w-4" /> Excluir

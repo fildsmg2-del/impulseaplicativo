@@ -5,10 +5,18 @@ EXCEPTION
     WHEN duplicate_object THEN null;
 END $$;
 
--- Create drone_services table
+-- Create drone_services table with complete client data
 CREATE TABLE IF NOT EXISTS public.drone_services (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     client_name TEXT NOT NULL,
+    client_document TEXT,
+    client_phone TEXT,
+    client_cep TEXT,
+    client_address_street TEXT,
+    client_address_number TEXT,
+    client_address_neighborhood TEXT,
+    client_address_city TEXT,
+    client_address_state TEXT,
     service_description TEXT NOT NULL,
     area_hectares NUMERIC,
     product_used TEXT,
@@ -27,6 +35,7 @@ CREATE TABLE IF NOT EXISTS public.drone_services (
 ALTER TABLE public.drone_services ENABLE ROW LEVEL SECURITY;
 
 -- Create policies
+DROP POLICY IF EXISTS "Enable all for authenticated users" ON public.drone_services;
 CREATE POLICY "Enable all for authenticated users" ON public.drone_services
     FOR ALL
     TO authenticated
@@ -42,6 +51,7 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
+DROP TRIGGER IF EXISTS update_drone_services_updated_at ON public.drone_services;
 CREATE TRIGGER update_drone_services_updated_at
     BEFORE UPDATE ON public.drone_services
     FOR EACH ROW

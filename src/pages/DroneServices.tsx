@@ -174,7 +174,17 @@ export default function DroneServices() {
                                             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter block">Localização</span>
                                             <span className="text-sm font-bold text-slate-700 dark:text-slate-200 inline-flex items-center gap-1.5 ml-auto">
                                                 <MapPin className="h-3.5 w-3.5 text-rose-500" />
-                                                {service.location_link ? 'Ver Mapa' : '-'}
+                                                {service.location_link ? (
+                                                    <a 
+                                                        href={service.location_link.startsWith('http') ? service.location_link : `https://${service.location_link}`} 
+                                                        target="_blank" 
+                                                        rel="noopener noreferrer" 
+                                                        className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                                                        onClick={e => e.stopPropagation()}
+                                                    >
+                                                        Ver Mapa
+                                                    </a>
+                                                ) : '-'}
                                             </span>
                                         </div>
                                     </div>

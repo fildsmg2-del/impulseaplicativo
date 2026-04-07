@@ -144,22 +144,28 @@ export function DroneServiceModal({ open, onOpenChange, service, onSuccess }: Dr
     e.preventDefault();
     setLoading(true);
     try {
+      // Filter out auto-generated or internal fields before saving
+      const { 
+        id, created_at, updated_at, created_by, logs,
+        ...saveData 
+      } = formData;
+
+      const payload = {
+        ...saveData,
+        area_hectares: formData.area_hectares ? parseFloat(formData.area_hectares) : null
+      };
+
       if (service) {
-        await droneService.update(service.id, {
-            ...formData,
-            area_hectares: formData.area_hectares ? parseFloat(formData.area_hectares) : null
-        });
+        await droneService.update(service.id, payload);
         toast.success('Serviço atualizado!');
       } else {
-        await droneService.create({
-            ...formData,
-            area_hectares: formData.area_hectares ? parseFloat(formData.area_hectares) : null
-        });
+        await droneService.create(payload);
         toast.success('Serviço de Drone aberto!');
       }
       onSuccess();
       onOpenChange(false);
     } catch (error) {
+      console.error(error);
       toast.error('Erro ao salvar serviço');
     } finally {
       setLoading(false);

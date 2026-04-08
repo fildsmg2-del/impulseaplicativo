@@ -157,18 +157,32 @@ export function TransactionFormModal({ type, open, onOpenChange, onSubmit, trans
     setFormData({ ...formData, splits: newSplits });
   };
 
+  // Helper: strips form-only fields and empty UUID strings so the DB never receives invalid data
+  const cleanFormData = (data: typeof formData) => {
+    const cleaned = { ...data };
+    // Remove empty UUID strings - DB expects NULL not ""
+    if (!cleaned.client_id) delete (cleaned as any).client_id;
+    if (!cleaned.supplier_id) delete (cleaned as any).supplier_id;
+    if (!cleaned.project_id) delete (cleaned as any).project_id;
+    if (!cleaned.account_id) delete (cleaned as any).account_id;
+    if (!cleaned.parent_id) delete (cleaned as any).parent_id;
+    // Remove empty text strings
+    if (!cleaned.cost_center) delete (cleaned as any).cost_center;
+    if (!cleaned.reference_code) delete (cleaned as any).reference_code;
+    if (!cleaned.nsu) delete (cleaned as any).nsu;
+    if (!cleaned.attachment_url) delete (cleaned as any).attachment_url;
+    if (!cleaned.client_name_manual) delete (cleaned as any).client_name_manual;
+    if (!cleaned.supplier_name_manual) delete (cleaned as any).supplier_name_manual;
+    return cleaned;
+  };
+
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Clean-up IDs that might be empty strings to avoid DB errors (Invalid UUID)
-    const cleanedData = { ...formData };
-    if (!cleanedData.client_id) delete (cleanedData as any).client_id;
-    if (!cleanedData.supplier_id) delete (cleanedData as any).supplier_id;
-    if (!cleanedData.project_id) delete (cleanedData as any).project_id;
-    if (!cleanedData.account_id) delete (cleanedData as any).account_id;
-    if (!cleanedData.parent_id) delete (cleanedData as any).parent_id;
+    // Destructure out form-only fields that should NOT go to the database
+    const { installments, splits, ...dbData } = cleanFormData(formData);
 
-    onSubmit(cleanedData, formData.installments);
+    onSubmit(dbData as CreateTransactionData, installments);
   };
 
   const categories = type === 'RECEITA' ? FINANCIAL_CATEGORIES.RECEITA : FINANCIAL_CATEGORIES.DESPESA;

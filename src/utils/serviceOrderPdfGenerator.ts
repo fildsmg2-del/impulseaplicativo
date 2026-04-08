@@ -138,7 +138,7 @@ export async function generateServiceOrderPDF(
   yPos += 10;
   doc.setFillColor(250, 250, 250);
   const serviceTypeLines = doc.splitTextToSize(serviceOrder.service_type, pageWidth - 2 * margin - 10);
-  const detailsBoxHeight = 35 + (serviceTypeLines.length * 5);
+  const detailsBoxHeight = 45 + (serviceTypeLines.length * 5);
   doc.roundedRect(margin, yPos, pageWidth - 2 * margin, detailsBoxHeight, 3, 3, 'F');
 
   yPos += 8;
@@ -364,11 +364,12 @@ export async function generateServiceOrderPDF(
 
       // Role badge
       if (log.created_by_role) {
+        doc.setFontSize(10); // temporary set to name size for width calculation
+        const nameWidth = doc.getTextWidth(log.created_by_name || 'Usuário');
         doc.setFontSize(8);
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(100, 100, 100);
-        const nameWidth = doc.getTextWidth(log.created_by_name || 'Usuário');
-        doc.text(`(${log.created_by_role})`, margin + 5 + nameWidth + 5, yPos);
+        doc.text(`(${log.created_by_role})`, margin + 5 + nameWidth + 3, yPos);
       }
 
       // Date/time on right

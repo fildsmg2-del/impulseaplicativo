@@ -13,6 +13,9 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Edit, Trash2, Key, Eye, EyeOff, Code, Settings2, Zap, MessageSquare, Calculator, Map, HardDrive, Monitor } from "lucide-react";
 import { AuditLogViewer } from "@/components/dev/AuditLogViewer";
+import { HealthBoard } from "@/components/dev/HealthBoard";
+import { FeatureFlagManager } from "@/components/dev/FeatureFlagManager";
+import { UserImpersonator } from "@/components/dev/UserImpersonator";
 import { apiSettingsService, ApiSetting, ApiSettingInput } from "@/services/apiSettingsService";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -159,12 +162,51 @@ export default function DevSettings() {
           <TabsList className="flex-wrap">
             <TabsTrigger value="all">Todas</TabsTrigger>
             <TabsTrigger value="audit">Audit Log</TabsTrigger>
+            <TabsTrigger value="health">Monitoramento</TabsTrigger>
+            <TabsTrigger value="flags">Feature Flags</TabsTrigger>
+            <TabsTrigger value="impersonate">Simulação</TabsTrigger>
             {CATEGORIES.map((cat) => (
               <TabsTrigger key={cat.value} value={cat.value}>
                 {cat.label}
               </TabsTrigger>
             ))}
           </TabsList>
+
+          <TabsContent value="health">
+            <Card>
+              <CardHeader>
+                <CardTitle>Monitoramento do Sistema</CardTitle>
+                <CardDescription>Status das conexões e serviços externos</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <HealthBoard />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="flags">
+            <Card>
+              <CardHeader>
+                <CardTitle>Gerenciador de Funcionalidades</CardTitle>
+                <CardDescription>Habilite ou desabilite módulos em tempo real</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <FeatureFlagManager />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="impersonate">
+            <Card>
+              <CardHeader>
+                <CardTitle>Simulador de Perfis</CardTitle>
+                <CardDescription>Teste a interface com permissões de outros usuários</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <UserImpersonator />
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           <TabsContent value="audit">
             <Card>

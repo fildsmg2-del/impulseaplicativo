@@ -6,6 +6,7 @@ import { AuthContext, UserProfile } from '@/hooks/use-auth';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserProfile | null>(null);
+  const [realUser, setRealUser] = useState<UserProfile | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isProfileLoaded, setIsProfileLoaded] = useState(false);
@@ -52,10 +53,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (session?.user) {
           // Defer Supabase calls with setTimeout
           setTimeout(() => {
-            fetchUserProfile(session.user.id);
+            fetchUserProfile(session.user.id).then(() => {
+              // After profile is loaded, check for impersonation
+              const savedImpersonation = sessionStorage.getItem('impersonated_user');
+              if (savedImpersonation) {
+                try {
+                  const targetUser = JSON.parse(savedImpersonation);
+                  setUser(targetUser);
+                } catch (e) {
+                  console.error("Error restoring impersonation", e);
+                }
+              }
+            });
           }, 0);
         } else {
           setUser(null);
+          setRealUser(null);
+          sessionStorage.removeItem('impersonated_user');
+          sessionStorage.removeItem('real_user');
         }
         
         setIsLoading(false);
@@ -126,7 +141,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     await supabase.auth.signOut();
     setUser(null);
+    setRealUser(null);
     setSession(null);
+    sessionStorage.removeItem('impersonated_user');
+    sessionStorage.removeItem('real_user');
+  };
+
+  const impersonate = (targetUser: UserProfile) => {
+    if (!user || user.role !== 'DEV') {
+      console.error("Only DEV can impersonate");
+      return;
+    }
+    
+    // Save current real user if not already impersonating
+    const currentUser = realUser || user;
+    setRealUser(currentUser);
+    setUser(targetUser);
+    
+    sessionStorage.setItem('real_user', JSON.stringify(currentUser));
+    sessionStorage.setItem('impersonated_user', JSON.stringify(targetUser));
+  };
+
+  const stopImpersonating = () => {
+    if (realUser) {
+      setUser(realUser);
+      setRealUser(null);
+      sessionStorage.removeItem('impersonated_user');
+      sessionStorage.removeItem('real_user');
+    }
   };
 
   const hasRole = (roles: UserRole[]): boolean => {
@@ -138,10 +180,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider
       value={{
         user,
+        realUser: realUser || user,
         session,
         isLoading,
         isAuthenticated: !!session,
         isProfileLoaded,
+        impersonate,
+        stopImpersonating,
         login,
         signUp,
         logout,

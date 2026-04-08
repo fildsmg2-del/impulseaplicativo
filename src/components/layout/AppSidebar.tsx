@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -23,10 +23,12 @@ import {
   Filter,
   ChevronDown,
   Plane,
+  Target,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
 import { UserRole } from '@/types';
+import { supabase } from '@/integrations/supabase/client';
 import logoImpulse from '@/assets/logo-impulse.png';
 
 interface NavItem {
@@ -34,6 +36,7 @@ interface NavItem {
   href: string;
   icon: React.ElementType;
   roles?: UserRole[];
+  flag?: string;
   children?: { title: string; href: string }[];
 }
 
@@ -60,7 +63,7 @@ const navItems: NavItem[] = [
     ]
   },
   { title: 'Vendas', href: '/sales', icon: ShoppingCart, roles: ['MASTER', 'ENGENHEIRO', 'VENDEDOR', 'FINANCEIRO', 'COMPRAS'] },
-  { title: 'Drone', href: '/drone', icon: Plane, roles: ['DEV'] },
+  { title: 'Drone', href: '/drone', icon: Plane, roles: ['DEV'], flag: 'MODULE_DRONE_ENABLED' },
   { title: 'Meu Perfil', href: '/my-profile', icon: User },
   { title: 'Funcionários', href: '/employees', icon: Users, roles: ['MASTER', 'DEV'] },
   { title: 'Configurações', href: '/settings', icon: Settings, roles: ['MASTER', 'DEV'] },
@@ -69,12 +72,31 @@ const navItems: NavItem[] = [
 
 export function AppSidebar() {
   const [collapsed, setCollapsed] = useState(false);
-  const { user, logout, hasRole } = useAuth();
+  const [flags, setFlags] = useState<Record<string, boolean>>({});
+  const { user, realUser, logout, hasRole, stopImpersonating } = useAuth();
   const location = useLocation();
+
+  useEffect(() => {
+    // Load flags once
+    const loadFlags = async () => {
+      const { data } = await supabase.from('api_settings').select('key, value').eq('category', 'feature_flag');
+      if (data) {
+        const flagMap = data.reduce((acc, curr) => ({ ...acc, [curr.key]: curr.value === 'true' }), {});
+        setFlags(flagMap);
+      }
+    };
+    loadFlags();
+  }, []);
+
+  const isImpersonating = user?.id !== realUser?.id;
 
 
   const filteredNavItems = navItems.filter(
-    (item) => !item.roles || hasRole(item.roles)
+    (item) => {
+      const roleAllowed = !item.roles || hasRole(item.roles);
+      const flagAllowed = !item.flag || flags[item.flag] !== false; // Default to true if flag not found yet
+      return roleAllowed && flagAllowed;
+    }
   );
 
   return (
@@ -168,12 +190,27 @@ export function AppSidebar() {
       </nav>
 
       {/* User Section */}
-      <div className="p-4 border-t border-sidebar-border">
+      <div className="p-4 border-t border-sidebar-border bg-black/20">
+        {isImpersonating && !collapsed && (
+          <div className="mb-4 p-2 bg-amber-500/20 border border-amber-500/50 rounded-lg text-amber-500 text-xs text-center animate-pulse">
+            <p className="font-bold">MODO SIMULAÇÃO</p>
+            <p className="mt-1">Logado como {user?.name}</p>
+            <button 
+              onClick={stopImpersonating}
+              className="mt-2 text-[10px] underline hover:no-underline font-bold"
+            >
+              Parar Simulação
+            </button>
+          </div>
+        )}
         {!collapsed && user && (
           <div className="mb-3 px-3">
-            <p className="text-sm font-medium text-sidebar-foreground truncate">
-              {user.name}
-            </p>
+            <div className="flex items-center gap-2">
+              <p className="text-sm font-medium text-sidebar-foreground truncate">
+                {user.name}
+              </p>
+              {isImpersonating && <Target className="h-3 w-3 text-amber-500" />}
+            </div>
             <p className="text-xs text-impulse-gold">{user.role}</p>
           </div>
         )}

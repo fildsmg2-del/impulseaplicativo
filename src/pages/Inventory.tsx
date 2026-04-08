@@ -39,7 +39,7 @@ export default function Inventory() {
   const [stockQuantity, setStockQuantity] = useState(1);
   const [stockReason, setStockReason] = useState('');
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [activeTab, setActiveTab] = useState('produtos');
+  const [activeTab, setActiveTab] = useState('kits');
   const [formData, setFormData] = useState<CreateProductData>({
     name: '',
     description: '',
@@ -242,19 +242,23 @@ export default function Inventory() {
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
-            <TabsTrigger value="produtos" className="flex items-center gap-2">
-              <Package className="h-4 w-4" />
-              Produtos
-            </TabsTrigger>
             <TabsTrigger value="kits" className="flex items-center gap-2">
               <Boxes className="h-4 w-4" />
               Kits
+            </TabsTrigger>
+            <TabsTrigger value="produtos" className="flex items-center gap-2">
+              <Package className="h-4 w-4" />
+              Produtos
             </TabsTrigger>
             <TabsTrigger value="movimentacoes" className="flex items-center gap-2">
               <History className="h-4 w-4" />
               Movimentações
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="kits">
+            <KitManager />
+          </TabsContent>
 
           <TabsContent value="produtos" className="space-y-6">
             {/* Products Header */}
@@ -527,9 +531,7 @@ export default function Inventory() {
             )}
           </TabsContent>
 
-          <TabsContent value="kits">
-            <KitManager />
-          </TabsContent>
+
 
           <TabsContent value="movimentacoes">
             <StockMovementHistory />

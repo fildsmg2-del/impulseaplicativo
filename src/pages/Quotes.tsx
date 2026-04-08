@@ -15,10 +15,10 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Checkbox } from '@/components/ui/checkbox';
 
 const statusConfig = {
-  DRAFT: { label: 'Rascunho', icon: FileText, color: 'bg-muted text-muted-foreground' },
-  SENT: { label: 'Enviado', icon: Clock, color: 'bg-secondary/10 text-secondary' },
-  APPROVED: { label: 'Aprovado', icon: CheckCircle, color: 'bg-success/10 text-success' },
-  REJECTED: { label: 'Rejeitado', icon: XCircle, color: 'bg-destructive/10 text-destructive' },
+  DRAFT: { label: 'Rascunho', icon: FileText, color: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border-slate-200' },
+  SENT: { label: 'Enviado', icon: Clock, color: 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 border-blue-100' },
+  APPROVED: { label: 'Aprovado', icon: CheckCircle, color: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400 border-emerald-100' },
+  REJECTED: { label: 'Rejeitado', icon: XCircle, color: 'bg-rose-50 text-rose-600 dark:bg-rose-900/20 dark:text-rose-400 border-rose-100' },
 };
 
 const formatCurrency = (value: number) =>
@@ -327,7 +327,7 @@ export default function Quotes() {
                     <h3 className="font-semibold text-foreground truncate">
                       {client?.name || 'Cliente não informado'}
                     </h3>
-                    <span className={cn('px-2 py-0.5 rounded-full text-xs font-medium', status.color)}>
+                    <span className={cn('px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border transition-colors', status.color)}>
                       {status.label}
                     </span>
                   </div>

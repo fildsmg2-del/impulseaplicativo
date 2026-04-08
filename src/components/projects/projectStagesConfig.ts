@@ -73,7 +73,7 @@ export const DEFAULT_PROJECT_STAGES: StageConfig[] = [
     key: 'VENDAS',
     label: 'VENDAS',
     icon: 'Handshake',
-    color: 'bg-chart-1',
+    color: 'bg-amber-500 text-white',
     objective: 'Consolidar o fechamento do contrato e alinhar expectativas com o cliente.',
     checklist: [],
     statusOptions: [
@@ -86,7 +86,7 @@ export const DEFAULT_PROJECT_STAGES: StageConfig[] = [
     key: 'FINANCEIRO',
     label: 'FINANCEIRO',
     icon: 'DollarSign',
-    color: 'bg-green-500',
+    color: 'bg-emerald-600 text-white',
     objective: 'Análise financeira, aprovação de crédito e condições de pagamento.',
     checklist: [
       { key: 'fin_analise_credito', label: 'Análise de crédito realizada' },
@@ -106,13 +106,13 @@ export const DEFAULT_PROJECT_STAGES: StageConfig[] = [
     key: 'COMPRAS',
     label: 'COMPRAS',
     icon: 'ShoppingCart',
-    color: 'bg-chart-2',
+    color: 'bg-sky-500 text-white',
     objective: 'Garantir a aquisição e disponibilidade de materiais para execução.',
     checklist: [
       { key: 'com_lista_materiais', label: 'Lista de materiais validada' },
       { key: 'com_pedidos_enviados', label: 'Pedidos enviados aos fornecedores' },
       { key: 'com_prazo_confirmado', label: 'Prazo de entrega confirmado' },
-      { key: 'com_materiais_recebidos', label: 'Materiais recebidos e conferidos' },
+      { key: 'com_materiais_recebidos', label: 'Materials recebidos e conferidos' },
     ],
     statusOptions: [
       { value: 'comprado', label: 'Comprado' },
@@ -124,7 +124,7 @@ export const DEFAULT_PROJECT_STAGES: StageConfig[] = [
     key: 'ENGENHEIRO',
     label: 'ENGENHEIRO',
     icon: 'DraftingCompass',
-    color: 'bg-chart-3',
+    color: 'bg-indigo-600 text-white',
     objective: 'Planejar tecnicamente o projeto e garantir aprovação junto à concessionária.',
     checklist: [
       { key: 'eng_projeto_elaborado', label: 'Projeto elétrico elaborado' },
@@ -143,7 +143,7 @@ export const DEFAULT_PROJECT_STAGES: StageConfig[] = [
     key: 'TECNICO',
     label: 'TECNICO',
     icon: 'Wrench',
-    color: 'bg-impulse-gold',
+    color: 'bg-orange-500 text-white',
     objective: 'Executar a instalação e garantir comissionamento do sistema.',
     checklist: [
       { key: 'tec_estrutura_instalada', label: 'Estrutura instalada' },
@@ -162,7 +162,7 @@ export const DEFAULT_PROJECT_STAGES: StageConfig[] = [
     key: 'POS_VENDA',
     label: 'PÓS VENDA',
     icon: 'HeartHandshake',
-    color: 'bg-primary',
+    color: 'bg-rose-500 text-white',
     objective: 'Acompanhar o cliente e garantir satisfação.',
     checklist: [
       { key: 'pos_contato_inicial', label: 'Contato pós-instalação realizado' },

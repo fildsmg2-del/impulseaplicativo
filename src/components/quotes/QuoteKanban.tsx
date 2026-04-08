@@ -14,26 +14,26 @@ const FUNNEL_STAGES: Array<{
   {
     key: 'DRAFT',
     label: 'Leads',
-    headerClass: 'bg-muted text-muted-foreground',
-    badgeClass: 'bg-muted/70 text-muted-foreground',
+    headerClass: 'bg-slate-100 text-slate-700 border-slate-200',
+    badgeClass: 'bg-slate-200 text-slate-700',
   },
   {
     key: 'SENT',
     label: 'Proposta enviada',
-    headerClass: 'bg-secondary/15 text-secondary',
-    badgeClass: 'bg-secondary/25 text-secondary',
+    headerClass: 'bg-blue-50 text-blue-700 border-blue-100',
+    badgeClass: 'bg-blue-200 text-blue-800',
   },
   {
     key: 'REJECTED',
     label: 'Negociação',
-    headerClass: 'bg-amber-500/15 text-amber-700',
-    badgeClass: 'bg-amber-500/25 text-amber-700',
+    headerClass: 'bg-amber-50 text-amber-700 border-amber-100',
+    badgeClass: 'bg-amber-200 text-amber-800',
   },
   {
     key: 'APPROVED',
     label: 'Em fechamento',
-    headerClass: 'bg-success/15 text-success',
-    badgeClass: 'bg-success/25 text-success',
+    headerClass: 'bg-emerald-50 text-emerald-700 border-emerald-100',
+    badgeClass: 'bg-emerald-200 text-emerald-800',
   },
 ];
 
@@ -127,25 +127,37 @@ export function QuoteKanban({
                 ? 'bg-impulse-gold/10 border-impulse-gold border-dashed'
                 : 'bg-card border-border'
             )}
-            onDragOver={(e) => handleDragOver(e, stage.key)}
-            onDragLeave={handleDragLeave}
+            onDragOver={(e) => {
+              e.preventDefault();
+              e.dataTransfer.dropEffect = 'move';
+              if (dragOverStage !== stage.key) setDragOverStage(stage.key);
+            }}
+            onDragEnter={(e) => {
+              e.preventDefault();
+              setDragOverStage(stage.key);
+            }}
+            onDragLeave={(e) => {
+              // Only clear if we are leaving the main container
+              if (e.currentTarget.contains(e.relatedTarget as Node)) return;
+              setDragOverStage(null);
+            }}
             onDrop={(e) => handleDrop(e, stage.key)}
           >
-            <div className={cn('p-3 rounded-t-xl', stage.headerClass)}>
+            <div className={cn('p-3 border-b border-inherit rounded-t-xl', stage.headerClass)}>
               <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-sm">{stage.label}</h3>
-                <span className={cn('text-xs px-2 py-0.5 rounded-full', stage.badgeClass)}>
+                <h3 className="font-bold text-xs uppercase tracking-wider">{stage.label}</h3>
+                <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded-full border border-black/5', stage.badgeClass)}>
                   {stageQuotes.length}
                 </span>
               </div>
             </div>
 
-            <div className="p-2 space-y-2 min-h-[200px] max-h-[calc(100vh-350px)] overflow-y-auto">
+            <div className="p-2 space-y-2 min-h-[400px] max-h-[calc(100vh-320px)] overflow-y-auto">
               {stageQuotes.map((quote) => {
-                const clientName = quote.client_id && clientNames
+                const clientName = (quote.client_id && clientNames)
                   ? clientNames[quote.client_id] || 'Cliente não vinculado'
                   : 'Cliente não vinculado';
-                const creatorName = quote.created_by && creatorNames
+                const creatorName = (quote.created_by && creatorNames)
                   ? creatorNames[quote.created_by] || 'Desconhecido'
                   : 'Usuário';
                 const isDragging = draggedQuote?.id === quote.id;
@@ -159,41 +171,48 @@ export function QuoteKanban({
                     onDragEnd={handleDragEnd}
                     onClick={() => onQuoteClick?.(quote)}
                     className={cn(
-                      'bg-background rounded-lg border border-border p-3 cursor-grab active:cursor-grabbing hover:border-impulse-gold/50 transition-all group',
-                      isDragging && 'opacity-50 scale-95'
+                      'bg-white dark:bg-slate-900 rounded-xl border p-4 cursor-grab active:cursor-grabbing hover:shadow-md hover:border-primary/30 transition-all group relative',
+                      isDragging && 'opacity-30 scale-95 border-dashed',
+                      !canDragQuote && 'cursor-default grayscale-[0.5] opacity-80'
                     )}
                   >
-                    <div className="flex items-start gap-2">
-                      <GripVertical className="h-4 w-4 text-muted-foreground mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="flex items-start gap-3">
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <User className="h-3.5 w-3.5 text-muted-foreground" />
-                          <p className="font-medium text-sm text-foreground truncate">{clientName}</p>
+                        <div className="flex items-center gap-2 mb-2">
+                          <User className="h-3.5 w-3.5 text-slate-400" />
+                          <p className="font-bold text-sm text-slate-800 dark:text-slate-100 truncate">{clientName}</p>
                         </div>
-                        <p className="text-xs text-muted-foreground mb-2">
-                          Criador: {creatorName}
-                        </p>
+                        
+                        <div className="space-y-1.5">
+                          <p className="text-[10px] text-slate-500 font-medium italic">
+                            Por: {creatorName}
+                          </p>
 
-                        {typeof quote.total === 'number' && (
-                          <div className="flex items-center gap-1 text-xs text-muted-foreground mb-2">
-                            <CircleDollarSign className="h-3 w-3 text-impulse-gold" />
-                            {formatCurrency(quote.total)}
+                          {typeof quote.total === 'number' && (
+                            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-slate-300">
+                              <CircleDollarSign className="h-3.5 w-3.5 text-emerald-500" />
+                              {formatCurrency(quote.total)}
+                            </div>
+                          )}
+
+                          <div className="flex items-center gap-1.5 text-[10px] text-slate-400">
+                            <Calendar className="h-3.5 w-3.5" />
+                            {new Date(quote.created_at).toLocaleDateString('pt-BR')}
                           </div>
-                        )}
-
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <Calendar className="h-3 w-3" />
-                          {new Date(quote.created_at).toLocaleDateString('pt-BR')}
                         </div>
                       </div>
+                      <GripVertical className="h-4 w-4 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
                     </div>
                   </div>
                 );
               })}
 
               {stageQuotes.length === 0 && (
-                <div className="flex items-center justify-center h-24 text-muted-foreground text-xs">
-                  Arraste orçamentos aqui
+                <div className="flex flex-col items-center justify-center h-32 text-slate-400 text-[10px] border-2 border-dashed border-slate-100 rounded-xl bg-slate-50/50">
+                  <div className="mb-2 p-2 bg-white rounded-full shadow-sm">
+                    <GripVertical className="h-4 w-4 text-slate-300" />
+                  </div>
+                  Arraste itens para esta etapa
                 </div>
               )}
             </div>

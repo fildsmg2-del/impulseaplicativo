@@ -241,16 +241,25 @@ export default function Inventory() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList>
-            <TabsTrigger value="kits" className="flex items-center gap-2">
+          <TabsList className="bg-muted p-1 rounded-xl">
+            <TabsTrigger 
+              value="kits" 
+              className="flex items-center gap-2 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all"
+            >
               <Boxes className="h-4 w-4" />
               Kits
             </TabsTrigger>
-            <TabsTrigger value="produtos" className="flex items-center gap-2">
+            <TabsTrigger 
+              value="produtos" 
+              className="flex items-center gap-2 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all"
+            >
               <Package className="h-4 w-4" />
               Produtos
             </TabsTrigger>
-            <TabsTrigger value="movimentacoes" className="flex items-center gap-2">
+            <TabsTrigger 
+              value="movimentacoes" 
+              className="flex items-center gap-2 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all"
+            >
               <History className="h-4 w-4" />
               Movimentações
             </TabsTrigger>

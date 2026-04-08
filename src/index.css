@@ -90,16 +90,43 @@
   }
 }
 
-@layer utilities {
+@layer components {
+  .gradient-impulse {
+    background: linear-gradient(135deg, hsl(var(--impulse-dark)) 0%, #0c3d36 100%);
+  }
+
   .gradient-gold {
     background: linear-gradient(135deg, hsl(var(--impulse-gold)) 0%, #ffcc00 100%);
   }
   
   .glassmorphism {
-    @apply bg-background/60 backdrop-blur-md border border-white/20;
+    @apply bg-background/60 backdrop-blur-md border border-white/10;
   }
 
-  /* Keeping basic highlight for selection fix requested by user */
+  .shadow-gold {
+    box-shadow: 0 4px 15px -1px rgba(255, 184, 0, 0.3);
+  }
+
+  .hover-lift {
+    @apply transition-transform duration-200 hover:-translate-y-0.5;
+  }
+
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+  }
+
   .tab-highlight {
     @apply bg-primary/10 border-primary text-primary font-bold;
   }

@@ -163,18 +163,18 @@ export default function DevSettings() {
         </div>
 
         <Tabs defaultValue="all" className="space-y-4">
-          <div className="w-full overflow-x-auto pb-2 scrollbar-none">
-            <TabsList className="inline-flex w-auto md:w-full justify-start md:justify-center p-1 bg-muted/50 backdrop-blur-sm border border-white/5 shadow-premium">
-              <TabsTrigger value="all">Todas</TabsTrigger>
-              <TabsTrigger value="audit">Audit Log</TabsTrigger>
-              <TabsTrigger value="health">Monitoramento</TabsTrigger>
-              <TabsTrigger value="flags">Feature Flags</TabsTrigger>
-              <TabsTrigger value="announcements">Comunicados</TabsTrigger>
-              <TabsTrigger value="presence">👥 Usuários Online</TabsTrigger>
-              <TabsTrigger value="pwa">📱 PWA & Mobile</TabsTrigger>
-              <TabsTrigger value="impersonate">Simulação</TabsTrigger>
+          <div className="w-full overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-muted-foreground/20">
+            <TabsList className="flex w-max min-w-full justify-start p-1 bg-muted/30 border border-border shadow-sm rounded-lg">
+              <TabsTrigger value="all" className="data-[state=active]:bg-background">Todas</TabsTrigger>
+              <TabsTrigger value="audit" className="data-[state=active]:bg-background">Audit Log</TabsTrigger>
+              <TabsTrigger value="health" className="data-[state=active]:bg-background">Monitoramento</TabsTrigger>
+              <TabsTrigger value="flags" className="data-[state=active]:bg-background">Feature Flags</TabsTrigger>
+              <TabsTrigger value="announcements" className="data-[state=active]:bg-background">Comunicados</TabsTrigger>
+              <TabsTrigger value="presence" className="data-[state=active]:bg-background text-xs sm:text-sm">👥 Online</TabsTrigger>
+              <TabsTrigger value="pwa" className="data-[state=active]:bg-background text-xs sm:text-sm">📱 PWA</TabsTrigger>
+              <TabsTrigger value="impersonate" className="data-[state=active]:bg-background">Simulação</TabsTrigger>
               {CATEGORIES.map((cat) => (
-                <TabsTrigger key={cat.value} value={cat.value}>
+                <TabsTrigger key={cat.value} value={cat.value} className="data-[state=active]:bg-background">
                   {cat.label}
                 </TabsTrigger>
               ))}

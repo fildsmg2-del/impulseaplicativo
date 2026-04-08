@@ -21,7 +21,7 @@ export default defineConfig(({ mode }) => ({
         name: 'Impulse Energetica',
         short_name: 'Impulse',
         description: 'Sistema de Gestão de Energia e Serviços Solar',
-        theme_color: '#020617',
+        theme_color: '#0E4A4C',
         icons: [
           {
             src: 'pwa-icon.png',

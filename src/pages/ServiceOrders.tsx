@@ -61,10 +61,8 @@ export default function ServiceOrders() {
   const canViewAllOrders = hasRole(['MASTER', 'ENGENHEIRO', 'TECNICO', 'DEV']);
   const canDeleteOrder = (order: ServiceOrder) => {
     if (!user) return false;
-    // Admins and Engineers can delete everything; technicians can only delete what's theirs (if applied)
-    if (user.role === 'TECNICO') {
-      return order.assigned_to === user.id || canViewAllOrders;
-    }
+    // Technicians cannot delete service orders
+    if (user.role === 'TECNICO') return false;
     return true;
   };
   const visibleOrders = canViewAllOrders || !user

@@ -14,9 +14,11 @@ interface AppLayoutProps {
 
 export function AppLayout({ children }: AppLayoutProps) {
   return (
-    <div className="flex h-screen bg-background font-sans overflow-hidden">
+    <div className="flex h-screen bg-background font-sans overflow-hidden noise-bg relative">
+      <div className="absolute inset-0 gradient-mesh opacity-50 pointer-events-none" />
+      
       {/* Desktop Sidebar */}
-      <div className="hidden md:flex">
+      <div className="hidden md:flex relative z-10">
         <AppSidebar />
       </div>
 
@@ -25,13 +27,15 @@ export function AppLayout({ children }: AppLayoutProps) {
       <PresenceTracker />
       <PwaHandler />
 
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative z-10">
         {/* Mobile Top Header */}
         <MobileHeader />
 
         <main className="flex-1 overflow-x-hidden overflow-y-auto pt-16 pb-20 md:pt-0 md:pb-0">
           <div className="p-4 md:p-8 max-w-7xl mx-auto">
-            {children}
+            <div className="reveal-stagger">
+              {children}
+            </div>
           </div>
         </main>
 

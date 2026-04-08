@@ -90,50 +90,55 @@ export default function Dashboard() {
   return (
     <AppLayout>
       {/* Header */}
-      <div className="mb-8 animate-fade-in">
-        <h1 className="text-2xl font-bold text-foreground">
+      <div className="mb-12">
+        <h1 className="text-4xl font-extrabold text-foreground tracking-tight">
           Olá, {user?.name?.split(' ')[0]}
         </h1>
-        <p className="text-muted-foreground text-sm mt-1">
+        <p className="text-muted-foreground text-sm mt-2 font-medium opacity-70">
           {new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
         </p>
       </div>
 
       {/* Main Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
         {/* Projetos */}
         <Link to="/projects" className="group">
-          <div className="bg-card rounded-xl border border-border p-5 hover:shadow-lg hover:border-primary/30 transition-all">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-2.5 rounded-xl bg-primary/10">
-                <FolderKanban className="h-5 w-5 text-primary" />
+          <div className="glassmorphism-v2 rounded-3xl p-7 hover-lift relative overflow-hidden h-full">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 blur-2xl rounded-full -translate-y-8 translate-x-8" />
+            
+            <div className="flex items-center justify-between mb-8">
+              <div className="p-3.5 rounded-2xl bg-primary/20 border border-primary/20 shadow-inner">
+                <FolderKanban className="h-6 w-6 text-primary" />
               </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+              <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all">
+                <ChevronRight className="h-4 w-4" />
+              </div>
             </div>
-            <h3 className="text-lg font-semibold text-foreground mb-3">Projetos</h3>
-            <div className="space-y-2">
+            
+            <h3 className="text-xl font-bold text-foreground mb-4">Projetos</h3>
+            <div className="space-y-3">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground flex items-center gap-2">
-                  <Clock className="h-3.5 w-3.5" />
+                <span className="text-muted-foreground flex items-center gap-2 font-medium">
+                  <Clock className="h-4 w-4 opacity-60" />
                   Em andamento
                 </span>
-                <span className="font-medium text-foreground">{summary?.projects.inProgress || 0}</span>
+                <span className="font-bold text-foreground text-base tracking-tight">{summary?.projects.inProgress || 0}</span>
               </div>
               {(summary?.projects.delayed || 0) > 0 && (
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-destructive flex items-center gap-2">
-                    <AlertTriangle className="h-3.5 w-3.5" />
+                  <span className="text-destructive flex items-center gap-2 font-medium">
+                    <AlertTriangle className="h-4 w-4" />
                     Atrasados
                   </span>
-                  <span className="font-medium text-destructive">{summary?.projects.delayed}</span>
+                  <span className="font-bold text-destructive text-base tracking-tight">{summary?.projects.delayed}</span>
                 </div>
               )}
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground flex items-center gap-2">
-                  <CheckCircle className="h-3.5 w-3.5" />
-                  Total
+              <div className="flex items-center justify-between text-sm pt-2 border-t border-white/5">
+                <span className="text-muted-foreground flex items-center gap-2 font-medium opacity-60">
+                  <CheckCircle className="h-4 w-4" />
+                  Total da base
                 </span>
-                <span className="font-medium text-foreground">{summary?.projects.total || 0}</span>
+                <span className="font-semibold text-foreground/70">{summary?.projects.total || 0}</span>
               </div>
             </div>
           </div>
@@ -141,35 +146,40 @@ export default function Dashboard() {
 
         {/* Orçamentos */}
         <Link to="/quotes" className="group">
-          <div className="bg-card rounded-xl border border-border p-5 hover:shadow-lg hover:border-primary/30 transition-all">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-2.5 rounded-xl bg-secondary/10">
-                <FileText className="h-5 w-5 text-secondary" />
+          <div className="glassmorphism-v2 rounded-3xl p-7 hover-lift relative overflow-hidden h-full">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-secondary/5 blur-2xl rounded-full -translate-y-8 translate-x-8" />
+            
+            <div className="flex items-center justify-between mb-8">
+              <div className="p-3.5 rounded-2xl bg-secondary/20 border border-secondary/20 shadow-inner">
+                <FileText className="h-6 w-6 text-secondary" />
               </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+              <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-secondary group-hover:text-secondary-foreground transition-all">
+                <ChevronRight className="h-4 w-4" />
+              </div>
             </div>
-            <h3 className="text-lg font-semibold text-foreground mb-3">Orçamentos</h3>
-            <div className="space-y-2">
+            
+            <h3 className="text-xl font-bold text-foreground mb-4">Orçamentos</h3>
+            <div className="space-y-3">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground flex items-center gap-2">
-                  <Clock className="h-3.5 w-3.5" />
-                  Pendentes
+                <span className="text-muted-foreground flex items-center gap-2 font-medium">
+                  <Clock className="h-4 w-4 opacity-60" />
+                  Aguardando resposta
                 </span>
-                <span className="font-medium text-foreground">{summary?.quotes.pending || 0}</span>
+                <span className="font-bold text-foreground text-base tracking-tight">{summary?.quotes.pending || 0}</span>
               </div>
               <div className="flex items-center justify-between text-sm">
-                <span className="text-success flex items-center gap-2">
-                  <CheckCircle className="h-3.5 w-3.5" />
-                  Aprovados
+                <span className="text-emerald-500 flex items-center gap-2 font-medium">
+                  <CheckCircle className="h-4 w-4" />
+                  Convertidos
                 </span>
-                <span className="font-medium text-success">{summary?.quotes.approved || 0}</span>
+                <span className="font-bold text-emerald-500 text-base tracking-tight">{summary?.quotes.approved || 0}</span>
               </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground flex items-center gap-2">
-                  <FileText className="h-3.5 w-3.5" />
-                  Total
+              <div className="flex items-center justify-between text-sm pt-2 border-t border-white/5">
+                <span className="text-muted-foreground flex items-center gap-2 font-medium opacity-60">
+                  <FileText className="h-4 w-4" />
+                  Volume total
                 </span>
-                <span className="font-medium text-foreground">{summary?.quotes.total || 0}</span>
+                <span className="font-semibold text-foreground/70">{summary?.quotes.total || 0}</span>
               </div>
             </div>
           </div>
@@ -177,43 +187,50 @@ export default function Dashboard() {
 
         {/* Ordens de Serviço */}
         <Link to="/service-orders" className="group">
-          <div className="bg-card rounded-xl border border-border p-5 hover:shadow-lg hover:border-primary/30 transition-all">
-            <div className="flex items-center justify-between mb-4">
+          <div className="glassmorphism-v2 rounded-3xl p-7 hover-lift relative overflow-hidden h-full">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 blur-2xl rounded-full -translate-y-8 translate-x-8" />
+            
+            <div className="flex items-center justify-between mb-8">
               <div className={cn(
-                "p-2.5 rounded-xl",
-                (summary?.serviceOrders.overdue || 0) > 0 ? "bg-destructive/10" : "bg-warning/10"
+                "p-3.5 rounded-2xl border shadow-inner",
+                (summary?.serviceOrders.overdue || 0) > 0 
+                  ? "bg-destructive/20 border-destructive/20" 
+                  : "bg-amber-500/20 border-amber-500/20"
               )}>
                 <Wrench className={cn(
-                  "h-5 w-5",
-                  (summary?.serviceOrders.overdue || 0) > 0 ? "text-destructive" : "text-warning"
+                  "h-6 w-6",
+                  (summary?.serviceOrders.overdue || 0) > 0 ? "text-destructive" : "text-amber-500"
                 )} />
               </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+              <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-amber-500 group-hover:text-amber-950 transition-all">
+                <ChevronRight className="h-4 w-4" />
+              </div>
             </div>
-            <h3 className="text-lg font-semibold text-foreground mb-3">Ordens de Serviço</h3>
-            <div className="space-y-2">
+            
+            <h3 className="text-xl font-bold text-foreground mb-4">Ordens de Serviço</h3>
+            <div className="space-y-3">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground flex items-center gap-2">
-                  <Clock className="h-3.5 w-3.5" />
-                  Pendentes
+                <span className="text-muted-foreground flex items-center gap-2 font-medium">
+                  <Clock className="h-4 w-4 opacity-60" />
+                  Operações ativas
                 </span>
-                <span className="font-medium text-foreground">{summary?.serviceOrders.pending || 0}</span>
+                <span className="font-bold text-foreground text-base tracking-tight">{summary?.serviceOrders.pending || 0}</span>
               </div>
               {(summary?.serviceOrders.overdue || 0) > 0 && (
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-destructive flex items-center gap-2">
-                    <AlertTriangle className="h-3.5 w-3.5" />
-                    Vencidas
+                  <span className="text-destructive flex items-center gap-2 font-medium">
+                    <AlertTriangle className="h-4 w-4" />
+                    Crítico / Vencidas
                   </span>
-                  <span className="font-medium text-destructive">{summary?.serviceOrders.overdue}</span>
+                  <span className="font-bold text-destructive text-base tracking-tight">{summary?.serviceOrders.overdue}</span>
                 </div>
               )}
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground flex items-center gap-2">
-                  <Wrench className="h-3.5 w-3.5" />
-                  Total
+              <div className="flex items-center justify-between text-sm pt-2 border-t border-white/5">
+                <span className="text-muted-foreground flex items-center gap-2 font-medium opacity-60">
+                  <Wrench className="h-4 w-4" />
+                  Módulo de serviço
                 </span>
-                <span className="font-medium text-foreground">{summary?.serviceOrders.total || 0}</span>
+                <span className="font-semibold text-foreground/70">{summary?.serviceOrders.total || 0}</span>
               </div>
             </div>
           </div>

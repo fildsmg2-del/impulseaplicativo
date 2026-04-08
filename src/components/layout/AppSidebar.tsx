@@ -103,34 +103,39 @@ export function AppSidebar() {
   return (
     <aside
       className={cn(
-        'gradient-impulse flex flex-col h-screen transition-all duration-300 relative sticky top-0 shrink-0',
-        collapsed ? 'w-20' : 'w-64'
+        'gradient-impulse flex flex-col h-screen transition-all duration-500 relative sticky top-0 shrink-0 z-50 overflow-hidden',
+        collapsed ? 'w-24' : 'w-72'
       )}
     >
-      {/* Logo */}
-      <div className="flex items-center justify-center p-4 border-b border-sidebar-border">
+      {/* Decorative Blur Background */}
+      <div className="absolute top-0 right-0 w-32 h-32 bg-impulse-gold/10 blur-3xl rounded-full -translate-y-16 translate-x-16 pointer-events-none" />
+
+      {/* Logo Section */}
+      <div className="flex items-center justify-center p-8 border-b border-white/5 relative z-10">
         {collapsed ? (
-          <Sun className="h-8 w-8 text-impulse-gold" />
+          <div className="h-10 w-10 flex items-center justify-center bg-white/5 rounded-2xl border border-white/10 hover-lift active:scale-95 transition-all">
+             <Sun className="h-6 w-6 text-impulse-gold" />
+          </div>
         ) : (
-          <img src={logoImpulse} alt="Impulse" className="h-12 object-contain" />
+          <img src={logoImpulse} alt="Impulse" className="h-14 object-contain animate-float" />
         )}
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 py-6 px-3 space-y-2 overflow-y-auto">
+      <nav className="flex-1 py-8 px-5 space-y-3 overflow-y-auto scrollbar-none relative z-10">
         {filteredNavItems.map((item) => {
           const isActive = location.pathname === item.href || (item.children && location.pathname.startsWith(item.href));
           
           if (item.children && !collapsed) {
             return (
-              <div key={item.href} className="space-y-1">
+              <div key={item.href} className="space-y-2">
                 <NavLink
                   to={item.href}
                   className={cn(
-                    'flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group',
+                    'flex items-center gap-4 px-5 py-4 rounded-2xl transition-all duration-300 group relative overflow-hidden',
                     isActive
-                      ? 'bg-impulse-gold text-impulse-dark font-medium shadow-gold'
-                      : 'text-sidebar-foreground hover:bg-sidebar-accent'
+                      ? 'bg-impulse-gold text-impulse-dark font-semibold shadow-gold'
+                      : 'text-sidebar-foreground hover:bg-white/5 hover-lift'
                   )}
                 >
                   <item.icon
@@ -139,10 +144,10 @@ export function AppSidebar() {
                       isActive ? 'text-impulse-dark' : 'text-impulse-gold'
                     )}
                   />
-                  <span className="animate-fade-in">{item.title}</span>
+                  <span className="text-sm tracking-tight">{item.title}</span>
                 </NavLink>
                 
-                <div className="pl-12 space-y-1 animate-slide-down">
+                <div className="pl-14 space-y-1.5 border-l border-white/5 ml-7">
                   {item.children.map((child) => {
                     const isChildActive = location.pathname === child.href;
                     return (
@@ -150,10 +155,10 @@ export function AppSidebar() {
                         key={child.href}
                         to={child.href}
                         className={cn(
-                          'block py-2 text-sm transition-colors',
+                          'block py-2.5 text-[13px] transition-all duration-300 hover:translate-x-1',
                           isChildActive 
-                            ? 'text-impulse-gold font-medium' 
-                            : 'text-sidebar-foreground/70 hover:text-impulse-gold'
+                            ? 'text-impulse-gold font-semibold' 
+                            : 'text-sidebar-foreground/50 hover:text-impulse-gold'
                         )}
                       >
                         {child.title}
@@ -170,10 +175,10 @@ export function AppSidebar() {
               key={item.href}
               to={item.href}
               className={cn(
-                'flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group',
+                'flex items-center gap-4 px-5 py-4 rounded-2xl transition-all duration-300 group relative',
                 isActive
-                  ? 'bg-impulse-gold text-impulse-dark font-medium shadow-gold'
-                  : 'text-sidebar-foreground hover:bg-sidebar-accent'
+                  ? 'bg-impulse-gold text-impulse-dark font-semibold shadow-gold'
+                  : 'text-sidebar-foreground hover:bg-white/5 hover-lift'
               )}
             >
               <item.icon
@@ -183,7 +188,10 @@ export function AppSidebar() {
                 )}
               />
               {!collapsed && (
-                <span className="animate-fade-in">{item.title}</span>
+                <span className="text-sm tracking-tight">{item.title}</span>
+              )}
+              {isActive && !collapsed && (
+                <div className="absolute right-4 w-1.5 h-1.5 bg-impulse-dark rounded-full" />
               )}
             </NavLink>
           );
@@ -191,43 +199,45 @@ export function AppSidebar() {
       </nav>
 
       {/* User Section */}
-      <div className="p-4 border-t border-sidebar-border bg-black/20">
+      <div className="p-6 border-t border-white/5 bg-black/40 backdrop-blur-md relative z-10">
         {isImpersonating && !collapsed && (
-          <div className="mb-4 p-2 bg-amber-500/20 border border-amber-500/50 rounded-lg text-amber-500 text-xs text-center animate-pulse">
-            <p className="font-bold">MODO SIMULAÇÃO</p>
-            <p className="mt-1">Logado como {user?.name}</p>
+          <div className="mb-4 p-3 bg-amber-500/10 border border-amber-500/20 rounded-2xl text-amber-500 text-[10px] text-center">
+            <p className="font-bold tracking-widest">MODO SIMULAÇÃO</p>
+            <p className="mt-1 opacity-80">Como {user?.name}</p>
             <button 
               onClick={stopImpersonating}
-              className="mt-2 text-[10px] underline hover:no-underline font-bold"
+              className="mt-2 text-[9px] uppercase tracking-tighter hover:underline font-bold"
             >
-              Parar Simulação
+              Encerrar
             </button>
           </div>
         )}
         {!collapsed && user && (
-          <div className="mb-3 px-3">
-            <div className="flex items-center gap-2">
-              <p className="text-sm font-medium text-sidebar-foreground truncate">
+          <div className="mb-5 px-3 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
+              <User className="h-5 w-5 text-impulse-gold" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[13px] font-bold text-white truncate leading-tight">
                 {user.name}
               </p>
-              {isImpersonating && <Target className="h-3 w-3 text-amber-500" />}
+              <p className="text-[11px] text-impulse-gold/70 font-medium tracking-wide">{user.role}</p>
             </div>
-            <p className="text-xs text-impulse-gold">{user.role}</p>
           </div>
         )}
         <button
           onClick={logout}
-          className="flex items-center gap-3 w-full px-4 py-3 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent transition-colors"
+          className="flex items-center gap-4 w-full px-5 py-4 rounded-2xl text-sidebar-foreground hover:bg-red-500/10 hover:text-red-400 transition-all duration-300 group"
         >
-          <LogOut className="h-5 w-5 text-impulse-gold" />
-          {!collapsed && <span>Sair</span>}
+          <LogOut className="h-5 w-5 text-impulse-gold group-hover:text-red-400 transition-colors" />
+          {!collapsed && <span className="text-sm font-medium">Sair</span>}
         </button>
       </div>
 
       {/* Collapse Toggle */}
       <button
         onClick={() => setCollapsed(!collapsed)}
-        className="absolute -right-3 top-20 bg-impulse-gold text-impulse-dark p-1.5 rounded-full shadow-gold hover:scale-110 transition-transform"
+        className="absolute -right-4 top-24 bg-impulse-gold text-impulse-dark p-2 rounded-xl shadow-gold hover:scale-110 active:scale-95 transition-all z-50 border-2 border-impulse-dark"
       >
         {collapsed ? (
           <ChevronRight className="h-4 w-4" />

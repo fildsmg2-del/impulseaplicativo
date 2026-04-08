@@ -1,149 +1,115 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Impulse Soluções em Energia - Design System */
+/* Impulse Soluções em Energia - Premium Design System */
 
 @layer base {
   :root {
-    /* Impulse Brand Colors */
-    --impulse-dark: 174 75% 18%;
-    --impulse-dark-deep: 174 80% 12%;
+    /* Refined Impulse Brand Colors - More Depth */
+    --impulse-dark: 174 75% 12%;       /* Deeper teal */
+    --impulse-dark-deep: 174 90% 7%;   /* Near black teal */
     --impulse-gold: 43 98% 53%;
-    --impulse-gold-light: 43 100% 65%;
+    --impulse-gold-light: 45 100% 65%;
     --impulse-white: 0 0% 100%;
     --impulse-gray: 210 20% 96%;
     --impulse-gray-dark: 210 15% 85%;
     
-    --background: 210 20% 98%;
-    --foreground: 174 75% 18%;
+    --background: 210 25% 98%;
+    --foreground: 174 80% 10%;
 
     --card: 0 0% 100%;
-    --card-foreground: 174 75% 18%;
+    --card-foreground: 174 80% 10%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 174 75% 18%;
-
-    --primary: 174 75% 18%;
+    --primary: 174 75% 12%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 43 98% 53%;
-    --secondary-foreground: 174 80% 12%;
-
-    --muted: 210 20% 96%;
-    --muted-foreground: 174 30% 40%;
-
-    --accent: 43 98% 53%;
-    --accent-foreground: 174 80% 12%;
-
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-
-    --success: 142 76% 36%;
-    --success-foreground: 0 0% 100%;
-
-    --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 100%;
+    --secondary-foreground: 174 90% 8%;
 
     --border: 210 20% 90%;
-    --input: 210 20% 90%;
-    --ring: 43 98% 53%;
-
-    --radius: 0.75rem;
-
-    --sidebar-background: 174 75% 18%;
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 43 98% 53%;
-    --sidebar-primary-foreground: 174 80% 12%;
-    --sidebar-accent: 174 70% 22%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 174 60% 25%;
-    --sidebar-ring: 43 98% 53%;
-
-    /* Chart colors */
-    --chart-1: 43 98% 53%;
-    --chart-2: 174 75% 18%;
-    --chart-3: 174 60% 35%;
-    --chart-4: 43 80% 70%;
-    --chart-5: 174 40% 50%;
+    --radius: 1rem; /* Slightly larger radius for 'Premium' feel */
+    
+    --sidebar-background: 174 80% 10%;
+    --sidebar-foreground: 0 0% 95%;
   }
-}
 
-@layer base {
   * {
     @apply border-border;
   }
 
   body {
-    @apply bg-background text-foreground font-sans antialiased;
-    font-family: 'Inter', system-ui, sans-serif;
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    letter-spacing: -0.01em;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.03em;
   }
 }
 
 @layer utilities {
-  .gradient-impulse {
-    background: linear-gradient(135deg, hsl(var(--impulse-dark)) 0%, hsl(var(--impulse-dark-deep)) 100%);
-  }
-  
-  .gradient-gold {
-    background: linear-gradient(135deg, hsl(var(--impulse-gold)) 0%, hsl(var(--impulse-gold-light)) 100%);
-  }
-  
-  .text-gradient-gold {
-    background: linear-gradient(135deg, hsl(var(--impulse-gold)) 0%, hsl(var(--impulse-gold-light)) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-  
-  .shadow-impulse {
-    box-shadow: 0 4px 20px -2px hsl(var(--impulse-dark) / 0.15);
-  }
-  
-  .shadow-gold {
-    box-shadow: 0 4px 20px -2px hsl(var(--impulse-gold) / 0.4);
-  }
-  
-  .animate-float {
-    animation: float 6s ease-in-out infinite;
-  }
-  
-  @keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
-  }
-  
-  .animate-pulse-gold {
-    animation: pulse-gold 2s ease-in-out infinite;
-  }
-  
-  @keyframes pulse-gold {
-    0%, 100% { box-shadow: 0 0 0 0 hsl(var(--impulse-gold) / 0.4); }
-    50% { box-shadow: 0 0 0 10px hsl(var(--impulse-gold) / 0); }
+  /* Textures & Visual Atmosphere */
+  .noise-bg::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.05;
+    z-index: 9999;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    mix-blend-mode: soft-light;
   }
 
-  .glassmorphism {
-    @apply bg-impulse-dark/80 backdrop-blur-lg;
+  .gradient-mesh {
+    background: radial-gradient(at 0% 0%, hsla(174, 90%, 15%, 0.1) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, hsla(43, 98%, 53%, 0.05) 0px, transparent 50%);
   }
 
+  .glassmorphism-v2 {
+    @apply bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl;
+  }
+
+  .shadow-premium {
+    box-shadow: 0 10px 30px -10px rgba(10, 50, 50, 0.1),
+                0 4px 10px -5px rgba(10, 50, 50, 0.05);
+  }
+
+  /* Motion Design - Staggered Reveals */
+  .reveal-stagger > * {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: reveal 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  }
+
+  .reveal-stagger > *:nth-child(1) { animation-delay: 0.1s; }
+  .reveal-stagger > *:nth-child(2) { animation-delay: 0.2s; }
+  .reveal-stagger > *:nth-child(3) { animation-delay: 0.3s; }
+  .reveal-stagger > *:nth-child(4) { animation-delay: 0.4s; }
+  .reveal-stagger > *:nth-child(5) { animation-delay: 0.5s; }
+
+  @keyframes reveal {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Premium Hover Logic */
+  .hover-lift {
+    @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-premium hover:brightness-110;
+  }
+
+  /* Safe Areas & Mobile */
   .safe-area-bottom {
     padding-bottom: env(safe-area-inset-bottom);
-  }
-
-  /* Improved Touch Targets for Mobile */
-  @media (max-width: 768px) {
-    button, [role="button"], a {
-      min-height: 48px;
-    }
-    
-    input, select, textarea {
-      font-size: 16px !important; /* Prevent iOS zoom */
-    }
-    
-    .card-mobile-optimized {
-      @apply rounded-xl border-none shadow-none bg-card/50;
-    }
   }
 }

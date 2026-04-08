@@ -74,9 +74,9 @@ export default function Quotes() {
     const isNew = searchParams.get('new') === 'true';
     const clientId = searchParams.get('client_id');
     
-    if (isNew && clientId) {
+    if (isNew) {
       if (canOpenWizard) {
-        setPreselectedClientId(clientId);
+        if (clientId) setPreselectedClientId(clientId);
         handleOpenWizard();
       }
       setSearchParams({});

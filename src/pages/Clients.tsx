@@ -68,6 +68,20 @@ export default function Clients() {
     refetch();
   }, [refetch]);
 
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  // Handle automatic modal opening via query params
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('new') === 'true') {
+      handleOpenModal();
+      // Clean up the URL to prevent reopening on refresh
+      window.history.replaceState({}, '', '/clients');
+    }
+  }, []);
+
   const handleOpenModal = (client?: ClientWithExtras) => {
     if (client) {
       setEditingClient({

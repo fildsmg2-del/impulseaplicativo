@@ -137,7 +137,9 @@ export async function generateServiceOrderPDF(
 
   yPos += 10;
   doc.setFillColor(250, 250, 250);
-  doc.roundedRect(margin, yPos, pageWidth - 2 * margin, 40, 3, 3, 'F');
+  const serviceTypeLines = doc.splitTextToSize(serviceOrder.service_type, pageWidth - 2 * margin - 10);
+  const detailsBoxHeight = 35 + (serviceTypeLines.length * 5);
+  doc.roundedRect(margin, yPos, pageWidth - 2 * margin, detailsBoxHeight, 3, 3, 'F');
 
   yPos += 8;
   doc.setTextColor(0, 0, 0);
@@ -147,12 +149,86 @@ export async function generateServiceOrderPDF(
   
   yPos += 6;
   doc.setFont('helvetica', 'normal');
-  const serviceTypeLines = doc.splitTextToSize(serviceOrder.service_type, pageWidth - 2 * margin - 10);
   doc.text(serviceTypeLines, margin + 5, yPos);
   yPos += serviceTypeLines.length * 5;
 
   yPos += 5;
-  doc.text(`Data de Execução: ${serviceOrder.execution_date ? formatDate(serviceOrder.execution_date) : 'Não definida'}`, margin + 5, yPos);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Responsável:', margin + 5, yPos);
+  doc.setFont('helvetica', 'normal');
+  doc.text(serviceOrder.technician?.name || 'Não atribuído', margin + 35, yPos);
+
+  yPos += 6;
+  doc.setFont('helvetica', 'bold');
+  doc.text('Data Abertura:', margin + 5, yPos);
+  doc.setFont('helvetica', 'normal');
+  doc.text(formatDate(serviceOrder.created_at), margin + 35, yPos);
+
+  yPos += 6;
+  doc.setFont('helvetica', 'bold');
+  doc.text('Data Execução:', margin + 5, yPos);
+  doc.setFont('helvetica', 'normal');
+  doc.text(serviceOrder.execution_date ? formatDate(serviceOrder.execution_date) : 'Não definida', margin + 35, yPos);
+
+  if (serviceOrder.deadline_date) {
+    yPos += 6;
+    doc.setFont('helvetica', 'bold');
+    doc.text('Prazo Final:', margin + 5, yPos);
+    doc.setFont('helvetica', 'normal');
+    const deadlineColor: [number, number, number] = new Date(serviceOrder.deadline_date) < new Date() ? [220, 38, 38] : [0, 0, 0];
+    doc.setTextColor(...deadlineColor);
+    doc.text(formatDate(serviceOrder.deadline_date), margin + 35, yPos);
+    doc.setTextColor(0, 0, 0);
+  }
+
+  // Checklist Section
+  if (serviceOrder.checklist_state && serviceOrder.checklist_state.length > 0) {
+    yPos += 15;
+    if (yPos > pageHeight - 40) {
+      doc.addPage();
+      yPos = margin;
+    }
+
+    doc.setTextColor(...goldColor);
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text('CHECKLIST DE SERVIÇO', margin, yPos);
+
+    yPos += 8;
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(9);
+    
+    const checklistCols = 2;
+    const colWidth = (pageWidth - 2 * margin) / checklistCols;
+    
+    serviceOrder.checklist_state.forEach((item, index) => {
+      const col = index % checklistCols;
+      const row = Math.floor(index / checklistCols);
+      const x = margin + (col * colWidth);
+      const currentY = yPos + (row * 6);
+
+      if (currentY > pageHeight - 20) {
+        // This is simplified, for many items it might skip rows. 
+        // But OS checklists are usually short.
+      }
+
+      // Draw checkbox
+      doc.setDrawColor(200, 200, 200);
+      doc.rect(x, currentY - 3.5, 4, 4);
+      if (item.checked) {
+        doc.setFont('zapfdingbats');
+        doc.text('4', x + 0.5, currentY - 0.5); // Checkmark in ZapfDingbats
+        doc.setFont('helvetica', 'bold');
+      } else {
+        doc.setFont('helvetica', 'normal');
+      }
+      
+      const labelLines = doc.splitTextToSize(item.label, colWidth - 10);
+      doc.text(labelLines[0], x + 6, currentY);
+    });
+    
+    yPos += (Math.ceil(serviceOrder.checklist_state.length / checklistCols) * 6) + 5;
+  }
 
   // Notes Section
   if (serviceOrder.notes) {
@@ -171,11 +247,13 @@ export async function generateServiceOrderPDF(
     yPos += notesLines.length * 5;
   }
 
-  // Attachments Section
+  // Attachments & Images Section
   const attachments = serviceOrder.attachments || [];
-  if (attachments.length > 0) {
+  const images = attachments.filter(a => a.type?.startsWith('image/'));
+  const otherFiles = attachments.filter(a => !a.type?.startsWith('image/'));
+
+  if (images.length > 0) {
     yPos += 15;
-    
     if (yPos > pageHeight - 60) {
       doc.addPage();
       yPos = margin;
@@ -184,26 +262,68 @@ export async function generateServiceOrderPDF(
     doc.setTextColor(...goldColor);
     doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
-    doc.text(`ANEXOS (${attachments.length})`, margin, yPos);
+    doc.text('REGISTRO FOTOGRÁFICO', margin, yPos);
+
+    yPos += 10;
+    
+    const imgWidth = (pageWidth - 2 * margin - 10) / 2;
+    const imgHeight = 60;
+
+    for (let i = 0; i < images.length; i++) {
+      const img = images[i];
+      const col = i % 2;
+      const x = margin + (col * (imgWidth + 10));
+
+      if (col === 0 && i > 0) {
+        yPos += imgHeight + 15;
+      }
+
+      if (yPos + imgHeight > pageHeight - 20) {
+        doc.addPage();
+        yPos = margin + 10;
+      }
+
+      try {
+        const base64 = await storageService.getImageAsBase64(img.path || img.url);
+        if (base64) {
+          doc.addImage(base64, 'JPEG', x, yPos, imgWidth, imgHeight, undefined, 'FAST');
+          doc.setFontSize(7);
+          doc.setTextColor(100, 100, 100);
+          doc.text(img.name, x, yPos + imgHeight + 4, { maxWidth: imgWidth });
+        }
+      } catch (err) {
+        console.error("Error adding image to PDF", err);
+        doc.rect(x, yPos, imgWidth, imgHeight);
+        doc.text("Erro ao carregar imagem", x + 5, yPos + imgHeight/2);
+      }
+    }
+    yPos += imgHeight + 20;
+  }
+
+  if (otherFiles.length > 0) {
+    yPos += 10;
+    if (yPos > pageHeight - 40) {
+      doc.addPage();
+      yPos = margin;
+    }
+
+    doc.setTextColor(...goldColor);
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text('OUTROS ANEXOS', margin, yPos);
 
     yPos += 8;
     doc.setTextColor(0, 0, 0);
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    attachments.forEach((attachment: any, index: number) => {
-      if (yPos > pageHeight - 30) {
+    otherFiles.forEach((attachment: any, index: number) => {
+      if (yPos > pageHeight - 20) {
         doc.addPage();
         yPos = margin;
       }
-      
-      const bgColor = index % 2 === 0 ? [248, 248, 248] : [255, 255, 255];
-      doc.setFillColor(bgColor[0], bgColor[1], bgColor[2]);
-      doc.roundedRect(margin, yPos - 3, pageWidth - 2 * margin, 10, 2, 2, 'F');
-      
-      doc.text(`${index + 1}. ${attachment.name}`, margin + 5, yPos + 3);
-      yPos += 12;
+      doc.text(`${index + 1}. ${attachment.name} (${attachment.sector || 'Geral'})`, margin + 5, yPos);
+      yPos += 6;
     });
   }
 

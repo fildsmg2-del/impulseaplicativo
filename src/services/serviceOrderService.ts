@@ -21,6 +21,9 @@ export interface ServiceOrder {
     name: string;
     phone: string;
   };
+  technician?: {
+    name: string;
+  };
   service_type_info?: {
     name: string;
     deadline_days: number;
@@ -129,6 +132,7 @@ export const serviceOrderService = {
       .select(`
         *,
         client:clients(name, phone),
+        technician:profiles!service_orders_assigned_to_fkey(name),
         service_type_info:service_types(name, deadline_days),
         ${attachmentSelect}
       `)
@@ -144,6 +148,7 @@ export const serviceOrderService = {
       .select(`
         *,
         client:clients(name, phone),
+        technician:profiles!service_orders_assigned_to_fkey(name),
         service_type_info:service_types(name, deadline_days),
         ${attachmentSelect}
       `)
@@ -168,6 +173,7 @@ export const serviceOrderService = {
       .select(`
         *,
         client:clients(name, phone),
+        technician:profiles!service_orders_assigned_to_fkey(name),
         service_type_info:service_types(name, deadline_days),
         ${attachmentSelect}
       `)
@@ -196,6 +202,7 @@ export const serviceOrderService = {
       .select(`
         *,
         client:clients(name, phone),
+        technician:profiles!service_orders_assigned_to_fkey(name),
         service_type_info:service_types(name, deadline_days),
         ${attachmentSelect}
       `)
@@ -226,6 +233,7 @@ export const serviceOrderService = {
       .select(`
         *,
         client:clients(name, phone),
+        technician:profiles!service_orders_assigned_to_fkey(name),
         service_type_info:service_types(name, deadline_days),
         ${attachmentSelect}
       `)

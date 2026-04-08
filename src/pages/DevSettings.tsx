@@ -163,21 +163,23 @@ export default function DevSettings() {
         </div>
 
         <Tabs defaultValue="all" className="space-y-4">
-          <TabsList className="flex-wrap">
-            <TabsTrigger value="all">Todas</TabsTrigger>
-            <TabsTrigger value="audit">Audit Log</TabsTrigger>
-            <TabsTrigger value="health">Monitoramento</TabsTrigger>
-            <TabsTrigger value="flags">Feature Flags</TabsTrigger>
-            <TabsTrigger value="announcements">Comunicados</TabsTrigger>
-            <TabsTrigger value="presence">👥 Usuários Online</TabsTrigger>
-            <TabsTrigger value="pwa">📱 PWA & Mobile</TabsTrigger>
-            <TabsTrigger value="impersonate">Simulação</TabsTrigger>
-            {CATEGORIES.map((cat) => (
-              <TabsTrigger key={cat.value} value={cat.value}>
-                {cat.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+          <div className="w-full overflow-x-auto pb-2 scrollbar-none">
+            <TabsList className="inline-flex w-auto md:w-full justify-start md:justify-center p-1 bg-muted/50 backdrop-blur-sm border border-white/5 shadow-premium">
+              <TabsTrigger value="all">Todas</TabsTrigger>
+              <TabsTrigger value="audit">Audit Log</TabsTrigger>
+              <TabsTrigger value="health">Monitoramento</TabsTrigger>
+              <TabsTrigger value="flags">Feature Flags</TabsTrigger>
+              <TabsTrigger value="announcements">Comunicados</TabsTrigger>
+              <TabsTrigger value="presence">👥 Usuários Online</TabsTrigger>
+              <TabsTrigger value="pwa">📱 PWA & Mobile</TabsTrigger>
+              <TabsTrigger value="impersonate">Simulação</TabsTrigger>
+              {CATEGORIES.map((cat) => (
+                <TabsTrigger key={cat.value} value={cat.value}>
+                  {cat.label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </div>
 
           <TabsContent value="health">
             <Card>

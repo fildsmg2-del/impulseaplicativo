@@ -69,15 +69,9 @@ const navItems: NavItem[] = [
 
 export function AppSidebar() {
   const [collapsed, setCollapsed] = useState(false);
-  const [openMenus, setOpenMenus] = useState<string[]>(['/financial']);
   const { user, logout, hasRole } = useAuth();
   const location = useLocation();
 
-  const toggleMenu = (href: string) => {
-    setOpenMenus(prev => 
-      prev.includes(href) ? prev.filter(h => h !== href) : [...prev, href]
-    );
-  };
 
   const filteredNavItems = navItems.filter(
     (item) => !item.roles || hasRole(item.roles)
@@ -103,56 +97,47 @@ export function AppSidebar() {
       <nav className="flex-1 py-6 px-3 space-y-2 overflow-y-auto">
         {filteredNavItems.map((item) => {
           const isActive = location.pathname === item.href || (item.children && location.pathname.startsWith(item.href));
-          const isMenuOpen = openMenus.includes(item.href);
           
           if (item.children && !collapsed) {
             return (
               <div key={item.href} className="space-y-1">
-                <button
-                  onClick={() => toggleMenu(item.href)}
+                <NavLink
+                  to={item.href}
                   className={cn(
-                    'flex items-center justify-between w-full px-4 py-3 rounded-lg transition-all duration-200 group',
+                    'flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group',
                     isActive
-                      ? 'bg-impulse-gold/10 text-impulse-gold font-medium'
+                      ? 'bg-impulse-gold text-impulse-dark font-medium shadow-gold'
                       : 'text-sidebar-foreground hover:bg-sidebar-accent'
                   )}
                 >
-                  <div className="flex items-center gap-3">
-                    <item.icon
-                      className={cn(
-                        'h-5 w-5 flex-shrink-0 transition-transform group-hover:scale-110',
-                        isActive ? 'text-impulse-gold' : 'text-impulse-gold'
-                      )}
-                    />
-                    <span className="animate-fade-in">{item.title}</span>
-                  </div>
-                  <ChevronDown className={cn(
-                    "h-4 w-4 transition-transform duration-200",
-                    isMenuOpen ? "rotate-0" : "-rotate-90"
-                  )} />
-                </button>
+                  <item.icon
+                    className={cn(
+                      'h-5 w-5 flex-shrink-0 transition-transform group-hover:scale-110',
+                      isActive ? 'text-impulse-dark' : 'text-impulse-gold'
+                    )}
+                  />
+                  <span className="animate-fade-in">{item.title}</span>
+                </NavLink>
                 
-                {isMenuOpen && (
-                  <div className="pl-12 space-y-1 animate-slide-down">
-                    {item.children.map((child) => {
-                      const isChildActive = location.pathname === child.href;
-                      return (
-                        <NavLink
-                          key={child.href}
-                          to={child.href}
-                          className={cn(
-                            'block py-2 text-sm transition-colors',
-                            isChildActive 
-                              ? 'text-impulse-gold font-medium' 
-                              : 'text-sidebar-foreground/70 hover:text-impulse-gold'
-                          )}
-                        >
-                          {child.title}
-                        </NavLink>
-                      );
-                    })}
-                  </div>
-                )}
+                <div className="pl-12 space-y-1 animate-slide-down">
+                  {item.children.map((child) => {
+                    const isChildActive = location.pathname === child.href;
+                    return (
+                      <NavLink
+                        key={child.href}
+                        to={child.href}
+                        className={cn(
+                          'block py-2 text-sm transition-colors',
+                          isChildActive 
+                            ? 'text-impulse-gold font-medium' 
+                            : 'text-sidebar-foreground/70 hover:text-impulse-gold'
+                        )}
+                      >
+                        {child.title}
+                      </NavLink>
+                    );
+                  })}
+                </div>
               </div>
             );
           }

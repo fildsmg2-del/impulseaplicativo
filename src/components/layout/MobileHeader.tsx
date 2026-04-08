@@ -10,7 +10,7 @@ export function MobileHeader() {
   const { isOnline, isSyncing } = useOfflineSync();
 
   return (
-    <header className="fixed top-0 left-0 right-0 h-16 glassmorphism border-b border-white/10 z-50 px-4 flex items-center justify-between md:hidden">
+    <header className="fixed top-0 left-0 right-0 h-16 gradient-impulse border-b border-white/10 z-50 px-4 flex items-center justify-between md:hidden shadow-md">
       <div className="flex items-center gap-2">
         <img src={logoImpulse} alt="Logo" className="h-8 object-contain" />
         <div className="h-4 w-px bg-white/20 mx-1" />

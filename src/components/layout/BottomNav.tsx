@@ -56,7 +56,7 @@ export function BottomNav() {
   const { user, hasRole } = useAuth();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 h-16 glassmorphism border-t border-white/10 z-50 flex items-center justify-around px-2 md:hidden safe-area-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 h-16 gradient-impulse border-t border-white/10 z-50 flex items-center justify-around px-2 md:hidden safe-area-bottom shadow-[0_-4px_10px_rgba(0,0,0,0.15)]">
       {mainItems.map((item) => {
         const isActive = location.pathname === item.href;
         return (
@@ -82,7 +82,7 @@ export function BottomNav() {
             <span className="text-[10px] font-medium">Mais</span>
           </button>
         </SheetTrigger>
-        <SheetContent side="bottom" className="rounded-t-3xl glassmorphism border-t border-white/10 outline-none p-6">
+        <SheetContent side="bottom" className="rounded-t-3xl gradient-impulse border-t border-white/10 outline-none p-6">
           <SheetHeader className="mb-6">
             <SheetTitle className="text-white">Navegação Completa</SheetTitle>
             <SheetDescription className="text-white/60">

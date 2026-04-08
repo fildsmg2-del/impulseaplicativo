@@ -156,9 +156,17 @@ export function UserPresenceBoard() {
                 <div
                   className={`w-11 h-11 rounded-xl bg-gradient-to-br ${getAvatarColor(
                     user.userId
-                  )} flex items-center justify-center text-white font-bold text-sm flex-shrink-0 shadow-lg`}
+                  )} flex items-center justify-center text-white font-bold text-sm flex-shrink-0 shadow-lg overflow-hidden border border-white/10`}
                 >
-                  {getInitials(user.name)}
+                  {user.avatar_url ? (
+                    <img 
+                      src={user.avatar_url} 
+                      alt={user.name} 
+                      className="w-full h-full object-cover" 
+                    />
+                  ) : (
+                    getInitials(user.name)
+                  )}
                 </div>
 
                 <div className="flex-1 min-w-0">

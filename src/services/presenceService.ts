@@ -8,6 +8,7 @@ export interface UserPresence {
   currentPageLabel: string;
   joinedAt: string;
   onlineAt: string;
+  avatar_url?: string;
 }
 
 const PRESENCE_CHANNEL = "user-presence";

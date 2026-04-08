@@ -26,6 +26,7 @@ export function PresenceTracker() {
       role: user.role || "DESCONHECIDO",
       currentPage,
       currentPageLabel,
+      avatar_url: user.avatar_url,
     });
 
     hasJoined.current = true;

@@ -64,7 +64,7 @@ export default function Employees() {
 
   const { currentPage, totalPages, paginatedItems, goToPage, startIndex, endIndex, totalItems } = usePagination({
     items: filteredEmployees,
-    itemsPerPage: 6
+    itemsPerPage: 10
   });
 
   const resetForm = () => {
@@ -192,48 +192,7 @@ export default function Employees() {
         </Button>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-full bg-impulse-gold/10">
-                <Users className="h-6 w-6 text-impulse-gold" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Total de Funcionários</p>
-                <p className="text-2xl font-bold">{employees.length}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-full bg-primary/10">
-                <Users className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Engenheiros</p>
-                <p className="text-2xl font-bold">{employees.filter(e => e.position === 'ENGENHEIRO').length}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-full bg-secondary/10">
-                <Users className="h-6 w-6 text-secondary-foreground" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Vendedores</p>
-                <p className="text-2xl font-bold">{employees.filter(e => e.position === 'VENDEDOR').length}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Stats Cards removidos conforme solicitação centralizando na lista */}
 
       <Card>
         <CardHeader>

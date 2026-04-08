@@ -39,6 +39,16 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { title: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { title: 'Minha Área', href: '/my-area', icon: Briefcase },
+  { title: 'Agenda', href: '/agenda', icon: Calendar },
+  { title: 'Calculadora', href: '/calculator', icon: Calculator },
+  { title: 'Funil', href: '/funnel', icon: Filter },
+  { title: 'Clientes', href: '/clients', icon: Users },
+  { title: 'Orçamentos', href: '/quotes', icon: FileText },
+  { title: 'Projetos', href: '/projects', icon: FolderKanban },
+  { title: 'OS', href: '/service-orders', icon: ClipboardList },
+  { title: 'Fornecedores', href: '/suppliers', icon: Building2, roles: ['MASTER', 'DEV'] },
+  { title: 'Estoque', href: '/inventory', icon: Package, roles: ['MASTER', 'DEV', 'COMPRAS'] },
   { 
     title: 'Financeiro', 
     href: '/financial', 
@@ -49,22 +59,12 @@ const navItems: NavItem[] = [
       { title: 'Contas a Pagar', href: '/financial/payables' },
     ]
   },
-  { title: 'Funcionários', href: '/employees', icon: Users, roles: ['MASTER', 'DEV'] },
-  { title: 'Área DEV', href: '/dev', icon: Code, roles: ['DEV'] },
-  { title: 'Minha Área', href: '/my-area', icon: Briefcase },
-  { title: 'Calculadora', href: '/calculator', icon: Calculator },
-  { title: 'Clientes', href: '/clients', icon: Users },
-  { title: 'Orçamentos', href: '/quotes', icon: FileText },
-  { title: 'Funil', href: '/funnel', icon: Filter },
-  { title: 'Projetos', href: '/projects', icon: FolderKanban },
   { title: 'Vendas', href: '/sales', icon: ShoppingCart, roles: ['MASTER', 'ENGENHEIRO', 'VENDEDOR', 'FINANCEIRO', 'COMPRAS'] },
-  { title: 'OS', href: '/service-orders', icon: ClipboardList },
   { title: 'Drone', href: '/drone', icon: Plane },
-  { title: 'Agenda', href: '/agenda', icon: Calendar },
-  { title: 'Fornecedores', href: '/suppliers', icon: Building2, roles: ['MASTER', 'DEV'] },
-  { title: 'Estoque', href: '/inventory', icon: Package, roles: ['MASTER', 'DEV', 'COMPRAS'] },
   { title: 'Meu Perfil', href: '/my-profile', icon: User },
+  { title: 'Funcionários', href: '/employees', icon: Users, roles: ['MASTER', 'DEV'] },
   { title: 'Configurações', href: '/settings', icon: Settings, roles: ['MASTER', 'DEV'] },
+  { title: 'Área DEV', href: '/dev', icon: Code, roles: ['DEV'] },
 ];
 
 export function AppSidebar() {

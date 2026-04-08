@@ -103,12 +103,14 @@ export function AppSidebar() {
   return (
     <aside
       className={cn(
-        'gradient-impulse flex flex-col h-screen transition-all duration-500 relative sticky top-0 shrink-0 z-50 overflow-hidden',
+        'gradient-impulse flex flex-col h-screen transition-all duration-500 relative sticky top-0 shrink-0 z-50',
         collapsed ? 'w-24' : 'w-72'
       )}
     >
-      {/* Decorative Blur Background */}
-      <div className="absolute top-0 right-0 w-32 h-32 bg-impulse-gold/10 blur-3xl rounded-full -translate-y-16 translate-x-16 pointer-events-none" />
+      {/* Decorative Blur Background clamped inside the sidebar */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-impulse-gold/10 blur-3xl rounded-full -translate-y-16 translate-x-16 pointer-events-none" />
+      </div>
 
       {/* Logo Section */}
       <div className="flex items-center justify-center p-8 border-b border-white/5 relative z-10">

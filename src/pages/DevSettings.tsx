@@ -17,6 +17,7 @@ import { HealthBoard } from "@/components/dev/HealthBoard";
 import { FeatureFlagManager } from "@/components/dev/FeatureFlagManager";
 import { UserImpersonator } from "@/components/dev/UserImpersonator";
 import { AnnouncementPanel } from "@/components/dev/AnnouncementPanel";
+import { UserPresenceBoard } from "@/components/dev/UserPresenceBoard";
 import { apiSettingsService, ApiSetting, ApiSettingInput } from "@/services/apiSettingsService";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -166,6 +167,7 @@ export default function DevSettings() {
             <TabsTrigger value="health">Monitoramento</TabsTrigger>
             <TabsTrigger value="flags">Feature Flags</TabsTrigger>
             <TabsTrigger value="announcements">Comunicados</TabsTrigger>
+            <TabsTrigger value="presence">👥 Usuários Online</TabsTrigger>
             <TabsTrigger value="impersonate">Simulação</TabsTrigger>
             {CATEGORIES.map((cat) => (
               <TabsTrigger key={cat.value} value={cat.value}>
@@ -206,6 +208,18 @@ export default function DevSettings() {
               </CardHeader>
               <CardContent>
                 <AnnouncementPanel />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="presence">
+            <Card>
+              <CardHeader>
+                <CardTitle>Usuários Online em Tempo Real</CardTitle>
+                <CardDescription>Veja quem está com o sistema aberto agora e o que está fazendo</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <UserPresenceBoard />
               </CardContent>
             </Card>
           </TabsContent>

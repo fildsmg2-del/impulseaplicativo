@@ -325,77 +325,79 @@ export function TransactionFormModal({ type, open, onOpenChange, onSubmit, trans
 
                 <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-6">
                   {!useSplit ? (
-                    <div className="grid grid-cols-3 gap-6">
-                      <div className="space-y-2">
-                        <Label className="text-slate-500 flex items-center gap-1">Categoria * <HelpCircle className="h-3 w-3" /></Label>
-                        <div className="relative">
-                            <Input 
-                                list="categories-list"
-                                value={formData.category}
-                                onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
-                                placeholder="Selecione ou digite..."
-                                required
-                            />
-                            <datalist id="categories-list">
-                                {categories.map(cat => <option key={cat} value={cat} />)}
-                            </datalist>
+                    <>
+                      <div className="grid grid-cols-3 gap-6">
+                        <div className="space-y-2">
+                          <Label className="text-slate-500 flex items-center gap-1">Categoria * <HelpCircle className="h-3 w-3" /></Label>
+                          <div className="relative">
+                              <Input 
+                                  list="categories-list"
+                                  value={formData.category}
+                                  onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
+                                  placeholder="Selecione ou digite..."
+                                  required
+                              />
+                              <datalist id="categories-list">
+                                  {categories.map(cat => <option key={cat} value={cat} />)}
+                              </datalist>
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-slate-500">Centro de custo</Label>
+                          <Select value={formData.cost_center} onValueChange={(v) => setFormData(prev => ({ ...prev, cost_center: v }))}>
+                            <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                            <SelectContent>
+                              {costCenters.map(cc => <SelectItem key={cc.id} value={cc.id}>{cc.name}</SelectItem>) || <SelectItem value="geral">Geral</SelectItem>}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-slate-500">Código de referência</Label>
+                          <Input 
+                            placeholder="Doc, NF, etc" 
+                            value={formData.reference_code}
+                            onChange={(e) => setFormData(prev => ({ ...prev, reference_code: e.target.value }))}
+                          />
                         </div>
                       </div>
-                      <div className="space-y-2">
-                        <Label className="text-slate-500">Centro de custo</Label>
-                        <Select value={formData.cost_center} onValueChange={(v) => setFormData(prev => ({ ...prev, cost_center: v }))}>
-                          <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
-                          <SelectContent>
-                            {costCenters.map(cc => <SelectItem key={cc.id} value={cc.id}>{cc.name}</SelectItem>) || <SelectItem value="geral">Geral</SelectItem>}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-slate-500">Código de referência</Label>
-                        <Input 
-                          placeholder="Doc, NF, etc" 
-                          value={formData.reference_code}
-                          onChange={(e) => setFormData(prev => ({ ...prev, reference_code: e.target.value }))}
-                        />
-                      </div>
-                    </div>
 
-                    <div className="grid grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <Label className="text-slate-500">Projeto vinculado</Label>
-                        <Select 
-                          value={formData.project_id || "none"} 
-                          onValueChange={(v) => setFormData(prev => ({ ...prev, project_id: v === "none" ? undefined : v }))}
-                        >
-                          <SelectTrigger><SelectValue placeholder="Selecione o projeto..." /></SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="none">Nenhum</SelectItem>
-                            {projects.map(p => (
-                              <SelectItem key={p.id} value={p.id}>
-                                {p.notes ? (p.notes.length > 30 ? p.notes.slice(0, 30) + "..." : p.notes) : `Projeto ${p.id.slice(0, 8)}`}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                      <div className="grid grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <Label className="text-slate-500">Projeto vinculado</Label>
+                          <Select 
+                            value={formData.project_id || "none"} 
+                            onValueChange={(v) => setFormData(prev => ({ ...prev, project_id: v === "none" ? undefined : v }))}
+                          >
+                            <SelectTrigger><SelectValue placeholder="Selecione o projeto..." /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none">Nenhum</SelectItem>
+                              {projects.map(p => (
+                                <SelectItem key={p.id} value={p.id}>
+                                  {p.notes ? (p.notes.length > 30 ? p.notes.slice(0, 30) + "..." : p.notes) : `Projeto ${p.id.slice(0, 8)}`}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-slate-500">OS vinculada</Label>
+                          <Select 
+                            value={formData.service_order_id || "none"} 
+                            onValueChange={(v) => setFormData(prev => ({ ...prev, service_order_id: v === "none" ? undefined : v }))}
+                          >
+                            <SelectTrigger><SelectValue placeholder="Selecione a OS..." /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none">Nenhum</SelectItem>
+                              {serviceOrders.map(so => (
+                                <SelectItem key={so.id} value={so.id}>
+                                  {so.service_type} - {so.client?.name || 'Sem cliente'}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </div>
-                      <div className="space-y-2">
-                        <Label className="text-slate-500">OS vinculada</Label>
-                        <Select 
-                          value={formData.service_order_id || "none"} 
-                          onValueChange={(v) => setFormData(prev => ({ ...prev, service_order_id: v === "none" ? undefined : v }))}
-                        >
-                          <SelectTrigger><SelectValue placeholder="Selecione a OS..." /></SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="none">Nenhum</SelectItem>
-                            {serviceOrders.map(so => (
-                              <SelectItem key={so.id} value={so.id}>
-                                {so.service_type} - {so.client?.name || 'Sem cliente'}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
+                    </>
                   ) : (
                     <div className="space-y-4">
                         <div className="grid grid-cols-12 gap-4 text-xs font-bold text-slate-400 uppercase px-2">

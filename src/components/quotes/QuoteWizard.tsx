@@ -59,6 +59,14 @@ export function QuoteWizard({ quoteId, preselectedClientId, onClose }: QuoteWiza
   const [isSaving, setIsSaving] = useState(false);
   const [clients, setClients] = useState<Client[]>([]);
   const [savedQuoteId, setSavedQuoteId] = useState<string | undefined>(quoteId);
+  const [kitStepState, setKitStepState] = useState({
+    systemType: 'all' as any,
+    searchBy: 'consumo' as any,
+    searchValue: undefined as number | undefined,
+    sortBy: 'menor_preco' as any,
+    viewMode: 'list' as any,
+    activeTab: 'kits' as any
+  });
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -501,7 +509,14 @@ export function QuoteWizard({ quoteId, preselectedClientId, onClose }: QuoteWiza
       case 'dimensioning':
         return <StepDimensioning formData={formData} updateFormData={updateFormData} />;
       case 'kit':
-        return <StepKitSelection formData={formData} updateFormData={updateFormData} />;
+        return (
+          <StepKitSelection 
+            formData={formData} 
+            updateFormData={updateFormData} 
+            stepState={kitStepState}
+            setStepState={(state) => setKitStepState(prev => ({ ...prev, ...state }))}
+          />
+        );
       case 'services':
         return <StepServices formData={formData} updateFormData={updateFormData} />;
       case 'pricing':

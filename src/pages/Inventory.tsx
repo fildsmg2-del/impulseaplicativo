@@ -56,6 +56,10 @@ export default function Inventory() {
     supplier_id: undefined,
     active: true,
   });
+  const [kitFilters, setKitFilters] = useState({
+    search: '',
+    systemType: 'all'
+  });
 
   const queryClient = useQueryClient();
 
@@ -266,7 +270,10 @@ export default function Inventory() {
           </TabsList>
 
           <TabsContent value="kits">
-            <KitManager />
+            <KitManager 
+              filters={kitFilters} 
+              onFiltersChange={(filters) => setKitFilters(prev => ({ ...prev, ...filters }))} 
+            />
           </TabsContent>
 
           <TabsContent value="produtos" className="space-y-6">

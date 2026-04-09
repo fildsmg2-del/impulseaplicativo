@@ -11,6 +11,15 @@ import { useQueryClient } from '@tanstack/react-query';
 interface StepKitSelectionProps {
   formData: QuoteFormData;
   updateFormData: (data: Partial<QuoteFormData>) => void;
+  stepState: {
+    systemType: SystemType | 'all';
+    searchBy: 'consumo' | 'potencia' | 'modulos' | 'area';
+    searchValue: number | undefined;
+    sortBy: 'menor_preco' | 'maior_potencia';
+    viewMode: 'grid' | 'list';
+    activeTab: 'kits' | 'manual';
+  };
+  setStepState: (state: Partial<StepKitSelectionProps['stepState']>) => void;
 }
 
 const formatCurrency = (value: number) =>
@@ -25,17 +34,20 @@ const SYSTEM_TYPE_LABELS: Record<SystemType, { label: string; icon: React.ReactN
 export function StepKitSelection({
   formData,
   updateFormData,
+  stepState,
+  setStepState,
 }: StepKitSelectionProps) {
   const [kits, setKits] = useState<Kit[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
-  const [activeTab, setActiveTab] = useState<'kits' | 'manual'>('kits');
-  
-  // Filters
-  const [systemType, setSystemType] = useState<SystemType | 'all'>('all');
-  const [searchBy, setSearchBy] = useState<'consumo' | 'potencia' | 'modulos' | 'area'>('consumo');
-  const [searchValue, setSearchValue] = useState<number>(formData.average_monthly_kwh || 500);
-  const [sortBy, setSortBy] = useState<'menor_preco' | 'maior_potencia'>('menor_preco');
+
+  const {
+    systemType,
+    searchBy,
+    searchValue,
+    sortBy,
+    viewMode,
+    activeTab
+  } = stepState;
 
   const hasSummaryBar = (formData.equipment_cost || 0) > 0;
   const queryClient = useQueryClient();
@@ -130,9 +142,11 @@ export function StepKitSelection({
   };
 
   const clearFilters = () => {
-    setSystemType('all');
-    setSearchBy('consumo');
-    setSearchValue(formData.average_monthly_kwh || 500);
+    setStepState({
+      systemType: 'all',
+      searchBy: 'consumo',
+      searchValue: formData.average_monthly_kwh || 500
+    });
   };
 
   return (
@@ -153,7 +167,7 @@ export function StepKitSelection({
       {/* Tabs */}
       <div className="flex gap-2 border-b border-border">
         <button
-          onClick={() => setActiveTab('kits')}
+          onClick={() => setStepState({ activeTab: 'kits' })}
           className={cn(
             'px-4 py-2 font-medium transition-colors border-b-2 -mb-px',
             activeTab === 'kits' 
@@ -164,7 +178,7 @@ export function StepKitSelection({
           Kits Cadastrados
         </button>
         <button
-          onClick={() => setActiveTab('manual')}
+          onClick={() => setStepState({ activeTab: 'manual' })}
           className={cn(
             'px-4 py-2 font-medium transition-colors border-b-2 -mb-px flex items-center gap-2',
             activeTab === 'manual' 
@@ -211,7 +225,7 @@ export function StepKitSelection({
                       type="radio"
                       name="systemType"
                       checked={systemType === 'all'}
-                      onChange={() => setSystemType('all')}
+                      onChange={() => setStepState({ systemType: 'all' })}
                       className="text-secondary"
                     />
                     Todos
@@ -222,7 +236,7 @@ export function StepKitSelection({
                         type="radio"
                         name="systemType"
                         checked={systemType === type}
-                        onChange={() => setSystemType(type)}
+                        onChange={() => setStepState({ systemType: type })}
                         className="text-secondary"
                       />
                       <span className="flex items-center gap-1">
@@ -249,7 +263,7 @@ export function StepKitSelection({
                         type="radio"
                         name="searchBy"
                         checked={searchBy === option.value}
-                        onChange={() => setSearchBy(option.value as typeof searchBy)}
+                        onChange={() => setStepState({ searchBy: option.value as any })}
                         className="text-secondary"
                       />
                       {option.label}
@@ -264,7 +278,7 @@ export function StepKitSelection({
                     searchBy === 'area' ? 'm²' : 'un'
                   }
                   value={searchValue || ''}
-                  onChange={(e) => setSearchValue(parseFloat(e.target.value) || 0)}
+                  onChange={(e) => setStepState({ searchValue: parseFloat(e.target.value) || 0 })}
                   className="w-full mt-2 px-3 py-2 text-sm bg-background border border-border rounded-lg"
                 />
               </div>
@@ -287,7 +301,7 @@ export function StepKitSelection({
                   <span className="text-sm text-muted-foreground">Ordenar por:</span>
                   <select
                     value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+                    onChange={(e) => setStepState({ sortBy: e.target.value as any })}
                     className="px-3 py-1.5 text-sm bg-background border border-border rounded-lg"
                   >
                     <option value="menor_preco">Menor Custo</option>
@@ -297,13 +311,13 @@ export function StepKitSelection({
               </div>
               <div className="flex items-center gap-1">
                 <button
-                  onClick={() => setViewMode('grid')}
+                  onClick={() => setStepState({ viewMode: 'grid' })}
                   className={cn('p-2 rounded-lg', viewMode === 'grid' ? 'bg-secondary/10 text-secondary' : 'text-muted-foreground')}
                 >
                   <Grid className="h-4 w-4" />
                 </button>
                 <button
-                  onClick={() => setViewMode('list')}
+                  onClick={() => setStepState({ viewMode: 'list' })}
                   className={cn('p-2 rounded-lg', viewMode === 'list' ? 'bg-secondary/10 text-secondary' : 'text-muted-foreground')}
                 >
                   <List className="h-4 w-4" />

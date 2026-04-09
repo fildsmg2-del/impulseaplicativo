@@ -20,12 +20,16 @@ const SYSTEM_TYPE_LABELS: Record<SystemType, { label: string; icon: React.ReactN
   off_grid: { label: 'Off Grid', icon: <Battery className="h-4 w-4" /> },
 };
 
-const formatCurrency = (value: number) =>
-  new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+interface KitManagerProps {
+  filters: {
+    search: string;
+    systemType: string;
+  };
+  onFiltersChange: (filters: Partial<KitManagerProps['filters']>) => void;
+}
 
-export function KitManager() {
-  const [search, setSearch] = useState('');
-  const [systemTypeFilter, setSystemTypeFilter] = useState<string>('all');
+export function KitManager({ filters, onFiltersChange }: KitManagerProps) {
+  const { search, systemType: systemTypeFilter } = filters;
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingKit, setEditingKit] = useState<Kit | null>(null);
 
@@ -152,11 +156,11 @@ export function KitManager() {
           <Input
             placeholder="Buscar kit..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => onFiltersChange({ search: e.target.value })}
             className="pl-10"
           />
         </div>
-        <Select value={systemTypeFilter} onValueChange={setSystemTypeFilter}>
+        <Select value={systemTypeFilter} onValueChange={(value) => onFiltersChange({ systemType: value })}>
           <SelectTrigger className="w-48">
             <SelectValue placeholder="Tipo de Sistema" />
           </SelectTrigger>

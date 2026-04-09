@@ -92,8 +92,8 @@ const navGroups: NavGroup[] = [
           { title: 'Contas a Pagar', href: '/financial/payables' },
         ]
       },
-      { title: 'Fornecedores', href: '/suppliers', icon: Building2, roles: ['MASTER', 'DEV'], flag: 'MODULE_SUPPLIERS_ENABLED' },
-      { title: 'Estoque', href: '/inventory', icon: Package, roles: ['MASTER', 'DEV', 'COMPRAS'], flag: 'MODULE_INVENTORY_ENABLED' },
+      { title: 'Fornecedores', href: '/suppliers', icon: Building2, roles: ['MASTER', 'DEV', 'ENGENHEIRO'], flag: 'MODULE_SUPPLIERS_ENABLED' },
+      { title: 'Estoque', href: '/inventory', icon: Package, roles: ['MASTER', 'DEV', 'COMPRAS', 'ENGENHEIRO'], flag: 'MODULE_INVENTORY_ENABLED' },
     ]
   },
   {

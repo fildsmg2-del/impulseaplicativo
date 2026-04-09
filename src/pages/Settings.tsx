@@ -56,7 +56,7 @@ export default function Settings() {
   const [editingUser, setEditingUser] = useState<UserWithRole | null>(null);
   const [isUserDialogOpen, setIsUserDialogOpen] = useState(false);
   const [isNewUserDialogOpen, setIsNewUserDialogOpen] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<'MASTER' | 'ENGENHEIRO' | 'VENDEDOR' | 'DEV' | 'FINANCEIRO' | 'TECNICO' | 'POS_VENDA' | 'COMPRAS'>('VENDEDOR');
+  const [selectedRole, setSelectedRole] = useState<UserRole>('VENDEDOR');
   
   // New user form state
   const [newUserData, setNewUserData] = useState<CreateUserData>({
@@ -241,6 +241,8 @@ export default function Settings() {
       case 'VENDEDOR': return 'bg-amber-500 text-white';
       case 'POS_VENDA': return 'bg-indigo-600 text-white';
       case 'COMPRAS': return 'bg-orange-600 text-white';
+      case 'CONSULTOR_TEC_DRONE': return 'bg-sky-500 text-white';
+      case 'PILOTO': return 'bg-blue-500 text-white';
       default: return 'bg-muted text-muted-foreground';
     }
   };
@@ -683,6 +685,8 @@ export default function Settings() {
                   <SelectItem value="POS_VENDA">Pós-venda</SelectItem>
                   <SelectItem value="FINANCEIRO">Financeiro</SelectItem>
                   <SelectItem value="COMPRAS">Compras</SelectItem>
+                  <SelectItem value="CONSULTOR_TEC_DRONE">Consultor Tec. Drone</SelectItem>
+                  <SelectItem value="PILOTO">Piloto</SelectItem>
                   <SelectItem value="MASTER">Master</SelectItem>
                   {isDev && <SelectItem value="DEV">Desenvolvedor</SelectItem>}
                 </SelectContent>
@@ -746,6 +750,8 @@ export default function Settings() {
                   <SelectItem value="POS_VENDA">Pós-venda</SelectItem>
                   <SelectItem value="FINANCEIRO">Financeiro</SelectItem>
                   <SelectItem value="COMPRAS">Compras</SelectItem>
+                  <SelectItem value="CONSULTOR_TEC_DRONE">Consultor Tec. Drone</SelectItem>
+                  <SelectItem value="PILOTO">Piloto</SelectItem>
                   <SelectItem value="MASTER">Master</SelectItem>
                   {isDev && <SelectItem value="DEV">Desenvolvedor</SelectItem>}
                 </SelectContent>

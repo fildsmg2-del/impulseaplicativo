@@ -108,7 +108,7 @@ export function DroneServiceModal({ open, onOpenChange, service, onSuccess }: Dr
   }, [service, open]);
 
   const { data: allUsers = [] } = useQuery({ queryKey: ['users'], queryFn: getUsers, enabled: open });
-  const pilots = allUsers.filter(u => u.role === 'PILOTO' || u.role === 'CONSULTOR_TEC_DRONE' || u.role === 'MASTER' || u.role === 'DEV');
+  const pilots = allUsers.filter(u => u.role === 'PILOTO' || u.role === 'CONSULTOR_TEC_DRONE');
 
   const loadLogs = async (id: string) => {
     try {

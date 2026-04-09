@@ -57,7 +57,7 @@ const navGroups: NavGroup[] = [
     label: 'UTILIDADES',
     items: [
       { title: 'Calculadora', href: '/calculator', icon: Calculator, roles: ['MASTER', 'ENGENHEIRO', 'VENDEDOR', 'DEV', 'FINANCEIRO', 'POS_VENDA', 'COMPRAS'], flag: 'MODULE_CALCULATOR_ENABLED' },
-      { title: 'Drone', href: '/drone', icon: Plane, roles: ['DEV'], flag: 'MODULE_DRONE_ENABLED' },
+      { title: 'Drone', href: '/drone', icon: Plane, roles: ['MASTER', 'DEV'], flag: 'MODULE_DRONE_ENABLED' },
     ]
   },
   {

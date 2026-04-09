@@ -15,6 +15,8 @@ import { clientService } from '@/services/clientService';
 import { supplierService } from '@/services/supplierService';
 import { accountService } from '@/services/accountService';
 import { costCenterService } from '@/services/costCenterService';
+import { projectService } from '@/services/projectService';
+import { serviceOrderService } from '@/services/serviceOrderService';
 import { storageService } from '@/services/storageService';
 import { FINANCIAL_CATEGORIES, PAYMENT_METHODS } from '@/constants/financialConstants';
 import { CreateTransactionData, Transaction, TransactionSplit } from '@/services/transactionService';
@@ -41,6 +43,8 @@ export function TransactionFormModal({ type, open, onOpenChange, onSubmit, trans
     payment_method: 'Pix',
     reference_code: '',
     account_id: undefined,
+    project_id: undefined,
+    service_order_id: undefined,
     notes: '',
     status: 'PENDENTE',
     installments: 1,
@@ -62,6 +66,8 @@ export function TransactionFormModal({ type, open, onOpenChange, onSubmit, trans
   const { data: suppliers = [] } = useQuery({ queryKey: ['suppliers'], queryFn: supplierService.getAll, enabled: type === 'DESPESA' });
   const { data: accounts = [] } = useQuery({ queryKey: ['accounts-active'], queryFn: accountService.getActive });
   const { data: costCenters = [] } = useQuery({ queryKey: ['cost-centers'], queryFn: costCenterService.getAll });
+  const { data: projects = [] } = useQuery({ queryKey: ['projects'], queryFn: projectService.getAll });
+  const { data: serviceOrders = [] } = useQuery({ queryKey: ['service-orders'], queryFn: serviceOrderService.getAll });
 
   useEffect(() => {
     if (transaction) {
@@ -164,6 +170,7 @@ export function TransactionFormModal({ type, open, onOpenChange, onSubmit, trans
     if (!cleaned.client_id) delete (cleaned as any).client_id;
     if (!cleaned.supplier_id) delete (cleaned as any).supplier_id;
     if (!cleaned.project_id) delete (cleaned as any).project_id;
+    if (!cleaned.service_order_id) delete (cleaned as any).service_order_id;
     if (!cleaned.account_id) delete (cleaned as any).account_id;
     if (!cleaned.parent_id) delete (cleaned as any).parent_id;
     // Remove empty text strings
@@ -350,6 +357,43 @@ export function TransactionFormModal({ type, open, onOpenChange, onSubmit, trans
                           value={formData.reference_code}
                           onChange={(e) => setFormData(prev => ({ ...prev, reference_code: e.target.value }))}
                         />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <Label className="text-slate-500">Projeto vinculado</Label>
+                        <Select 
+                          value={formData.project_id || "none"} 
+                          onValueChange={(v) => setFormData(prev => ({ ...prev, project_id: v === "none" ? undefined : v }))}
+                        >
+                          <SelectTrigger><SelectValue placeholder="Selecione o projeto..." /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">Nenhum</SelectItem>
+                            {projects.map(p => (
+                              <SelectItem key={p.id} value={p.id}>
+                                {p.notes ? (p.notes.length > 30 ? p.notes.slice(0, 30) + "..." : p.notes) : `Projeto ${p.id.slice(0, 8)}`}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-slate-500">OS vinculada</Label>
+                        <Select 
+                          value={formData.service_order_id || "none"} 
+                          onValueChange={(v) => setFormData(prev => ({ ...prev, service_order_id: v === "none" ? undefined : v }))}
+                        >
+                          <SelectTrigger><SelectValue placeholder="Selecione a OS..." /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">Nenhum</SelectItem>
+                            {serviceOrders.map(so => (
+                              <SelectItem key={so.id} value={so.id}>
+                                {so.service_type} - {so.client?.name || 'Sem cliente'}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
                   ) : (

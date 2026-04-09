@@ -1325,6 +1325,7 @@ export type Database = {
           project_id: string | null
           recurrence: string | null
           reference_code: string | null
+          service_order_id: string | null
           status: Database["public"]["Enums"]["transaction_status"]
           supplier_id: string | null
           supplier_name_manual: string | null
@@ -1355,6 +1356,7 @@ export type Database = {
           project_id?: string | null
           recurrence?: string | null
           reference_code?: string | null
+          service_order_id?: string | null
           status?: Database["public"]["Enums"]["transaction_status"]
           supplier_id?: string | null
           supplier_name_manual?: string | null
@@ -1385,6 +1387,7 @@ export type Database = {
           project_id?: string | null
           recurrence?: string | null
           reference_code?: string | null
+          service_order_id?: string | null
           status?: Database["public"]["Enums"]["transaction_status"]
           supplier_id?: string | null
           supplier_name_manual?: string | null
@@ -1419,6 +1422,13 @@ export type Database = {
             columns: ["account_id"]
             isOneToOne: false
             referencedRelation: "financial_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_service_order_id_fkey"
+            columns: ["service_order_id"]
+            isOneToOne: false
+            referencedRelation: "service_orders"
             referencedColumns: ["id"]
           },
         ]

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { format, addDays, differenceInDays, isPast } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { X, Send, Paperclip, FileDown, AlertTriangle, MessageSquare } from 'lucide-react';
@@ -23,6 +24,7 @@ import { getCompanySettings, CompanySettings } from '@/services/companySettingsS
 import { getUsers, UserWithRole } from '@/services/userService';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
+import { transactionService } from '@/services/transactionService';
 
 interface ServiceOrderModalProps {
   open: boolean;
@@ -78,6 +80,12 @@ export function ServiceOrderModal({
 }: ServiceOrderModalProps) {
   const { toast } = useToast();
   const { user, hasRole } = useAuth();
+  
+  const { data: financialSummary } = useQuery({
+    queryKey: ['service-order-financial-summary', serviceOrder?.id],
+    queryFn: () => transactionService.getSummary({ service_order_id: serviceOrder?.id }),
+    enabled: !!serviceOrder?.id && open && hasRole(['MASTER', 'DEV', 'FINANCEIRO']),
+  });
   const [loading, setLoading] = useState(false);
   const [clients, setClients] = useState<{ id: string; name: string }[]>([]);
   const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
@@ -756,11 +764,30 @@ export function ServiceOrderModal({
               )}
             </TabsContent>
 
-            {/* FINANCEIRO Tab - Chat and attachments only */}
+            {/* FINANCEIRO Tab - Financial summary, chat and attachments */}
             <TabsContent value="FINANCEIRO" className="space-y-4">
-              <div className="text-center py-4 text-muted-foreground border rounded-lg mb-4">
-                <p className="text-sm">Setor Financeiro - Registros e anexos</p>
-              </div>
+              {financialSummary && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                  <div className="p-4 rounded-lg border border-green-500/20 bg-green-500/5">
+                    <p className="text-xs text-muted-foreground uppercase font-semibold">Total Cobrado (Receitas)</p>
+                    <p className="text-xl font-bold text-green-600">
+                      {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(financialSummary.totalReceitas)}
+                    </p>
+                  </div>
+                  <div className="p-4 rounded-lg border border-rose-500/20 bg-rose-500/5">
+                    <p className="text-xs text-muted-foreground uppercase font-semibold">Total Gasto (Despesas)</p>
+                    <p className="text-xl font-bold text-rose-600">
+                      {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(financialSummary.totalDespesas)}
+                    </p>
+                  </div>
+                  <div className="p-4 rounded-lg border border-primary/20 bg-primary/5">
+                    <p className="text-xs text-muted-foreground uppercase font-semibold">Saldo Atual</p>
+                    <p className={`text-xl font-bold ${financialSummary.saldo >= 0 ? 'text-green-600' : 'text-rose-600'}`}>
+                      {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(financialSummary.saldo)}
+                    </p>
+                  </div>
+                </div>
+              )}
               {renderSectorChatSection('FINANCEIRO')}
             </TabsContent>
 

@@ -25,6 +25,8 @@ export interface Transaction {
   client_id?: string;
   client_name_manual?: string;
   project_id?: string;
+  service_order_id?: string;
+
   supplier_id?: string;
   supplier_name_manual?: string;
   account_id?: string;
@@ -57,6 +59,8 @@ export interface CreateTransactionData {
   client_id?: string;
   client_name_manual?: string;
   project_id?: string;
+  service_order_id?: string;
+
   supplier_id?: string;
   supplier_name_manual?: string;
   account_id?: string;
@@ -84,6 +88,8 @@ export const transactionService = {
     startDate?: string; 
     endDate?: string;
     account_id?: string;
+    project_id?: string;
+    service_order_id?: string;
   }): Promise<Transaction[]> {
     let query = supabase
       .from('transactions')
@@ -104,6 +110,12 @@ export const transactionService = {
     }
     if (filters?.account_id && filters.account_id !== 'all') {
       query = query.eq('account_id', filters.account_id);
+    }
+    if (filters?.project_id) {
+      query = query.eq('project_id', filters.project_id);
+    }
+    if (filters?.service_order_id) {
+      query = query.eq('service_order_id', filters.service_order_id);
     }
 
     const { data, error } = await query;
@@ -243,7 +255,13 @@ export const transactionService = {
     return data as Transaction;
   },
 
-  async getSummary(filters?: { account_id?: string; startDate?: string; endDate?: string }): Promise<FinancialSummary> {
+  async getSummary(filters?: { 
+    account_id?: string; 
+    startDate?: string; 
+    endDate?: string;
+    project_id?: string;
+    service_order_id?: string;
+  }): Promise<FinancialSummary> {
     let query = supabase
       .from('transactions')
       .select('type, status, amount');
@@ -256,6 +274,12 @@ export const transactionService = {
     }
     if (filters?.endDate) {
       query = query.lte('due_date', filters.endDate);
+    }
+    if (filters?.project_id) {
+      query = query.eq('project_id', filters.project_id);
+    }
+    if (filters?.service_order_id) {
+      query = query.eq('service_order_id', filters.service_order_id);
     }
 
     const { data, error } = await query;

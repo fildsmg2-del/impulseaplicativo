@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { useQuery } from '@tanstack/react-query';
 
 import { Badge } from '@/components/ui/badge';
 import {
@@ -39,6 +40,7 @@ import { quoteService } from '@/services/quoteService';
 import { getCompanySettings } from '@/services/companySettingsService';
 import { projectActivityLogService, ProjectActivityLog } from '@/services/projectActivityLogService';
 import { storageService } from '@/services/storageService';
+import { transactionService } from '@/services/transactionService';
 import { useAuth } from '@/hooks/use-auth';
 import { UserRole } from '@/types';
 import {
@@ -110,6 +112,13 @@ export function ProjectModal({ project, open, onOpenChange, onSave, preselectedC
   const isTecnico = hasRole(['TECNICO']);
   const isCompras = hasRole(['COMPRAS']);
   const isPosVenda = hasRole(['POS_VENDA']);
+  
+  const { data: financialSummary, refetch: refetchFinance } = useQuery({
+    queryKey: ['project-financial-summary', project?.id],
+    queryFn: () => transactionService.getSummary({ project_id: project?.id }),
+    enabled: !!project?.id && open && hasRole(['MASTER', 'DEV', 'FINANCEIRO']),
+  });
+
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const { stages, template } = useProjectStages();
   
@@ -956,6 +965,30 @@ export function ProjectModal({ project, open, onOpenChange, onSave, preselectedC
                       )}
                     </div>
                   </div>
+
+                  {/* Financial Summary - Only for Financeiro stage */}
+                  {stage.key === 'FINANCEIRO' && financialSummary && (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="p-4 rounded-lg border border-green-500/20 bg-green-500/5">
+                        <p className="text-xs text-muted-foreground uppercase font-semibold">Total Cobrado (Receitas)</p>
+                        <p className="text-2xl font-bold text-green-600">
+                          {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(financialSummary.totalReceitas)}
+                        </p>
+                      </div>
+                      <div className="p-4 rounded-lg border border-rose-500/20 bg-rose-500/5">
+                        <p className="text-xs text-muted-foreground uppercase font-semibold">Total Gasto (Despesas)</p>
+                        <p className="text-2xl font-bold text-rose-600">
+                          {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(financialSummary.totalDespesas)}
+                        </p>
+                      </div>
+                      <div className="p-4 rounded-lg border border-impulse-gold/20 bg-impulse-gold/5">
+                        <p className="text-xs text-muted-foreground uppercase font-semibold">Saldo Atual</p>
+                        <p className={`text-2xl font-bold ${financialSummary.saldo >= 0 ? 'text-green-600' : 'text-rose-600'}`}>
+                          {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(financialSummary.saldo)}
+                        </p>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Stage Dates - Always locked, auto-filled when sent to stage */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-lg border border-impulse-gold/30 bg-impulse-gold/5">

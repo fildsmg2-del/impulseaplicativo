@@ -71,12 +71,20 @@ export function TransactionFormModal({ type, open, onOpenChange, onSubmit, trans
   const { data: accounts = [] } = useQuery({ queryKey: ['accounts-active'], queryFn: accountService.getActive });
   const { data: costCenters = [] } = useQuery({ queryKey: ['cost-centers'], queryFn: costCenterService.getAll });
   const { data: projectsRaw = [] } = useQuery({ queryKey: ['projects'], queryFn: projectService.getAll });
-  const { data: serviceOrders = [] } = useQuery({ queryKey: ['service-orders'], queryFn: serviceOrderService.getAll });
-  const { data: droneServices = [] } = useQuery({ queryKey: ['drone-services'], queryFn: droneService.getAll });
+  const { data: serviceOrdersRaw = [] } = useQuery({ queryKey: ['service-orders'], queryFn: serviceOrderService.getAll });
+  const { data: droneServicesRaw = [] } = useQuery({ queryKey: ['drone-services'], queryFn: droneService.getAll });
 
   const projects = useMemo(() => {
-    return projectsRaw.filter(p => p.status !== 'finalizado' && p.current_stage !== 'POS_VENDA');
+    return projectsRaw.filter(p => p.status !== 'finalizado' && p.status !== 'POS_VENDA');
   }, [projectsRaw]);
+
+  const serviceOrders = useMemo(() => {
+    return serviceOrdersRaw.filter(so => so.status !== 'CONCLUIDO');
+  }, [serviceOrdersRaw]);
+
+  const droneServices = useMemo(() => {
+    return droneServicesRaw.filter(ds => ds.status !== 'FINALIZADO');
+  }, [droneServicesRaw]);
 
   useEffect(() => {
     if (transaction) {
@@ -436,11 +444,15 @@ export function TransactionFormModal({ type, open, onOpenChange, onSubmit, trans
                                 <SelectTrigger><SelectValue placeholder="Selecione a OS..." /></SelectTrigger>
                                 <SelectContent>
                                   <SelectItem value="none">Nenhum</SelectItem>
-                                  {serviceOrders.map(so => (
-                                    <SelectItem key={so.id} value={so.id}>
-                                      {so.display_code || 'OS'} - {so.client?.name || 'Sem cliente'}
-                                    </SelectItem>
-                                  ))}
+                                  {serviceOrders.map(so => {
+                                    const relatedProject = projectsRaw.find(p => p.client_id === so.client_id);
+                                    return (
+                                      <SelectItem key={so.id} value={so.id}>
+                                        {so.display_code || 'OS'} - {so.client?.name || 'Sem cliente'} 
+                                        {relatedProject?.power_kwp ? ` - ${relatedProject.power_kwp}kWp` : ''}
+                                      </SelectItem>
+                                    );
+                                  })}
                                 </SelectContent>
                               </Select>
                             </div>
@@ -459,7 +471,7 @@ export function TransactionFormModal({ type, open, onOpenChange, onSubmit, trans
                                 <SelectItem value="none">Nenhum</SelectItem>
                                 {droneServices.map(ds => (
                                   <SelectItem key={ds.id} value={ds.id}>
-                                    {ds.display_code || 'DR'} - {ds.client_name || 'Sem cliente'} ({ds.service_type})
+                                    {ds.display_code || 'DR'} - {ds.client_name || 'Sem cliente'} ({ds.area_hectares ? `${ds.area_hectares}ha` : ds.service_type})
                                   </SelectItem>
                                 ))}
                               </SelectContent>

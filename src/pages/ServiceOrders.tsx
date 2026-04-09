@@ -83,22 +83,12 @@ export default function ServiceOrders() {
   });
 
   const sortedOrders = [...filteredOrders].sort((a, b) => {
-    const aOverdue = isOrderOverdue(a);
-    const bOverdue = isOrderOverdue(b);
-    
-    if (aOverdue && !bOverdue) return -1;
-    if (!aOverdue && bOverdue) return 1;
-    
-    if (a.deadline_date && b.deadline_date) {
-      return new Date(a.deadline_date).getTime() - new Date(b.deadline_date).getTime();
-    }
-    if (a.deadline_date && !b.deadline_date) return -1;
-    if (!a.deadline_date && b.deadline_date) return 1;
-    
-    return 0;
+    const codeA = a.display_code || '';
+    const codeB = b.display_code || '';
+    return codeB.localeCompare(codeA, undefined, { numeric: true });
   });
 
-  const { currentPage, totalPages, paginatedItems, goToPage, startIndex, endIndex, totalItems } = usePagination(sortedOrders, { itemsPerPage: 6 });
+  const { currentPage, totalPages, paginatedItems, goToPage, startIndex, endIndex, totalItems } = usePagination(sortedOrders, { itemsPerPage: 15 });
 
   const overdueCount = visibleOrders.filter(isOrderOverdue).length;
 

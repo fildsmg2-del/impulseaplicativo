@@ -19,8 +19,11 @@ import { ProjectChecklistTemplateManager } from '@/components/settings/ProjectCh
 import { FinancialAccountManager } from '@/components/settings/FinancialAccountManager';
 import { useAuth } from '@/hooks/use-auth';
 import { UserRole } from '@/types';
+import { useQueryClient } from '@tanstack/react-query';
+import { r2StorageService } from '@/services/r2StorageService';
 
 export default function Settings() {
+  const queryClient = useQueryClient();
   const { toast } = useToast();
   const { user, hasRole } = useAuth();
   const isMaster = hasRole(['MASTER', 'DEV']);
@@ -172,6 +175,7 @@ export default function Settings() {
         description: 'Nível de acesso atualizado'
       });
       setIsUserDialogOpen(false);
+      await queryClient.invalidateQueries({ queryKey: ['users'] });
       loadData();
     } catch (error) {
       toast({
@@ -218,6 +222,7 @@ export default function Settings() {
       });
       setIsNewUserDialogOpen(false);
       setNewUserData({ email: '', password: '', name: '', role: 'VENDEDOR' });
+      await queryClient.invalidateQueries({ queryKey: ['users'] });
       loadData();
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Erro ao criar usuário';

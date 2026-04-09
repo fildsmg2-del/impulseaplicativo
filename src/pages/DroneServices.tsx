@@ -12,6 +12,8 @@ import { DroneServiceModal } from '@/components/drone/DroneServiceModal';
 import { pdfService } from '@/services/pdfService';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { PaginationControls } from '@/components/ui/pagination-controls';
+import { usePagination } from '@/hooks/use-pagination';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -40,13 +42,30 @@ export default function DroneServices() {
     }),
   });
 
-  const services = useMemo(() => {
+  const sortedServices = useMemo(() => {
+    let result = [...servicesRaw];
     if (!user) return [];
+    
     if (user.role === 'PILOTO') {
-        return servicesRaw.filter(s => s.technician_id === user.id);
+      result = result.filter(s => s.technician_id === user.id);
     }
-    return servicesRaw;
+
+    return result.sort((a, b) => {
+      const codeA = a.display_code || `DR-${a.id.slice(0, 4)}`;
+      const codeB = b.display_code || `DR-${b.id.slice(0, 4)}`;
+      return codeB.localeCompare(codeA, undefined, { numeric: true });
+    });
   }, [servicesRaw, user]);
+
+  const {
+    currentPage,
+    totalPages,
+    paginatedItems,
+    goToPage,
+    startIndex,
+    endIndex,
+    totalItems
+  } = usePagination(sortedServices, { itemsPerPage: 15 });
 
   const deleteMutation = useMutation({
     mutationFn: droneService.delete,
@@ -145,7 +164,7 @@ export default function DroneServices() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {services.map((service) => {
+                    {paginatedItems.map((service) => {
                         const config = STATUS_CONFIG[service.status];
                         return (
                             <TableRow key={service.id} className="hover:bg-slate-50 border-slate-50 transition-colors group">
@@ -207,6 +226,18 @@ export default function DroneServices() {
                     })}
                   </TableBody>
                 </Table>
+                
+                <div className="p-4 border-t">
+                  <PaginationControls
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={goToPage}
+                    startIndex={startIndex}
+                    endIndex={endIndex}
+                    totalItems={totalItems}
+                  />
+                </div>
+              </>
             )}
           </CardContent>
         </Card>

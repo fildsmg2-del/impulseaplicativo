@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from "react";
-import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -154,7 +153,7 @@ export default function DevSettings() {
   };
 
   return (
-    <AppLayout>
+    <>
       <div className="space-y-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
@@ -443,7 +442,7 @@ export default function DevSettings() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </AppLayout>
+    </>
   );
 }
 

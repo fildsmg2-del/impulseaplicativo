@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { AppLayout } from "@/components/layout/AppLayout";
+import { Calendar as CalendarIcon, Plus, Edit, Trash2, FileText, Clock, User, CheckCircle2, ClipboardList } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,7 +9,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Plus, Edit, Trash2, FileText, Clock, User, CheckCircle2, ClipboardList } from "lucide-react";
 import { format, startOfMonth, endOfMonth, parseISO, isSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { activityService, Activity, ActivityInput } from "@/services/activityService";
@@ -85,7 +84,6 @@ export default function Agenda() {
   }, [loadMonthData]);
 
   useEffect(() => {
-    // Combine activities and service orders for the selected day
     const activityItems: AgendaItem[] = activities
       .filter((a) => isSameDay(parseISO(a.activity_date), selectedDate))
       .map((a) => ({
@@ -119,8 +117,6 @@ export default function Agenda() {
 
     setDayItems([...activityItems, ...osItems]);
   }, [activities, serviceOrders, selectedDate]);
-
-
 
   const handleSave = async (data: ActivityInput) => {
     try {
@@ -156,7 +152,6 @@ export default function Agenda() {
 
   const handleToggleComplete = async (item: AgendaItem) => {
     if (item.isServiceOrder) {
-      // Navigate to service orders page for OS items
       navigate('/service-orders');
       return;
     }
@@ -174,16 +169,12 @@ export default function Agenda() {
 
   const getDaysWithItems = () => {
     const dates: Date[] = [];
-    
-    // Add activity dates
     activities.forEach((a) => {
       const date = parseISO(a.activity_date);
       if (!dates.some((d) => isSameDay(d, date))) {
         dates.push(date);
       }
     });
-    
-    // Add service order dates
     serviceOrders.forEach((os) => {
       if (os.execution_date) {
         const date = parseISO(os.execution_date);
@@ -192,7 +183,6 @@ export default function Agenda() {
         }
       }
     });
-    
     return dates;
   };
 
@@ -209,76 +199,50 @@ export default function Agenda() {
   const generatePDF = async () => {
     try {
       let filteredActivities = activities;
-
       if (filterType !== "all") {
         filteredActivities = filteredActivities.filter((a) => a.activity_type === filterType);
       }
-
       if (filterStartDate) {
-        filteredActivities = filteredActivities.filter(
-          (a) => a.activity_date >= filterStartDate
-        );
+        filteredActivities = filteredActivities.filter((a) => a.activity_date >= filterStartDate);
       }
-
       if (filterEndDate) {
-        filteredActivities = filteredActivities.filter(
-          (a) => a.activity_date <= filterEndDate
-        );
+        filteredActivities = filteredActivities.filter((a) => a.activity_date <= filterEndDate);
       }
 
       const doc = new jsPDF();
       doc.setFontSize(18);
       doc.text("Relatório de Atividades", 20, 20);
-
       doc.setFontSize(10);
       doc.text(`Gerado em: ${format(new Date(), "dd/MM/yyyy HH:mm")}`, 20, 30);
-
       if (filterType !== "all") {
         const typeInfo = getActivityTypeInfo(filterType);
         doc.text(`Tipo: ${typeInfo.label}`, 20, 36);
       }
-
       if (filterStartDate || filterEndDate) {
-        doc.text(
-          `Período: ${filterStartDate || "..."} a ${filterEndDate || "..."}`,
-          20,
-          42
-        );
+        doc.text(`Período: ${filterStartDate || "..."} a ${filterEndDate || "..."}`, 20, 42);
       }
 
       let yPos = 55;
       doc.setFontSize(9);
-
       filteredActivities.forEach((activity) => {
         if (yPos > 270) {
           doc.addPage();
           yPos = 20;
         }
-
         const typeInfo = getActivityTypeInfo(activity.activity_type);
         const status = activity.completed ? "[✓]" : "[ ]";
-        const time = activity.start_time
-          ? `${activity.start_time}${activity.end_time ? `-${activity.end_time}` : ""}`
-          : "";
-
-        doc.text(
-          `${status} ${format(parseISO(activity.activity_date), "dd/MM/yyyy")} ${time} - ${typeInfo.label}: ${activity.title}`,
-          20,
-          yPos
-        );
+        const time = activity.start_time ? `${activity.start_time}${activity.end_time ? `-${activity.end_time}` : ""}` : "";
+        doc.text(`${status} ${format(parseISO(activity.activity_date), "dd/MM/yyyy")} ${time} - ${typeInfo.label}: ${activity.title}`, 20, yPos);
         yPos += 5;
-
         if (activity.client?.name) {
           doc.text(`   Cliente: ${activity.client.name}`, 20, yPos);
           yPos += 5;
         }
-
         if (activity.description) {
           const desc = activity.description.substring(0, 80);
           doc.text(`   ${desc}${activity.description.length > 80 ? "..." : ""}`, 20, yPos);
           yPos += 5;
         }
-
         yPos += 3;
       });
 
@@ -293,7 +257,7 @@ export default function Agenda() {
   const daysWithItems = getDaysWithItems();
 
   return (
-    <AppLayout>
+    <>
       <div className="space-y-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
@@ -536,6 +500,6 @@ export default function Agenda() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </AppLayout>
+    </>
   );
 }

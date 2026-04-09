@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -235,7 +234,7 @@ export default function MyArea() {
       ).length;
 
   return (
-    <AppLayout>
+    <>
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
@@ -391,6 +390,6 @@ export default function MyArea() {
         onOpenChange={setModalOpen}
         onSave={fetchProjects}
       />
-    </AppLayout>
+    </>
   );
 }

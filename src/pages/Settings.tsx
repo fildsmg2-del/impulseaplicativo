@@ -9,7 +9,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
-import { AppLayout } from '@/components/layout/AppLayout';
 import { Building2, Users, Save, Plus, Pencil, Trash2, Loader2, Calculator, Wrench, ClipboardList, Landmark } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { getCompanySettings, updateCompanySettings, CompanySettings } from '@/services/companySettingsService';
@@ -248,16 +247,14 @@ export default function Settings() {
 
   if (loading) {
     return (
-      <AppLayout>
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-impulse-gold" />
-        </div>
-      </AppLayout>
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-impulse-gold" />
+      </div>
     );
   }
 
   return (
-    <AppLayout>
+    <>
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-foreground">Configurações</h1>
         <p className="text-muted-foreground mt-1">Gerencie as configurações do sistema</p>
@@ -766,6 +763,6 @@ export default function Settings() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </AppLayout>
+    </>
   );
 }

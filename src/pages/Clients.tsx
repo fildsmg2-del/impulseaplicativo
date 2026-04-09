@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Plus, Search, MoreHorizontal, Building2, User, Phone, Mail, FileText, X, Trash2, Edit, MessageCircle, ChevronRight } from 'lucide-react';
-import { AppLayout } from '@/components/layout/AppLayout';
+import { Plus, Search, MoreHorizontal, Building2, User, FileText, X, Trash2, Edit, MessageCircle, ChevronRight } from 'lucide-react';
 import { clientService, Client, CreateClientData } from '@/services/clientService';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
@@ -217,8 +216,6 @@ export default function Clients() {
     }
   };
 
-  // Upload is now handled by ClientDetailSheet component
-
   const filteredClients = clients.filter((client) => {
     const matchesSearch = 
       client.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -239,13 +236,12 @@ export default function Clients() {
     resetPage,
   } = usePagination(filteredClients, { itemsPerPage: 15 });
 
-  // Reset page when filters change
   useEffect(() => {
     resetPage();
   }, [search, filterType, resetPage]);
 
   return (
-    <AppLayout>
+    <>
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 animate-fade-in">
         <div>
@@ -654,6 +650,6 @@ export default function Clients() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </AppLayout>
+    </>
   );
 }

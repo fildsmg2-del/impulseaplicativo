@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -97,7 +96,7 @@ export default function SolarCalculator() {
   };
 
   return (
-    <AppLayout>
+    <>
       <div className="p-6 space-y-6">
         {/* Header */}
         <div>
@@ -299,6 +298,6 @@ export default function SolarCalculator() {
           )}
         </div>
       </div>
-    </AppLayout>
+    </>
   );
 }

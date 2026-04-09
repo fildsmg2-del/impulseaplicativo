@@ -8,6 +8,7 @@ import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persist
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { AppLayout } from "@/components/layout/AppLayout";
 import { Loader2 } from "lucide-react";
 
 // ── Lazy-loaded pages (code splitting) ──────────────────────────
@@ -75,26 +76,30 @@ const App = () => (
               <Route path="/login" element={<Login />} />
               {/* Public route for client signature */}
               <Route path="/orcamento/:token" element={<QuoteSignature />} />
-              <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-              <Route path="/clients" element={<ProtectedRoute><Clients /></ProtectedRoute>} />
-              <Route path="/quotes" element={<ProtectedRoute><Quotes /></ProtectedRoute>} />
-              <Route path="/sales" element={<ProtectedRoute allowedRoles={['MASTER', 'ENGENHEIRO', 'VENDEDOR', 'FINANCEIRO', 'COMPRAS']}><Sales /></ProtectedRoute>} />
-              <Route path="/funnel" element={<ProtectedRoute><Funnel /></ProtectedRoute>} />
-              <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
-              <Route path="/suppliers" element={<ProtectedRoute allowedRoles={['MASTER', 'DEV', 'ENGENHEIRO']}><Suppliers /></ProtectedRoute>} />
-              <Route path="/inventory" element={<ProtectedRoute allowedRoles={['MASTER', 'DEV', 'COMPRAS', 'ENGENHEIRO']}><Inventory /></ProtectedRoute>} />
-              <Route path="/financial" element={<ProtectedRoute allowedRoles={['MASTER', 'DEV', 'FINANCEIRO']}><Financial /></ProtectedRoute>} />
-              <Route path="/financial/receivables" element={<ProtectedRoute allowedRoles={['MASTER', 'DEV', 'FINANCEIRO']}><FinancialReceivables /></ProtectedRoute>} />
-              <Route path="/financial/payables" element={<ProtectedRoute allowedRoles={['MASTER', 'DEV', 'FINANCEIRO']}><FinancialPayables /></ProtectedRoute>} />
-              <Route path="/calculator" element={<ProtectedRoute><SolarCalculator /></ProtectedRoute>} />
-              <Route path="/settings" element={<ProtectedRoute allowedRoles={['MASTER', 'DEV']}><Settings /></ProtectedRoute>} />
-              <Route path="/employees" element={<ProtectedRoute allowedRoles={['MASTER', 'DEV']}><Employees /></ProtectedRoute>} />
-              <Route path="/my-profile" element={<ProtectedRoute><MyProfile /></ProtectedRoute>} />
-              <Route path="/agenda" element={<ProtectedRoute><Agenda /></ProtectedRoute>} />
-              <Route path="/my-area" element={<ProtectedRoute><MyArea /></ProtectedRoute>} />
-              <Route path="/service-orders" element={<ProtectedRoute><ServiceOrders /></ProtectedRoute>} />
-              <Route path="/drone" element={<ProtectedRoute><DroneServices /></ProtectedRoute>} />
-              <Route path="/dev" element={<ProtectedRoute allowedRoles={['DEV']}><DevSettings /></ProtectedRoute>} />
+
+              {/* Protected Routes with Persistent Layout */}
+              <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/clients" element={<Clients />} />
+                <Route path="/quotes" element={<Quotes />} />
+                <Route path="/sales" element={<ProtectedRoute allowedRoles={['MASTER', 'ENGENHEIRO', 'VENDEDOR', 'FINANCEIRO', 'COMPRAS']}><Sales /></ProtectedRoute>} />
+                <Route path="/funnel" element={<Funnel />} />
+                <Route path="/projects" element={<Projects />} />
+                <Route path="/suppliers" element={<ProtectedRoute allowedRoles={['MASTER', 'DEV', 'ENGENHEIRO']}><Suppliers /></ProtectedRoute>} />
+                <Route path="/inventory" element={<ProtectedRoute allowedRoles={['MASTER', 'DEV', 'COMPRAS', 'ENGENHEIRO']}><Inventory /></ProtectedRoute>} />
+                <Route path="/financial" element={<ProtectedRoute allowedRoles={['MASTER', 'DEV', 'FINANCEIRO']}><Financial /></ProtectedRoute>} />
+                <Route path="/financial/receivables" element={<ProtectedRoute allowedRoles={['MASTER', 'DEV', 'FINANCEIRO']}><FinancialReceivables /></ProtectedRoute>} />
+                <Route path="/financial/payables" element={<ProtectedRoute allowedRoles={['MASTER', 'DEV', 'FINANCEIRO']}><FinancialPayables /></ProtectedRoute>} />
+                <Route path="/calculator" element={<SolarCalculator />} />
+                <Route path="/settings" element={<ProtectedRoute allowedRoles={['MASTER', 'DEV']}><Settings /></ProtectedRoute>} />
+                <Route path="/employees" element={<ProtectedRoute allowedRoles={['MASTER', 'DEV']}><Employees /></ProtectedRoute>} />
+                <Route path="/my-profile" element={<MyProfile />} />
+                <Route path="/agenda" element={<Agenda />} />
+                <Route path="/my-area" element={<MyArea />} />
+                <Route path="/service-orders" element={<ServiceOrders />} />
+                <Route path="/drone" element={<DroneServices />} />
+                <Route path="/dev" element={<ProtectedRoute allowedRoles={['DEV']}><DevSettings /></ProtectedRoute>} />
+              </Route>
 
               <Route path="*" element={<NotFound />} />
             </Routes>

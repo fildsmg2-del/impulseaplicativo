@@ -1,7 +1,6 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { startOfMonth, endOfMonth, parseISO } from 'date-fns';
-import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -226,7 +225,7 @@ export default function FinancialPayables() {
   };
 
   return (
-    <AppLayout>
+    <>
       <div className="p-6 space-y-6">
         <div className="flex justify-between items-center">
             <div>
@@ -430,6 +429,6 @@ export default function FinancialPayables() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </AppLayout>
+    </>
   );
 }

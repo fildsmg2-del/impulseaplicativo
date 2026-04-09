@@ -1,12 +1,11 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Search, Filter, MoreHorizontal, Edit, Trash2, MapPin, Plane, Ruler, Calendar, CheckCircle2, Clock, AlertCircle, FileText } from 'lucide-react';
+import { Plus, Search, MoreHorizontal, Edit, Trash2, MapPin, Plane, Ruler, CheckCircle2, Clock, AlertCircle, FileText } from 'lucide-react';
 import { droneService, DroneService, DroneServiceStatus } from '@/services/droneService';
 import { DroneServiceModal } from '@/components/drone/DroneServiceModal';
 import { pdfService } from '@/services/pdfService';
@@ -57,7 +56,7 @@ export default function DroneServices() {
   };
 
   return (
-    <AppLayout>
+    <>
       <div className="p-6 space-y-6">
         <div className="flex justify-between items-center bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
           <div>
@@ -232,6 +231,6 @@ export default function DroneServices() {
           </AlertDialogContent>
         </AlertDialog>
       </div>
-    </AppLayout>
+    </>
   );
 }

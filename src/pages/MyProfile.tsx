@@ -3,7 +3,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { AppLayout } from '@/components/layout/AppLayout';
 import { User, Lock, Save, Loader2, Camera, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
@@ -183,7 +182,7 @@ export default function MyProfile() {
   };
 
   return (
-    <AppLayout>
+    <>
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-foreground">Meu Perfil</h1>
         <p className="text-muted-foreground mt-1">Gerencie suas informações pessoais</p>
@@ -331,6 +330,6 @@ export default function MyProfile() {
           </CardContent>
         </Card>
       </div>
-    </AppLayout>
+    </>
   );
 }

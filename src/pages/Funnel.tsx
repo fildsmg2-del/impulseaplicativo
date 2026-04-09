@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Search } from 'lucide-react';
-import { AppLayout } from '@/components/layout/AppLayout';
 import { Quote, quoteService } from '@/services/quoteService';
 import { clientService, Client } from '@/services/clientService';
 import { getUsers } from '@/services/userService';
@@ -69,7 +68,7 @@ export default function Funnel() {
   });
 
   return (
-    <AppLayout>
+    <>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 animate-fade-in">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Funil</h1>
@@ -111,6 +110,6 @@ export default function Funnel() {
           )}
         </div>
       )}
-    </AppLayout>
+    </>
   );
 }

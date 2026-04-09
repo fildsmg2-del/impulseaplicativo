@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Plus, Search, FileText, Clock, CheckCircle, XCircle, ArrowRight, Trash2, CheckSquare, Square } from 'lucide-react';
-import { AppLayout } from '@/components/layout/AppLayout';
 import { QuoteWizard } from '@/components/quotes/QuoteWizard';
 import { quoteService, Quote } from '@/services/quoteService';
 import { clientService, Client } from '@/services/clientService';
@@ -174,7 +173,7 @@ export default function Quotes() {
   }, [search, statusFilter, resetPage]);
 
   return (
-    <AppLayout>
+    <>
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 animate-fade-in">
         <div>
@@ -406,6 +405,6 @@ export default function Quotes() {
       {showWizard && (
         <QuoteWizard quoteId={editingQuoteId} preselectedClientId={preselectedClientId} onClose={handleCloseWizard} />
       )}
-    </AppLayout>
+    </>
   );
 }

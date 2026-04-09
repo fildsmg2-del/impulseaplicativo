@@ -8,7 +8,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { AppLayout } from '@/components/layout/AppLayout';
 import { Search, Plus, Pencil, Trash2, Loader2, Users, Phone, Mail, Calendar } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { usePagination } from '@/hooks/use-pagination';
@@ -171,17 +170,15 @@ export default function Employees() {
 
   if (loading) {
     return (
-      <AppLayout>
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-impulse-gold" />
-        </div>
-      </AppLayout>
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-impulse-gold" />
+      </div>
     );
   }
 
   return (
-    <AppLayout>
-      <div className="flex items-center justify-between mb-6">
+    <>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Funcionários</h1>
           <p className="text-muted-foreground mt-1">Gerencie os funcionários da empresa</p>
@@ -191,8 +188,6 @@ export default function Employees() {
           Novo Funcionário
         </Button>
       </div>
-
-      {/* Stats Cards removidos conforme solicitação centralizando na lista */}
 
       <Card>
         <CardHeader>
@@ -316,7 +311,6 @@ export default function Employees() {
         </CardContent>
       </Card>
 
-      {/* Employee Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
@@ -405,6 +399,6 @@ export default function Employees() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </AppLayout>
+    </>
   );
 }

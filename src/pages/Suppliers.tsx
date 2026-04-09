@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { usePagination } from '@/hooks/use-pagination';
 import { PaginationControls } from '@/components/ui/pagination-controls';
@@ -169,7 +168,7 @@ export default function Suppliers() {
   }, [search, resetPage]);
 
   return (
-    <AppLayout>
+    <>
       <div className="p-6 space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -394,6 +393,6 @@ export default function Suppliers() {
           </>
         )}
       </div>
-    </AppLayout>
+    </>
   );
 }

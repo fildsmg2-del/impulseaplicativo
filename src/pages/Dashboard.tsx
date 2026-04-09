@@ -5,7 +5,6 @@ import {
   Clock, CheckCircle, PlusCircle, Users, BarChart3, TrendingUp, TrendingDown,
   DollarSign
 } from 'lucide-react';
-import { AppLayout } from '@/components/layout/AppLayout';
 import { SmartAlerts } from '@/components/dashboard/SmartAlerts';
 import { useAuth } from '@/hooks/use-auth';
 import { supabase } from '@/integrations/supabase/client';
@@ -105,16 +104,14 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <AppLayout>
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-impulse-gold" />
-        </div>
-      </AppLayout>
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-impulse-gold" />
+      </div>
     );
   }
 
   return (
-    <AppLayout>
+    <>
       {/* Header & Quick Actions */}
       <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
@@ -299,6 +296,6 @@ export default function Dashboard() {
 
       {/* Smart Alerts Layer */}
       <SmartAlerts />
-    </AppLayout>
+    </>
   );
 }

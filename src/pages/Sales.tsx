@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react';
-import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -133,7 +132,7 @@ export default function Sales() {
   };
 
   return (
-    <AppLayout>
+    <>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -404,6 +403,6 @@ export default function Sales() {
           />
         )}
       </div>
-    </AppLayout>
+    </>
   );
 }

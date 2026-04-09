@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Plus, Search, X, LayoutGrid, List, Calendar, Trash2 } from 'lucide-react';
-import { AppLayout } from '@/components/layout/AppLayout';
 import { cn } from '@/lib/utils';
 import { Project, projectService, ProjectStatus } from '@/services/projectService';
 import { supabase } from '@/integrations/supabase/client';
@@ -146,7 +145,7 @@ export default function Projects() {
   };
 
   return (
-    <AppLayout>
+    <>
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 animate-fade-in">
         <div>
@@ -411,6 +410,6 @@ export default function Projects() {
         onSave={handleSave}
         preselectedClientId={preselectedClientId}
       />
-    </AppLayout>
+    </>
   );
 }

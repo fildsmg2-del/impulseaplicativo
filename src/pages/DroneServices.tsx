@@ -146,12 +146,13 @@ export default function DroneServices() {
                         <div key={i} className="h-12 w-full bg-slate-50 animate-pulse rounded-lg" />
                     ))}
                 </div>
-            ) : services.length === 0 ? (
+            ) : sortedServices.length === 0 ? (
                 <div className="text-center py-20 bg-white dark:bg-slate-800">
                     <Plane className="h-12 w-12 text-slate-200 mx-auto mb-4" />
                     <p className="text-slate-400 font-medium">Nenhuma ordem de serviço encontrada.</p>
                 </div>
             ) : (
+              <>
                 <Table>
                   <TableHeader className="bg-slate-50 dark:bg-slate-900">
                     <TableRow className="hover:bg-transparent border-slate-100">

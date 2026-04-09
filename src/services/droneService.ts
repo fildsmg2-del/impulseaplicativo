@@ -26,6 +26,7 @@ export interface DroneService {
   created_at: string;
   updated_at: string;
   created_by?: string;
+  display_code?: string;
 }
 
 export interface CreateDroneServiceData {

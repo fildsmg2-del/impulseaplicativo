@@ -17,6 +17,7 @@ export interface ServiceOrder {
   checklist_state: ServiceOrderChecklistItem[];
   created_at: string;
   updated_at: string;
+  display_code?: string;
   client?: {
     name: string;
     phone: string;
@@ -48,6 +49,7 @@ export interface CreateServiceOrderData {
   notes?: string | null;
   assigned_to?: string | null;
   checklist_state?: ServiceOrderChecklistItem[];
+  display_code?: string;
 }
 
 export interface UpdateServiceOrderData extends Partial<CreateServiceOrderData> {
@@ -80,11 +82,13 @@ export interface ServiceOrderAttachmentInput {
   type?: string | null;
   uploadedAt?: string;
   sector: string;
+  drone_service_id?: string;
 }
 
 interface ServiceOrderAttachmentRow {
   id: string;
   service_order_id: string;
+  drone_service_id?: string;
   name: string;
   url: string;
   path: string | null;

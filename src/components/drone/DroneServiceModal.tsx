@@ -11,6 +11,8 @@ import { pdfService } from '@/services/pdfService';
 import { droneLogService, DroneServiceLog } from '@/services/droneLogService';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/use-auth';
+import { getUsers, UserWithRole } from '@/services/userService';
+import { useQuery } from '@tanstack/react-query';
 import { Loader2, Plane, Ruler, Box, MapPin, ClipboardList, CheckCircle2, Crosshair, FileText, Send, User, MessageCircle } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { format } from 'date-fns';
@@ -66,6 +68,7 @@ const EMPTY_FORM = {
   location_link: '',
   status: 'PENDENTE' as DroneServiceStatus,
   office_notes: '',
+  technician_id: '',
 };
 
 export function DroneServiceModal({ open, onOpenChange, service, onSuccess }: DroneServiceModalProps) {
@@ -95,6 +98,7 @@ export function DroneServiceModal({ open, onOpenChange, service, onSuccess }: Dr
         location_link: service.location_link || '',
         status: service.status,
         office_notes: service.office_notes || '',
+        technician_id: service.technician_id || '',
       });
       loadLogs(service.id);
     } else {
@@ -102,6 +106,9 @@ export function DroneServiceModal({ open, onOpenChange, service, onSuccess }: Dr
       setLogs([]);
     }
   }, [service, open]);
+
+  const { data: allUsers = [] } = useQuery({ queryKey: ['users'], queryFn: getUsers, enabled: open });
+  const pilots = allUsers.filter(u => u.role === 'PILOTO' || u.role === 'CONSULTOR_TEC_DRONE' || u.role === 'MASTER' || u.role === 'DEV');
 
   const loadLogs = async (id: string) => {
     try {
@@ -144,7 +151,7 @@ export function DroneServiceModal({ open, onOpenChange, service, onSuccess }: Dr
     status: formData.status,
     office_notes: formData.office_notes || null,
     // Add missing fields from migration
-    technician_id: service?.technician_id || null,
+    technician_id: formData.technician_id || null,
     technician_notes: service?.technician_notes || null,
     attachment_url: service?.attachment_url || null,
   });
@@ -240,7 +247,12 @@ export function DroneServiceModal({ open, onOpenChange, service, onSuccess }: Dr
         <DialogHeader className="p-4 bg-white dark:bg-slate-800 border-b flex-shrink-0 flex flex-row items-center justify-between">
           <DialogTitle className="text-lg font-bold flex items-center gap-2">
             <div className="w-2 h-5 rounded-full bg-blue-500" />
-            {service ? 'OS Drone#' + service.id.slice(0, 5) : 'Nova Operação Drone'}
+            {service ? (
+              <div className="flex flex-col">
+                <span className="text-sm font-black text-blue-600 leading-none">{service.display_code}</span>
+                <span className="text-[10px] text-slate-400 font-medium">Editar Operação</span>
+              </div>
+            ) : 'Nova Operação Drone'}
           </DialogTitle>
           {service && (
             <Button onClick={handleExportPDF} variant="outline" size="sm" className="text-emerald-600 gap-2 border-emerald-200 bg-emerald-50 hover:bg-emerald-100">
@@ -334,6 +346,21 @@ export function DroneServiceModal({ open, onOpenChange, service, onSuccess }: Dr
                     <Select value={formData.status} onValueChange={v => setFormData(prev => ({ ...prev, status: v as DroneServiceStatus }))}>
                       <SelectTrigger className="bg-white h-9 font-bold text-blue-600 text-sm focus:ring-0 shadow-none"><SelectValue /></SelectTrigger>
                       <SelectContent className="border-none shadow-xl">{Object.entries(STATUS_LABELS).map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-[10px] font-bold text-slate-500 uppercase">Piloto / Técnico Responsável</Label>
+                    <Select value={formData.technician_id} onValueChange={v => f('technician_id', v)}>
+                      <SelectTrigger className="bg-white h-9 text-sm focus:ring-0 shadow-none">
+                        <SelectValue placeholder="Selecione um piloto..." />
+                      </SelectTrigger>
+                      <SelectContent className="border-none shadow-xl">
+                        {pilots.map(p => (
+                          <SelectItem key={p.id} value={p.id}>
+                            {p.name} ({p.role})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
                     </Select>
                   </div>
                 </div>

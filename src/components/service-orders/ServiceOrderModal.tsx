@@ -620,29 +620,16 @@ export function ServiceOrderModal({
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto space-y-6 pr-2">
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-8">
-              {SECTOR_TABS.map((tab) => {
-                // If tab has specific roles required, check them
-                if (tab.roles && !hasRole(tab.roles)) return null;
-                
-                return (
-                  <TabsTrigger key={tab.key} value={tab.key} className="text-xs">
-                    {tab.label}
-                  </TabsTrigger>
-                );
-              })}
-            </TabsList>
-
-            {/* INFO Tab - Shows all info consolidated */}
-            <TabsContent value="INFO" className="space-y-4">
+        <div className="flex-1 overflow-y-auto space-y-6 pr-2">
+          {!serviceOrder ? (
+            <div className="space-y-6 max-w-2xl mx-auto py-4">
               <div className="space-y-2">
-                <Label>Cliente</Label>
+                <Label className="text-sm font-bold uppercase tracking-wider text-slate-500">Cliente</Label>
                 <Select
                   value={formData.client_id}
                   onValueChange={(value) => setFormData({ ...formData, client_id: value })}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="h-12 bg-white border-slate-200">
                     <SelectValue placeholder="Selecione um cliente" />
                   </SelectTrigger>
                   <SelectContent>
@@ -655,141 +642,221 @@ export function ServiceOrderModal({
                 </Select>
               </div>
 
-              <div className="grid gap-2 text-sm">
-                <div className="flex flex-col gap-1 rounded-lg border p-3">
-                  <span className="text-xs text-muted-foreground">Nome do cliente</span>
-                  <span className="font-medium">
-                    {clientDetails?.name || 'Selecione um cliente'}
-                  </span>
-                </div>
-                <div className="flex flex-col gap-1 rounded-lg border p-3">
-                  <span className="text-xs text-muted-foreground">Endereço completo</span>
-                  <span className="font-medium">{getClientAddress(clientDetails)}</span>
-                </div>
-                <div className="flex flex-col gap-1 rounded-lg border p-3">
-                  <span className="text-xs text-muted-foreground">Técnico responsável</span>
-                  <span className="font-medium">
-                    {assignedTechnician?.name || 'Não definido'}
-                  </span>
-                </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-bold uppercase tracking-wider text-slate-500">Tipo de Serviço</Label>
+                <Select
+                  value={formData.service_type_id}
+                  onValueChange={handleServiceTypeChange}
+                >
+                  <SelectTrigger className="h-12 bg-white border-slate-200">
+                    <SelectValue placeholder="Selecione o tipo de serviço" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {serviceTypes.map((type) => (
+                      <SelectItem key={type.id} value={type.id}>
+                        {type.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
-              {/* All logs consolidated */}
-              {serviceOrder && (
-                <div className="space-y-4 border-t pt-4">
-                  <Label className="text-lg font-semibold">Histórico Completo</Label>
-                  <ScrollArea className="h-64 border rounded-lg p-3">
-                    {logs.length === 0 ? (
-                      <p className="text-sm text-muted-foreground text-center py-4">
-                        Nenhum registro ainda
-                      </p>
-                    ) : (
-                      <div className="space-y-3">
-                        {logs.map((log) => {
-                          const sectorMatch = log.description.match(/^\[([^\]]+)\]/);
-                          const sectorName = sectorMatch ? sectorMatch[1] : 'Geral';
-                          const message = log.description.replace(/^\[[^\]]+\]\s*/, '');
-                          
-                          return (
-                            <div
-                              key={log.id}
-                              className="bg-muted/50 rounded-lg p-3 space-y-1"
-                            >
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                  <span className="font-medium text-sm">
-                                    {log.created_by_name || 'Usuário'}
-                                  </span>
-                                  <Badge variant="outline" className="text-xs">
-                                    {sectorName}
-                                  </Badge>
-                                </div>
-                                <span className="text-xs text-muted-foreground">
-                                  {format(new Date(log.created_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
-                                </span>
-                              </div>
-                              {log.created_by_role && (
-                                <Badge variant="secondary" className="text-xs">
-                                  {log.created_by_role}
-                                </Badge>
-                              )}
-                              <p className="text-sm mt-1">{message}</p>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </ScrollArea>
+              <div className="space-y-2">
+                <Label className="text-sm font-bold uppercase tracking-wider text-slate-500">Descrição da solicitação</Label>
+                <Textarea
+                  value={formData.notes}
+                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                  placeholder="Descreva detalhadamente o que precisa ser feito..."
+                  rows={6}
+                  className="bg-white border-slate-200 resize-none px-4 py-3"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-sm font-bold uppercase tracking-wider text-slate-500">Enviar para (Setor ou responsável)</Label>
+                <Select
+                  value={formData.assigned_to}
+                  onValueChange={(value) => setFormData({ ...formData, assigned_to: value })}
+                >
+                  <SelectTrigger className="h-12 bg-white border-slate-200">
+                    <SelectValue placeholder="Selecione o técnico responsável" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {technicians.map((tech) => (
+                      <SelectItem key={tech.id} value={tech.id}>
+                        {tech.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          ) : (
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <TabsList className="grid w-full grid-cols-8">
+                {SECTOR_TABS.map((tab) => {
+                  if (tab.roles && !hasRole(tab.roles)) return null;
+                  return (
+                    <TabsTrigger key={tab.key} value={tab.key} className="text-xs">
+                      {tab.label}
+                    </TabsTrigger>
+                  );
+                })}
+              </TabsList>
+
+              <TabsContent value="INFO" className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Código da OS</Label>
+                    <Input value={serviceOrder.display_code || `OS-${serviceOrder.id.slice(0, 4)}`} disabled className="bg-slate-50 font-bold" />
+                  </div>
+                  <div className="space-y-2">
+                    <Badge variant={isOverdue ? "destructive" : "outline"} className="mt-8">
+                      {formData.status}
+                    </Badge>
+                  </div>
                 </div>
-              )}
 
-            </TabsContent>
-
-            <TabsContent value="ANEXOS" className="space-y-4">
-              {formData.attachments.length > 0 && (
                 <div className="space-y-2">
-                  <Label className="text-lg font-semibold">Todos os Anexos</Label>
-                  <div className="space-y-1">
-                    {formData.attachments.map((attachment, index) => {
-                      const sectorLabel = SECTOR_TABS.find(s => s.key === attachment.sector)?.label || attachment.sector;
-                      return (
-                        <div key={index} className="flex items-center justify-between p-2 bg-muted rounded">
-                          <div className="flex items-center gap-2 flex-1 min-w-0">
-                            <Badge variant="outline" className="text-xs shrink-0">
-                              {sectorLabel}
-                            </Badge>
-                            <a
-                              href={attachment.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-sm text-primary hover:underline truncate"
-                            >
-                              {attachment.name}
-                            </a>
-                          </div>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleRemoveAttachment(index)}
-                            disabled={!canEditSector(attachment.sector)}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      );
-                    })}
-                  </div>
+                  <Label>Cliente</Label>
+                  <Select
+                    value={formData.client_id}
+                    onValueChange={(value) => setFormData({ ...formData, client_id: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione um cliente" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {clients.map((client) => (
+                        <SelectItem key={client.id} value={client.id}>
+                          {client.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-              )}
-            </TabsContent>
 
-            {/* FINANCEIRO Tab - Financial summary, chat and attachments */}
-            <TabsContent value="FINANCEIRO" className="space-y-4">
-              {financialSummary && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                  <div className="p-4 rounded-lg border border-green-500/20 bg-green-500/5">
-                    <p className="text-xs text-muted-foreground uppercase font-semibold">Total Cobrado (Receitas)</p>
-                    <p className="text-xl font-bold text-green-600">
-                      {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(financialSummary.totalReceitas)}
-                    </p>
+                <div className="grid gap-2 text-sm">
+                  <div className="flex flex-col gap-1 rounded-lg border p-3">
+                    <span className="text-xs text-muted-foreground">Endereço completo</span>
+                    <span className="font-medium">{getClientAddress(clientDetails)}</span>
                   </div>
-                  <div className="p-4 rounded-lg border border-rose-500/20 bg-rose-500/5">
-                    <p className="text-xs text-muted-foreground uppercase font-semibold">Total Gasto (Despesas)</p>
-                    <p className="text-xl font-bold text-rose-600">
-                      {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(financialSummary.totalDespesas)}
-                    </p>
-                  </div>
-                  <div className="p-4 rounded-lg border border-primary/20 bg-primary/5">
-                    <p className="text-xs text-muted-foreground uppercase font-semibold">Saldo Atual</p>
-                    <p className={`text-xl font-bold ${financialSummary.saldo >= 0 ? 'text-green-600' : 'text-rose-600'}`}>
-                      {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(financialSummary.saldo)}
-                    </p>
+                  <div className="flex flex-col gap-1 rounded-lg border p-3">
+                    <span className="text-xs text-muted-foreground">Técnico responsável</span>
+                    <span className="font-medium">
+                      {assignedTechnician?.name || 'Não definido'}
+                    </span>
                   </div>
                 </div>
-              )}
-              {renderSectorChatSection('FINANCEIRO')}
-            </TabsContent>
+
+                {serviceOrder && (
+                  <div className="space-y-4 border-t pt-4">
+                    <Label className="text-lg font-semibold">Histórico Completo</Label>
+                    <ScrollArea className="h-64 border rounded-lg p-3">
+                      {logs.length === 0 ? (
+                        <p className="text-sm text-muted-foreground text-center py-4">
+                          Nenhum registro ainda
+                        </p>
+                      ) : (
+                        <div className="space-y-3">
+                          {logs.map((log) => {
+                            const sectorMatch = log.description.match(/^\[([^\]]+)\]/);
+                            const sectorName = sectorMatch ? sectorMatch[1] : 'Geral';
+                            const message = log.description.replace(/^\[[^\]]+\]\s*/, '');
+                            
+                            return (
+                              <div
+                                key={log.id}
+                                className="bg-muted/50 rounded-lg p-3 space-y-1"
+                              >
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-medium text-sm">
+                                      {log.created_by_name || 'Usuário'}
+                                    </span>
+                                    <Badge variant="outline" className="text-xs">
+                                      {sectorName}
+                                    </Badge>
+                                  </div>
+                                  <span className="text-xs text-muted-foreground">
+                                    {format(new Date(log.created_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                                  </span>
+                                </div>
+                                <p className="text-sm mt-1">{message}</p>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </ScrollArea>
+                  </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="ANEXOS" className="space-y-4">
+                {formData.attachments.length > 0 && (
+                  <div className="space-y-2">
+                    <Label className="text-lg font-semibold">Todos os Anexos</Label>
+                    <div className="space-y-1">
+                      {formData.attachments.map((attachment, index) => {
+                        const sectorLabel = SECTOR_TABS.find(s => s.key === attachment.sector)?.label || attachment.sector;
+                        return (
+                          <div key={index} className="flex items-center justify-between p-2 bg-muted rounded">
+                            <div className="flex items-center gap-2 flex-1 min-w-0">
+                              <Badge variant="outline" className="text-xs shrink-0">
+                                {sectorLabel}
+                              </Badge>
+                              <a
+                                href={attachment.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-sm text-primary hover:underline truncate"
+                              >
+                                {attachment.name}
+                              </a>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleRemoveAttachment(index)}
+                              disabled={!canEditSector(attachment.sector)}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="FINANCEIRO" className="space-y-4">
+                {financialSummary && (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div className="p-4 rounded-lg border border-green-500/20 bg-green-500/5">
+                      <p className="text-xs text-muted-foreground uppercase font-semibold">Receitas</p>
+                      <p className="text-xl font-bold text-green-600">
+                        {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(financialSummary.totalReceitas)}
+                      </p>
+                    </div>
+                    <div className="p-4 rounded-lg border border-rose-500/20 bg-rose-500/5">
+                      <p className="text-xs text-muted-foreground uppercase font-semibold">Despesas</p>
+                      <p className="text-xl font-bold text-rose-600">
+                        {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(financialSummary.totalDespesas)}
+                      </p>
+                    </div>
+                    <div className="p-4 rounded-lg border border-primary/20 bg-primary/5">
+                      <p className="text-xs text-muted-foreground uppercase font-semibold">Saldo</p>
+                      <p className={`text-xl font-bold ${financialSummary.saldo >= 0 ? 'text-green-600' : 'text-rose-600'}`}>
+                        {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(financialSummary.saldo)}
+                      </p>
+                    </div>
+                  </div>
+                )}
+                {renderSectorChatSection('FINANCEIRO')}
+              </TabsContent>
 
             {/* TECNICO Tab - Full content */}
             <TabsContent value="TECNICO" className="space-y-4">

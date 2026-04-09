@@ -30,13 +30,22 @@ export default function DroneServices() {
   const [selectedService, setSelectedService] = useState<DroneService | null>(null);
   const [serviceToDelete, setServiceToDelete] = useState<string | null>(null);
 
-  const { data: services = [], isLoading } = useQuery({
+  const { user } = useAuth();
+  const { data: servicesRaw = [], isLoading } = useQuery({
     queryKey: ['drone-services', statusFilter, search],
     queryFn: () => droneService.getAll({ 
         status: statusFilter === 'all' ? undefined : statusFilter as DroneServiceStatus,
         search: search 
     }),
   });
+
+  const services = useMemo(() => {
+    if (!user) return [];
+    if (user.role === 'PILOTO') {
+        return servicesRaw.filter(s => s.technician_id === user.id);
+    }
+    return servicesRaw;
+  }, [servicesRaw, user]);
 
   const deleteMutation = useMutation({
     mutationFn: droneService.delete,
@@ -139,8 +148,8 @@ export default function DroneServices() {
                         const config = STATUS_CONFIG[service.status];
                         return (
                             <TableRow key={service.id} className="hover:bg-slate-50 border-slate-50 transition-colors group">
-                              <TableCell className="font-mono text-xs text-slate-400">
-                                #{service.id.slice(0, 5)}
+                              <TableCell className="font-bold text-blue-600">
+                                {service.display_code || `DR-${service.id.slice(0, 4)}`}
                               </TableCell>
                               <TableCell>
                                 <div className="flex flex-col">

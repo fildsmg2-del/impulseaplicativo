@@ -20,6 +20,7 @@ import { serviceOrderService } from '@/services/serviceOrderService';
 import { storageService } from '@/services/storageService';
 import { FINANCIAL_CATEGORIES, PAYMENT_METHODS } from '@/constants/financialConstants';
 import { CreateTransactionData, Transaction, TransactionSplit } from '@/services/transactionService';
+import { droneService } from '@/services/droneService';
 import { toast } from 'sonner';
 
 interface TransactionFormModalProps {
@@ -51,8 +52,11 @@ export function TransactionFormModal({ type, open, onOpenChange, onSubmit, trans
     splits: [],
     client_name_manual: '',
     supplier_name_manual: '',
-    attachment_url: ''
+    attachment_url: '',
+    drone_service_id: undefined
   });
+
+  const [linkType, setLinkType] = useState<'solar' | 'drone' | 'none'>('none');
 
   const [useSplit, setUseSplit] = useState(false);
   const [isManualName, setIsManualName] = useState(false);
@@ -66,8 +70,13 @@ export function TransactionFormModal({ type, open, onOpenChange, onSubmit, trans
   const { data: suppliers = [] } = useQuery({ queryKey: ['suppliers'], queryFn: supplierService.getAll, enabled: type === 'DESPESA' });
   const { data: accounts = [] } = useQuery({ queryKey: ['accounts-active'], queryFn: accountService.getActive });
   const { data: costCenters = [] } = useQuery({ queryKey: ['cost-centers'], queryFn: costCenterService.getAll });
-  const { data: projects = [] } = useQuery({ queryKey: ['projects'], queryFn: projectService.getAll });
+  const { data: projectsRaw = [] } = useQuery({ queryKey: ['projects'], queryFn: projectService.getAll });
   const { data: serviceOrders = [] } = useQuery({ queryKey: ['service-orders'], queryFn: serviceOrderService.getAll });
+  const { data: droneServices = [] } = useQuery({ queryKey: ['drone-services'], queryFn: droneService.getAll });
+
+  const projects = useMemo(() => {
+    return projectsRaw.filter(p => p.status !== 'finalizado' && p.current_stage !== 'POS_VENDA');
+  }, [projectsRaw]);
 
   useEffect(() => {
     if (transaction) {
@@ -82,6 +91,9 @@ export function TransactionFormModal({ type, open, onOpenChange, onSubmit, trans
       if (transaction.client_name_manual || transaction.supplier_name_manual) {
           setIsManualName(true);
       }
+      if (transaction.project_id || transaction.service_order_id) setLinkType('solar');
+      else if (transaction.drone_service_id) setLinkType('drone');
+      else setLinkType('none');
     } else {
         setFormData(prev => ({ ...prev, type }));
     }
@@ -171,6 +183,7 @@ export function TransactionFormModal({ type, open, onOpenChange, onSubmit, trans
     if (!cleaned.supplier_id) delete (cleaned as any).supplier_id;
     if (!cleaned.project_id) delete (cleaned as any).project_id;
     if (!cleaned.service_order_id) delete (cleaned as any).service_order_id;
+    if (!cleaned.drone_service_id) delete (cleaned as any).drone_service_id;
     if (!cleaned.account_id) delete (cleaned as any).account_id;
     if (!cleaned.parent_id) delete (cleaned as any).parent_id;
     // Remove empty text strings
@@ -361,42 +374,98 @@ export function TransactionFormModal({ type, open, onOpenChange, onSubmit, trans
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                          <Label className="text-slate-500">Projeto vinculado</Label>
-                          <Select 
-                            value={formData.project_id || "none"} 
-                            onValueChange={(v) => setFormData(prev => ({ ...prev, project_id: v === "none" ? undefined : v }))}
-                          >
-                            <SelectTrigger><SelectValue placeholder="Selecione o projeto..." /></SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="none">Nenhum</SelectItem>
-                              {projects.map(p => (
-                                <SelectItem key={p.id} value={p.id}>
-                                  {p.client?.name || 'Sem Cliente'} - {p.notes ? (p.notes.length > 20 ? p.notes.slice(0, 20) + "..." : p.notes) : `Projeto ${p.id.slice(-4)}`}
-                                  {p.power_kwp && ` (${p.power_kwp} kWp)`}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                      <div className="space-y-4 pt-4 border-t border-slate-100">
+                        <div className="flex items-center gap-4">
+                          <Label className="text-slate-500 font-bold">Vincular a:</Label>
+                          <div className="flex bg-slate-100 p-1 rounded-lg">
+                            <Button 
+                              type="button" size="sm" 
+                              variant={linkType === 'none' ? 'default' : 'ghost'} 
+                              onClick={() => {
+                                setLinkType('none');
+                                setFormData(prev => ({ ...prev, project_id: undefined, service_order_id: undefined, drone_service_id: undefined }));
+                              }}
+                              className="text-[10px] h-7 px-3"
+                            >Nenhum</Button>
+                            <Button 
+                              type="button" size="sm" 
+                              variant={linkType === 'solar' ? 'default' : 'ghost'} 
+                              onClick={() => {
+                                setLinkType('solar');
+                                setFormData(prev => ({ ...prev, drone_service_id: undefined }));
+                              }}
+                              className="text-[10px] h-7 px-3"
+                            >Solar</Button>
+                            <Button 
+                              type="button" size="sm" 
+                              variant={linkType === 'drone' ? 'default' : 'ghost'} 
+                              onClick={() => {
+                                setLinkType('drone');
+                                setFormData(prev => ({ ...prev, project_id: undefined, service_order_id: undefined }));
+                              }}
+                              className="text-[10px] h-7 px-3"
+                            >Drone</Button>
+                          </div>
                         </div>
-                        <div className="space-y-2">
-                          <Label className="text-slate-500">OS vinculada</Label>
-                          <Select 
-                            value={formData.service_order_id || "none"} 
-                            onValueChange={(v) => setFormData(prev => ({ ...prev, service_order_id: v === "none" ? undefined : v }))}
-                          >
-                            <SelectTrigger><SelectValue placeholder="Selecione a OS..." /></SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="none">Nenhum</SelectItem>
-                              {serviceOrders.map(so => (
-                                <SelectItem key={so.id} value={so.id}>
-                                  {so.service_type} - {so.client?.name || 'Sem cliente'}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
+
+                        {linkType === 'solar' && (
+                          <div className="grid grid-cols-2 gap-6 animate-in fade-in slide-in-from-top-2 duration-300">
+                            <div className="space-y-2">
+                              <Label className="text-slate-500">Projeto vinculado</Label>
+                              <Select 
+                                value={formData.project_id || "none"} 
+                                onValueChange={(v) => setFormData(prev => ({ ...prev, project_id: v === "none" ? undefined : v }))}
+                              >
+                                <SelectTrigger><SelectValue placeholder="Selecione o projeto..." /></SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="none">Nenhum</SelectItem>
+                                  {projects.map(p => (
+                                    <SelectItem key={p.id} value={p.id}>
+                                      {p.client?.name || 'Sem Cliente'} - {p.notes ? (p.notes.length > 20 ? p.notes.slice(0, 20) + "..." : p.notes) : `Projeto ${p.id.slice(-4)}`}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-2">
+                              <Label className="text-slate-500">OS Solar vinculada</Label>
+                              <Select 
+                                value={formData.service_order_id || "none"} 
+                                onValueChange={(v) => setFormData(prev => ({ ...prev, service_order_id: v === "none" ? undefined : v }))}
+                              >
+                                <SelectTrigger><SelectValue placeholder="Selecione a OS..." /></SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="none">Nenhum</SelectItem>
+                                  {serviceOrders.map(so => (
+                                    <SelectItem key={so.id} value={so.id}>
+                                      {so.display_code || 'OS'} - {so.client?.name || 'Sem cliente'}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+                        )}
+
+                        {linkType === 'drone' && (
+                          <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                            <Label className="text-slate-500">OS Drone vinculada</Label>
+                            <Select 
+                              value={formData.drone_service_id || "none"} 
+                              onValueChange={(v) => setFormData(prev => ({ ...prev, drone_service_id: v === "none" ? undefined : v }))}
+                            >
+                              <SelectTrigger><SelectValue placeholder="Selecione a OS de Drone..." /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="none">Nenhum</SelectItem>
+                                {droneServices.map(ds => (
+                                  <SelectItem key={ds.id} value={ds.id}>
+                                    {ds.display_code || 'DR'} - {ds.client_name || 'Sem cliente'} ({ds.service_type})
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        )}
                       </div>
                     </>
                   ) : (

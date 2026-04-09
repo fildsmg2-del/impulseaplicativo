@@ -26,6 +26,7 @@ export interface Transaction {
   client_name_manual?: string;
   project_id?: string;
   service_order_id?: string;
+  drone_service_id?: string;
 
   supplier_id?: string;
   supplier_name_manual?: string;
@@ -60,6 +61,7 @@ export interface CreateTransactionData {
   client_name_manual?: string;
   project_id?: string;
   service_order_id?: string;
+  drone_service_id?: string;
 
   supplier_id?: string;
   supplier_name_manual?: string;
@@ -90,6 +92,7 @@ export const transactionService = {
     account_id?: string;
     project_id?: string;
     service_order_id?: string;
+    drone_service_id?: string;
   }): Promise<Transaction[]> {
     let query = supabase
       .from('transactions')
@@ -116,6 +119,9 @@ export const transactionService = {
     }
     if (filters?.service_order_id) {
       query = query.eq('service_order_id', filters.service_order_id);
+    }
+    if (filters?.drone_service_id) {
+      query = query.eq('drone_service_id', filters.drone_service_id);
     }
 
     const { data, error } = await query;
@@ -261,6 +267,7 @@ export const transactionService = {
     endDate?: string;
     project_id?: string;
     service_order_id?: string;
+    drone_service_id?: string;
   }): Promise<FinancialSummary> {
     let query = supabase
       .from('transactions')
@@ -280,6 +287,9 @@ export const transactionService = {
     }
     if (filters?.service_order_id) {
       query = query.eq('service_order_id', filters.service_order_id);
+    }
+    if (filters?.drone_service_id) {
+      query = query.eq('drone_service_id', filters.drone_service_id);
     }
 
     const { data, error } = await query;

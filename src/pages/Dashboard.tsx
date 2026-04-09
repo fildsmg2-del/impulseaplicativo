@@ -28,6 +28,10 @@ async function fetchDashboardSummary(role: string, userId: string): Promise<Dash
   // Performance tuning: only fetch what's needed for the role
   const queries = [];
 
+  const isMasterOrDev = role === 'MASTER' || role === 'DEV';
+  const isVendedor = role === 'VENDEDOR';
+  const isFinanceiro = role === 'FINANCEIRO';
+
   // 0: Projects
   if (isMasterOrDev || isEngenharia) {
     queries.push(supabase.from('projects').select('id, status, estimated_end_date'));
@@ -43,13 +47,13 @@ async function fetchDashboardSummary(role: string, userId: string): Promise<Dash
   // 2: Service Orders
   if (isMasterOrDev || isEngenharia || isDrone) {
     let q = supabase.from('service_orders').select('id, status, deadline_date, assigned_to');
-    if (isPilot) q = q.eq('assigned_to', userId);
+    if (isPilot || role === 'TECNICO') q = q.eq('assigned_to', userId);
     queries.push(q);
   } else { queries.push(Promise.resolve({ data: [] })); }
 
   // 3: Financeiro
   if (isMasterOrDev || isFinanceiro) {
-    queries.push(supabase.from('financial_transactions').select('id, type, status, due_date'));
+    queries.push(supabase.from('transactions').select('id, type, status, due_date'));
   } else { queries.push(Promise.resolve({ data: [] })); }
 
   const [resProj, resQuotes, resOs, resFin] = await Promise.all(queries);
@@ -98,7 +102,9 @@ export default function Dashboard() {
     enabled: !!user?.id
   });
 
+  const isMasterOrDev = user?.role === 'MASTER' || user?.role === 'DEV';
   const isFinanceiro = user?.role === 'FINANCEIRO';
+  const isVendedor = user?.role === 'VENDEDOR';
   const isEngenharia = user?.role === 'ENGENHEIRO' || user?.role === 'TECNICO';
   const isDrone = user?.role === 'CONSULTOR_TEC_DRONE' || user?.role === 'PILOTO';
 

@@ -60,7 +60,6 @@ export default function ServiceOrders() {
   const canViewAllOrders = hasRole(['MASTER', 'ENGENHEIRO', 'TECNICO', 'DEV', 'CONSULTOR_TEC_DRONE']);
   const canDeleteOrder = (order: ServiceOrder) => {
     if (!user) return false;
-    // Technicians and Drone roles cannot delete service orders
     if (['TECNICO', 'PILOTO', 'CONSULTOR_TEC_DRONE'].includes(user.role)) return false;
     return true;
   };
@@ -72,6 +71,7 @@ export default function ServiceOrders() {
   const filteredOrders = visibleOrders.filter((order) => {
     const matchesSearch =
       order.service_type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (order.display_code && order.display_code.toLowerCase().includes(searchTerm.toLowerCase())) ||
       order.client?.name?.toLowerCase().includes(searchTerm.toLowerCase());
     
     if (statusFilter === 'VENCIDAS') {
@@ -82,16 +82,13 @@ export default function ServiceOrders() {
     return matchesSearch && matchesStatus;
   });
 
-  // Sort by deadline (closest first), then overdue at top
   const sortedOrders = [...filteredOrders].sort((a, b) => {
     const aOverdue = isOrderOverdue(a);
     const bOverdue = isOrderOverdue(b);
     
-    // Overdue orders first
     if (aOverdue && !bOverdue) return -1;
     if (!aOverdue && bOverdue) return 1;
     
-    // Then by deadline date (closest first)
     if (a.deadline_date && b.deadline_date) {
       return new Date(a.deadline_date).getTime() - new Date(b.deadline_date).getTime();
     }
@@ -134,7 +131,6 @@ export default function ServiceOrders() {
     loadServiceOrders();
   }, [user, loadServiceOrders]);
 
-  // Check for new OS with client or OS ID in URL
   useEffect(() => {
     const orderId = searchParams.get('id');
     const isNew = searchParams.get('new') === 'true';
@@ -165,8 +161,6 @@ export default function ServiceOrders() {
       }
     }
   }, [searchParams, loading, serviceOrders, setSearchParams]);
-
-
 
   const handleCreate = () => {
     setSelectedOrder(null);
@@ -351,6 +345,7 @@ export default function ServiceOrders() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-[100px]">Código</TableHead>
                       <TableHead>Cliente</TableHead>
                       <TableHead>Tipo de Serviço</TableHead>
                       <TableHead>Abertura</TableHead>
@@ -367,6 +362,9 @@ export default function ServiceOrders() {
                           key={order.id} 
                           className={overdue ? 'bg-destructive/5 hover:bg-destructive/10' : ''}
                         >
+                          <TableCell className="font-bold text-primary">
+                            {order.display_code || '-'}
+                          </TableCell>
                           <TableCell className="font-medium">
                             {order.client?.name || '-'}
                           </TableCell>

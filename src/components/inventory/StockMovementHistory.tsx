@@ -89,9 +89,9 @@ export function StockMovementHistory() {
   });
 
   const stats = {
-    totalEntradas: movements.filter(m => m.movement_type === 'ENTRADA').reduce((sum, m) => sum + m.quantity, 0),
-    totalSaidas: movements.filter(m => m.movement_type === 'SAIDA').reduce((sum, m) => sum + m.quantity, 0),
-    totalMovimentos: movements.length,
+    totalEntradas: (movements || []).filter(m => m && m.movement_type === 'ENTRADA').reduce((sum, m) => sum + (m.quantity || 0), 0),
+    totalSaidas: (movements || []).filter(m => m && m.movement_type === 'SAIDA').reduce((sum, m) => sum + (m.quantity || 0), 0),
+    totalMovimentos: (movements || []).length,
   };
 
   return (

@@ -237,7 +237,8 @@ export default function Inventory() {
     resetPage();
   }, [search, categoryFilter, resetPage]);
 
-  const lowStockProducts = products.filter(p => p.quantity <= p.min_quantity && p.active);
+  // Robust null safety for products
+  const lowStockProducts = (products || []).filter(p => p && typeof p.quantity === 'number' && p.quantity <= p.min_quantity && p.active);
 
   return (
     <>
@@ -471,7 +472,7 @@ export default function Inventory() {
             {/* Products Table */}
             {isLoading ? (
               <div className="text-center py-8 text-muted-foreground">Carregando...</div>
-            ) : filteredProducts.length === 0 ? (
+            ) : (filteredProducts || []).length === 0 ? (
               <Card>
                 <CardContent className="py-12 text-center">
                   <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
@@ -493,7 +494,7 @@ export default function Inventory() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {paginatedProducts.map((product) => (
+                      {(paginatedProducts || []).map((product) => (
                         <TableRow key={product.id}>
                           <TableCell>
                             <div>
@@ -559,8 +560,6 @@ export default function Inventory() {
               </Card>
             )}
           </TabsContent>
-
-
 
           <TabsContent value="movimentacoes">
             <StockMovementHistory />

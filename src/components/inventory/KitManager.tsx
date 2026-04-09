@@ -212,7 +212,8 @@ export function KitManager({ filters, onFiltersChange }: KitManagerProps) {
               </TableHeader>
               <TableBody>
                 {paginatedKits.map((kit) => {
-                  const moduleCount = kit.items.filter(i => i.category === 'MODULO').reduce((sum, i) => sum + i.quantity, 0);
+                  const moduleCount = (kit.items || []).filter(i => i.category === 'MODULO').reduce((sum, i) => sum + i.quantity, 0);
+                  const systemTypeInfo = SYSTEM_TYPE_LABELS[kit.system_type as SystemType] || { label: 'Outro', icon: <Package className="h-4 w-4" /> };
                   return (
                     <TableRow key={kit.id}>
                       <TableCell>
@@ -225,8 +226,8 @@ export function KitManager({ filters, onFiltersChange }: KitManagerProps) {
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline" className="flex items-center gap-1 w-fit">
-                          {SYSTEM_TYPE_LABELS[kit.system_type].icon}
-                          {SYSTEM_TYPE_LABELS[kit.system_type].label}
+                          {systemTypeInfo.icon}
+                          {systemTypeInfo.label}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-center">{kit.total_power_kwp.toFixed(2)} kWp</TableCell>

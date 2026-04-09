@@ -620,7 +620,6 @@ export function ServiceOrderModal({
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto space-y-6 pr-2">
-        <div className="flex-1 overflow-y-auto space-y-6 pr-2">
           {!serviceOrder ? (
             <div className="space-y-6 max-w-2xl mx-auto py-4">
               <div className="space-y-2">

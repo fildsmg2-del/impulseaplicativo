@@ -57,13 +57,14 @@ export default function ServiceOrders() {
     return differenceInDays(new Date(order.deadline_date), new Date());
   };
 
-  const canViewAllOrders = hasRole(['MASTER', 'ENGENHEIRO', 'TECNICO', 'DEV']);
+  const canViewAllOrders = hasRole(['MASTER', 'ENGENHEIRO', 'TECNICO', 'DEV', 'CONSULTOR_TEC_DRONE']);
   const canDeleteOrder = (order: ServiceOrder) => {
     if (!user) return false;
-    // Technicians cannot delete service orders
-    if (user.role === 'TECNICO') return false;
+    // Technicians and Drone roles cannot delete service orders
+    if (['TECNICO', 'PILOTO', 'CONSULTOR_TEC_DRONE'].includes(user.role)) return false;
     return true;
   };
+
   const visibleOrders = canViewAllOrders || !user
     ? serviceOrders
     : serviceOrders.filter((order) => order.assigned_to === user.id);

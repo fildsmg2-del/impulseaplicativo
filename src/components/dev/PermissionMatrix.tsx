@@ -8,7 +8,7 @@ import { UserRole } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { Shield, Loader2, Info } from "lucide-react";
 
-const ROLES: UserRole[] = ['MASTER', 'ENGENHEIRO', 'VENDEDOR', 'FINANCEIRO', 'TECNICO', 'POS_VENDA', 'COMPRAS'];
+const ROLES: UserRole[] = ['MASTER', 'ENGENHEIRO', 'VENDEDOR', 'FINANCEIRO', 'TECNICO', 'POS_VENDA', 'COMPRAS', 'CONSULTOR_TEC_DRONE', 'PILOTO'];
 
 export function PermissionMatrix() {
   const [permissions, setPermissions] = useState<AppPermission[]>([]);

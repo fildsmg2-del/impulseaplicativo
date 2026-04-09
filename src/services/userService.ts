@@ -5,7 +5,7 @@ export interface UserWithRole {
   email: string;
   name: string;
   avatar_url: string | null;
-  role: 'MASTER' | 'ENGENHEIRO' | 'VENDEDOR' | 'DEV' | 'FINANCEIRO' | 'TECNICO' | 'POS_VENDA' | 'COMPRAS';
+  role: 'MASTER' | 'ENGENHEIRO' | 'VENDEDOR' | 'DEV' | 'FINANCEIRO' | 'TECNICO' | 'POS_VENDA' | 'COMPRAS' | 'CONSULTOR_TEC_DRONE' | 'PILOTO';
   created_at: string;
 }
 
@@ -13,7 +13,7 @@ export interface CreateUserData {
   email: string;
   password: string;
   name: string;
-  role: 'MASTER' | 'ENGENHEIRO' | 'VENDEDOR' | 'DEV' | 'FINANCEIRO' | 'TECNICO' | 'POS_VENDA' | 'COMPRAS';
+  role: 'MASTER' | 'ENGENHEIRO' | 'VENDEDOR' | 'DEV' | 'FINANCEIRO' | 'TECNICO' | 'POS_VENDA' | 'COMPRAS' | 'CONSULTOR_TEC_DRONE' | 'PILOTO';
 }
 
 export async function getUsers(): Promise<UserWithRole[]> {
@@ -43,7 +43,7 @@ export async function getUsers(): Promise<UserWithRole[]> {
       email: profile.email,
       name: profile.name,
       avatar_url: profile.avatar_url,
-      role: (userRole?.role || 'VENDEDOR') as 'MASTER' | 'ENGENHEIRO' | 'VENDEDOR' | 'DEV' | 'FINANCEIRO' | 'TECNICO' | 'POS_VENDA' | 'COMPRAS',
+      role: (userRole?.role || 'VENDEDOR') as 'MASTER' | 'ENGENHEIRO' | 'VENDEDOR' | 'DEV' | 'FINANCEIRO' | 'TECNICO' | 'POS_VENDA' | 'COMPRAS' | 'CONSULTOR_TEC_DRONE' | 'PILOTO',
       created_at: profile.created_at
     };
   });
@@ -86,7 +86,7 @@ export async function createUser(userData: CreateUserData): Promise<void> {
   }
 }
 
-export async function updateUserRole(userId: string, role: 'MASTER' | 'ENGENHEIRO' | 'VENDEDOR' | 'DEV' | 'FINANCEIRO' | 'TECNICO' | 'POS_VENDA' | 'COMPRAS'): Promise<void> {
+export async function updateUserRole(userId: string, role: 'MASTER' | 'ENGENHEIRO' | 'VENDEDOR' | 'DEV' | 'FINANCEIRO' | 'TECNICO' | 'POS_VENDA' | 'COMPRAS' | 'CONSULTOR_TEC_DRONE' | 'PILOTO'): Promise<void> {
   const { error } = await supabase
     .from('user_roles')
     .update({ role })

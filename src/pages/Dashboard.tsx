@@ -21,10 +21,9 @@ interface DashboardSummary {
 
 async function fetchDashboardSummary(role: string, userId: string): Promise<DashboardSummary> {
   const today = new Date().toISOString().split('T')[0];
-  const isMasterOrDev = role === 'MASTER' || role === 'DEV';
-  const isVendedor = role === 'VENDEDOR';
-  const isFinanceiro = role === 'FINANCEIRO';
   const isEngenharia = role === 'ENGENHEIRO' || role === 'TECNICO';
+  const isDrone = role === 'CONSULTOR_TEC_DRONE' || role === 'PILOTO';
+  const isPilot = role === 'PILOTO';
 
   // Performance tuning: only fetch what's needed for the role
   const queries = [];
@@ -42,8 +41,10 @@ async function fetchDashboardSummary(role: string, userId: string): Promise<Dash
   } else { queries.push(Promise.resolve({ data: [] })); }
 
   // 2: Service Orders
-  if (isMasterOrDev || isEngenharia) {
-    queries.push(supabase.from('service_orders').select('id, status, deadline_date'));
+  if (isMasterOrDev || isEngenharia || isDrone) {
+    let q = supabase.from('service_orders').select('id, status, deadline_date, assigned_to');
+    if (isPilot) q = q.eq('assigned_to', userId);
+    queries.push(q);
   } else { queries.push(Promise.resolve({ data: [] })); }
 
   // 3: Financeiro
@@ -97,10 +98,9 @@ export default function Dashboard() {
     enabled: !!user?.id
   });
 
-  const isMasterOrDev = user?.role === 'MASTER' || user?.role === 'DEV';
-  const isVendedor = user?.role === 'VENDEDOR';
   const isFinanceiro = user?.role === 'FINANCEIRO';
   const isEngenharia = user?.role === 'ENGENHEIRO' || user?.role === 'TECNICO';
+  const isDrone = user?.role === 'CONSULTOR_TEC_DRONE' || user?.role === 'PILOTO';
 
   if (loading) {
     return (
@@ -147,7 +147,7 @@ export default function Dashboard() {
             </>
           )}
 
-          {(isMasterOrDev || isEngenharia) && !isVendedor && !isFinanceiro && (
+          {(isMasterOrDev || isEngenharia || isDrone) && !isVendedor && !isFinanceiro && (
             <>
               <Button size="sm" onClick={() => navigate('/service-orders?new=true')}>
                 <Wrench className="h-4 w-4 mr-2" /> Nova O.S.
@@ -261,8 +261,8 @@ export default function Dashboard() {
           </Link>
         )}
 
-        {/* Module: Ordens de Servico (Engenharia) */}
-        {(isMasterOrDev || isEngenharia) && (
+        {/* Module: Ordens de Servico (Engenharia / Drone) */}
+        {(isMasterOrDev || isEngenharia || isDrone) && (
           <Link to="/service-orders" className="group">
             <div className="bg-card rounded-xl border border-border p-5 hover:shadow-lg hover:border-primary/30 transition-all hover-lift">
               <div className="flex items-center justify-between mb-4">
@@ -271,7 +271,9 @@ export default function Dashboard() {
                 </div>
                 <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
               </div>
-              <h3 className="text-lg font-semibold text-foreground mb-3">Ordens de Serviço</h3>
+              <h3 className="text-lg font-semibold text-foreground mb-3">
+                {user?.role === 'PILOTO' ? 'Minhas O.S.' : 'Ordens de Serviço'}
+              </h3>
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground flex items-center gap-2">

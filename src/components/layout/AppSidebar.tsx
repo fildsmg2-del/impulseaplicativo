@@ -124,8 +124,6 @@ export function AppSidebar() {
     loadFlags();
   }, []);
 
-  const isImpersonating = user?.id !== realUser?.id;
-
 
   const filteredGroups = navGroups.map(group => {
     return {

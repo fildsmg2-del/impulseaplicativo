@@ -50,6 +50,9 @@ export default function DevSettings() {
     category: "geral",
     is_secret: false,
   });
+  const [activeTab, setActiveTab] = useState(() => {
+    return sessionStorage.getItem("dev_settings_tab") || "all";
+  });
   const { toast } = useToast();
 
   const loadSettings = useCallback(async () => {
@@ -68,6 +71,11 @@ export default function DevSettings() {
   useEffect(() => {
     loadSettings();
   }, [loadSettings]);
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    sessionStorage.setItem("dev_settings_tab", value);
+  };
 
   const handleOpenModal = (setting?: ApiSetting) => {
     if (setting) {
@@ -162,7 +170,7 @@ export default function DevSettings() {
           </Button>
         </div>
 
-        <Tabs defaultValue="all" className="space-y-4">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
           <div className="w-full overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-muted-foreground/20">
             <TabsList className="flex w-max min-w-full justify-start p-1 bg-muted/30 border border-border shadow-sm rounded-lg">
               <TabsTrigger value="all" className="data-[state=active]:bg-background">Todas</TabsTrigger>

@@ -13,7 +13,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchUserProfile = async (userId: string) => {
     try {
-      setIsProfileLoaded(false);
+      // Only show global loader on initial mount. 
+      // Background refreshes should not trigger a systemic unmount.
+      setIsProfileLoaded(prev => prev); // keep current value for now
+      if (!isProfileLoaded) {
+        setIsProfileLoaded(false);
+      }
       const [{ data: profile }, { data: roleData }] = await Promise.all([
         supabase
           .from('profiles')

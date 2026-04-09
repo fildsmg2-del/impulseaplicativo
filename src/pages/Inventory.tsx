@@ -39,7 +39,9 @@ export default function Inventory() {
   const [stockQuantity, setStockQuantity] = useState(1);
   const [stockReason, setStockReason] = useState('');
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [activeTab, setActiveTab] = useState('kits');
+  const [activeTab, setActiveTab] = useState(() => {
+    return sessionStorage.getItem("inventory_active_tab") || "kits";
+  });
   const [formData, setFormData] = useState<CreateProductData>({
     name: '',
     description: '',
@@ -244,7 +246,13 @@ export default function Inventory() {
         </div>
 
         {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <Tabs 
+          value={activeTab} 
+          onValueChange={(value) => {
+            setActiveTab(value);
+            sessionStorage.setItem("inventory_active_tab", value);
+          }}
+        >
           <TabsList className="bg-muted p-1 rounded-xl">
             <TabsTrigger 
               value="kits" 

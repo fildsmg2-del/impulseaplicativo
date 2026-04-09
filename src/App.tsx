@@ -80,25 +80,25 @@ const App = () => (
               {/* Protected Routes with Persistent Layout */}
               <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
                 <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/clients" element={<Clients />} />
-                <Route path="/quotes" element={<Quotes />} />
-                <Route path="/sales" element={<ProtectedRoute allowedRoles={['MASTER', 'ENGENHEIRO', 'VENDEDOR', 'FINANCEIRO', 'COMPRAS']}><Sales /></ProtectedRoute>} />
-                <Route path="/funnel" element={<Funnel />} />
-                <Route path="/projects" element={<Projects />} />
-                <Route path="/suppliers" element={<ProtectedRoute allowedRoles={['MASTER', 'DEV', 'ENGENHEIRO']}><Suppliers /></ProtectedRoute>} />
-                <Route path="/inventory" element={<ProtectedRoute allowedRoles={['MASTER', 'DEV', 'COMPRAS', 'ENGENHEIRO']}><Inventory /></ProtectedRoute>} />
-                <Route path="/financial" element={<ProtectedRoute allowedRoles={['MASTER', 'DEV', 'FINANCEIRO']}><Financial /></ProtectedRoute>} />
-                <Route path="/financial/receivables" element={<ProtectedRoute allowedRoles={['MASTER', 'DEV', 'FINANCEIRO']}><FinancialReceivables /></ProtectedRoute>} />
-                <Route path="/financial/payables" element={<ProtectedRoute allowedRoles={['MASTER', 'DEV', 'FINANCEIRO']}><FinancialPayables /></ProtectedRoute>} />
-                <Route path="/calculator" element={<SolarCalculator />} />
-                <Route path="/settings" element={<ProtectedRoute allowedRoles={['MASTER', 'DEV']}><Settings /></ProtectedRoute>} />
-                <Route path="/employees" element={<ProtectedRoute allowedRoles={['MASTER', 'DEV']}><Employees /></ProtectedRoute>} />
+                <Route path="/clients" element={<ProtectedRoute requiredPermission="clients.view"><Clients /></ProtectedRoute>} />
+                <Route path="/quotes" element={<ProtectedRoute requiredPermission="quotes.view"><Quotes /></ProtectedRoute>} />
+                <Route path="/sales" element={<ProtectedRoute requiredPermission="sales.view"><Sales /></ProtectedRoute>} />
+                <Route path="/funnel" element={<ProtectedRoute requiredPermission="funnel.view"><Funnel /></ProtectedRoute>} />
+                <Route path="/projects" element={<ProtectedRoute requiredPermission="projects.view"><Projects /></ProtectedRoute>} />
+                <Route path="/suppliers" element={<ProtectedRoute requiredPermission="suppliers.view"><Suppliers /></ProtectedRoute>} />
+                <Route path="/inventory" element={<ProtectedRoute requiredPermission="inventory.view"><Inventory /></ProtectedRoute>} />
+                <Route path="/financial" element={<ProtectedRoute requiredPermission="financial.view"><Financial /></ProtectedRoute>} />
+                <Route path="/financial/receivables" element={<ProtectedRoute requiredPermission="financial.view"><FinancialReceivables /></ProtectedRoute>} />
+                <Route path="/financial/payables" element={<ProtectedRoute requiredPermission="financial.view"><FinancialPayables /></ProtectedRoute>} />
+                <Route path="/calculator" element={<ProtectedRoute requiredPermission="calculator.view"><SolarCalculator /></ProtectedRoute>} />
+                <Route path="/settings" element={<ProtectedRoute requiredPermission="settings.view"><Settings /></ProtectedRoute>} />
+                <Route path="/employees" element={<ProtectedRoute requiredPermission="employees.view"><Employees /></ProtectedRoute>} />
                 <Route path="/my-profile" element={<MyProfile />} />
-                <Route path="/agenda" element={<Agenda />} />
-                <Route path="/my-area" element={<MyArea />} />
-                <Route path="/service-orders" element={<ServiceOrders />} />
-                <Route path="/drone" element={<DroneServices />} />
-                <Route path="/dev" element={<ProtectedRoute allowedRoles={['DEV']}><DevSettings /></ProtectedRoute>} />
+                <Route path="/agenda" element={<ProtectedRoute requiredPermission="agenda.view"><Agenda /></ProtectedRoute>} />
+                <Route path="/my-area" element={<ProtectedRoute requiredPermission="my_area.view"><MyArea /></ProtectedRoute>} />
+                <Route path="/service-orders" element={<ProtectedRoute requiredPermission="service_orders.view"><ServiceOrders /></ProtectedRoute>} />
+                <Route path="/drone" element={<ProtectedRoute requiredPermission="drone.view"><DroneServices /></ProtectedRoute>} />
+                <Route path="/dev" element={<ProtectedRoute requiredPermission="dev.view"><DevSettings /></ProtectedRoute>} />
               </Route>
 
               <Route path="*" element={<NotFound />} />

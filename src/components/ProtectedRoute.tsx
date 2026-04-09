@@ -6,10 +6,11 @@ import { UserRole } from '@/types';
 interface ProtectedRouteProps {
   children: ReactNode;
   allowedRoles?: UserRole[];
+  requiredPermission?: string;
 }
 
-export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
-  const { isAuthenticated, isLoading, isProfileLoaded, hasRole } = useAuth();
+export function ProtectedRoute({ children, allowedRoles, requiredPermission }: ProtectedRouteProps) {
+  const { isAuthenticated, isLoading, isProfileLoaded, hasRole, can } = useAuth();
   const location = useLocation();
 
   if (isLoading || (isAuthenticated && !isProfileLoaded)) {
@@ -26,6 +27,12 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
+  // Permission-based check (Primary)
+  if (requiredPermission && !can(requiredPermission)) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  // Legacy Role-based check (Secondary)
   if (allowedRoles && !hasRole(allowedRoles)) {
     return <Navigate to="/dashboard" replace />;
   }

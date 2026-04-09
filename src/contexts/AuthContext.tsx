@@ -13,9 +13,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchUserProfile = async (userId: string) => {
     try {
-      // No longer resetting isProfileLoaded to false here.
-      // This prevents the entire app from unmounting during background refreshes or focus events.
-      // The initial state is already false, so the first load will still show the loader.
       const [{ data: profile }, { data: roleData }] = await Promise.all([
         supabase
           .from('profiles')
@@ -30,13 +27,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       ]);
 
       if (profile) {
+        const userRole = (roleData?.role as UserRole) || 'VENDEDOR';
+        
+        // Fetch permissions for this role and overrides for this user
+        const [{ data: rolePerms }, { data: userPerms }] = await Promise.all([
+          supabase
+            .from('role_permissions')
+            .select('permission_id')
+            .eq('role', userRole),
+          supabase
+            .from('user_permissions_override')
+            .select('permission_id, enabled')
+            .eq('user_id', userId),
+        ]);
+
+        const effectivePermissions = new Set<string>();
+        
+        // 1. Add role defaults
+        rolePerms?.forEach(p => effectivePermissions.add(p.permission_id));
+        
+        // 2. Apply overrides
+        userPerms?.forEach(p => {
+          if (p.enabled) {
+            effectivePermissions.add(p.permission_id);
+          } else {
+            effectivePermissions.delete(p.permission_id);
+          }
+        });
+
         setUser({
           id: profile.id,
           email: profile.email,
           name: profile.name,
-          role: (roleData?.role as UserRole) || 'VENDEDOR',
+          role: userRole,
           avatar_url: profile.avatar_url || undefined,
           created_at: profile.created_at,
+          permissions: Array.from(effectivePermissions),
         });
       }
       setIsProfileLoaded(true);
@@ -47,16 +73,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setSession(session);
         
         if (session?.user) {
-          // Defer Supabase calls with setTimeout
           setTimeout(() => {
             fetchUserProfile(session.user.id).then(() => {
-              // After profile is loaded, check for impersonation
               const savedImpersonation = sessionStorage.getItem('impersonated_user');
               const savedRealUser = sessionStorage.getItem('real_user');
               if (savedImpersonation && savedRealUser) {
@@ -82,7 +105,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     );
 
-    // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       if (session?.user) {
@@ -97,14 +119,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string): Promise<{ error: Error | null }> => {
     try {
       setIsLoading(true);
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        return { error: new Error(error.message) };
-      }
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) return { error: new Error(error.message) };
       return { error: null };
     } catch (error) {
       return { error: error as Error };
@@ -117,24 +133,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       setIsLoading(true);
       const redirectUrl = `${window.location.origin}/`;
-      
       const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           emailRedirectTo: redirectUrl,
-          data: {
-            name: name,
-          },
+          data: { name: name },
         },
       });
-
-      if (error) {
-        if (error.message.includes('already registered')) {
-          return { error: new Error('Este email já está cadastrado. Tente fazer login.') };
-        }
-        return { error: new Error(error.message) };
-      }
+      if (error) return { error: new Error(error.message) };
       return { error: null };
     } catch (error) {
       return { error: error as Error };
@@ -153,16 +160,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const impersonate = (targetUser: UserProfile) => {
-    if (!user || user.role !== 'DEV') {
-      console.error("Only DEV can impersonate");
-      return;
-    }
-    
-    // Save current real user if not already impersonating
+    if (!user || user.role !== 'DEV') return;
     const currentUser = realUser || user;
     setRealUser(currentUser);
     setUser(targetUser);
-    
     sessionStorage.setItem('real_user', JSON.stringify(currentUser));
     sessionStorage.setItem('impersonated_user', JSON.stringify(targetUser));
   };
@@ -181,6 +182,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return roles.includes(user.role);
   };
 
+  const can = (permission: string): boolean => {
+    if (!user) return false;
+    if (user.role === 'DEV') return true;
+    return user.permissions.includes(permission);
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -197,6 +204,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signUp,
         logout,
         hasRole,
+        can,
       }}
     >
       {children}

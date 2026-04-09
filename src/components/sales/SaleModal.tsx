@@ -40,7 +40,7 @@ export function SaleModal({ saleId, onClose }: SaleModalProps) {
   const [showClientSignature, setShowClientSignature] = useState(false);
   const [showCompanySignature, setShowCompanySignature] = useState(false);
   const { toast } = useToast();
-  const { hasRole } = useAuth();
+  const { can } = useAuth();
 
   const loadData = useCallback(async () => {
     try {
@@ -272,7 +272,7 @@ export function SaleModal({ saleId, onClose }: SaleModalProps) {
               <Download className="h-4 w-4" />
               Baixar PDF
             </Button>
-            {!isEditing ? (
+            {!isEditing && can('sale.edit') && (
               <Button
                 variant="secondary"
                 size="sm"
@@ -282,7 +282,8 @@ export function SaleModal({ saleId, onClose }: SaleModalProps) {
                 <Edit className="h-4 w-4" />
                 Editar
               </Button>
-            ) : (
+            )}
+            {isEditing && (
               <Button
                 variant="secondary"
                 size="sm"
@@ -547,7 +548,7 @@ export function SaleModal({ saleId, onClose }: SaleModalProps) {
         {/* Footer Actions */}
         <div className="flex items-center justify-between px-6 py-4 border-t border-border bg-muted/30">
           <div className="flex gap-2">
-            {sale.approval_status === 'PENDENTE' && (
+            {sale.approval_status === 'PENDENTE' && can('sale.approve') && (
               <>
                 <Button onClick={handleApprove} className="gap-2 bg-success hover:bg-success/90">
                   <CheckCircle className="h-4 w-4" />
@@ -569,7 +570,7 @@ export function SaleModal({ saleId, onClose }: SaleModalProps) {
               <MessageCircle className="h-4 w-4" />
               Enviar por WhatsApp
             </Button>
-            {sale.payment_status === 'PENDENTE' && sale.approval_status === 'APROVADO' && (
+            {sale.payment_status === 'PENDENTE' && sale.approval_status === 'APROVADO' && can('sale.pay') && (
               <Button onClick={handleMarkAsPaid} className="gap-2 bg-impulse-gold text-impulse-dark hover:bg-impulse-gold/90">
                 <DollarSign className="h-4 w-4" />
                 Confirmar Pagamento

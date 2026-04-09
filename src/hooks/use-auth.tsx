@@ -9,6 +9,7 @@ export interface UserProfile {
   role: UserRole;
   avatar_url?: string;
   created_at: string;
+  permissions: string[]; // Effective permission keys
 }
 
 export interface AuthContextType {
@@ -25,6 +26,7 @@ export interface AuthContextType {
   signUp: (email: string, password: string, name: string) => Promise<{ error: Error | null }>;
   logout: () => Promise<void>;
   hasRole: (roles: UserRole[]) => boolean;
+  can: (permission: string) => boolean;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);

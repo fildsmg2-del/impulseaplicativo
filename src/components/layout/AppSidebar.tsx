@@ -36,7 +36,7 @@ interface NavItem {
   title: string;
   href: string;
   icon: React.ElementType;
-  roles?: UserRole[];
+  permission?: string;
   flag?: string;
   children?: { title: string; href: string }[];
 }
@@ -56,27 +56,27 @@ const navGroups: NavGroup[] = [
   {
     label: 'UTILIDADES',
     items: [
-      { title: 'Calculadora', href: '/calculator', icon: Calculator, roles: ['MASTER', 'ENGENHEIRO', 'VENDEDOR', 'DEV', 'FINANCEIRO', 'POS_VENDA', 'COMPRAS'], flag: 'MODULE_CALCULATOR_ENABLED' },
-      { title: 'Drone', href: '/drone', icon: Plane, roles: ['MASTER', 'DEV'], flag: 'MODULE_DRONE_ENABLED' },
+      { title: 'Calculadora', href: '/calculator', icon: Calculator, permission: 'calculator.view', flag: 'MODULE_CALCULATOR_ENABLED' },
+      { title: 'Drone', href: '/drone', icon: Plane, permission: 'drone.view', flag: 'MODULE_DRONE_ENABLED' },
     ]
   },
   {
     label: 'MEU ESPAÇO',
     items: [
-      { title: 'Meu Perfil', href: '/my-profile', icon: User },
-      { title: 'Minha Área', href: '/my-area', icon: Briefcase },
-      { title: 'Agenda', href: '/agenda', icon: Calendar, roles: ['MASTER', 'ENGENHEIRO', 'VENDEDOR', 'DEV', 'FINANCEIRO', 'POS_VENDA', 'COMPRAS'], flag: 'MODULE_AGENDA_ENABLED' },
+      { title: 'Meu Perfil', href: '/my-profile', icon: User, permission: 'profile.view' },
+      { title: 'Minha Área', href: '/my-area', icon: Briefcase, permission: 'my_area.view' },
+      { title: 'Agenda', href: '/agenda', icon: Calendar, permission: 'agenda.view', flag: 'MODULE_AGENDA_ENABLED' },
     ]
   },
   {
     label: 'VENDAS & CLIENTES',
     items: [
-      { title: 'Clientes', href: '/clients', icon: Users, roles: ['MASTER', 'ENGENHEIRO', 'VENDEDOR', 'DEV', 'FINANCEIRO', 'POS_VENDA', 'COMPRAS'], flag: 'MODULE_CLIENTS_ENABLED' },
-      { title: 'Funil', href: '/funnel', icon: Filter, roles: ['MASTER', 'ENGENHEIRO', 'VENDEDOR', 'DEV', 'FINANCEIRO', 'POS_VENDA', 'COMPRAS'], flag: 'MODULE_FUNNEL_ENABLED' },
-      { title: 'Orçamentos', href: '/quotes', icon: FileText, roles: ['MASTER', 'ENGENHEIRO', 'VENDEDOR', 'DEV', 'FINANCEIRO', 'POS_VENDA', 'COMPRAS'], flag: 'MODULE_QUOTES_ENABLED' },
-      { title: 'Projetos', href: '/projects', icon: FolderKanban, roles: ['MASTER', 'ENGENHEIRO', 'VENDEDOR', 'DEV', 'FINANCEIRO', 'POS_VENDA', 'COMPRAS'], flag: 'MODULE_PROJECTS_ENABLED' },
-      { title: 'OS', href: '/service-orders', icon: ClipboardList, flag: 'MODULE_SERVICE_ORDERS_ENABLED' },
-      { title: 'Vendas', href: '/sales', icon: ShoppingCart, roles: ['MASTER', 'ENGENHEIRO', 'VENDEDOR', 'FINANCEIRO', 'COMPRAS'], flag: 'MODULE_SALES_ENABLED' },
+      { title: 'Clientes', href: '/clients', icon: Users, permission: 'clients.view', flag: 'MODULE_CLIENTS_ENABLED' },
+      { title: 'Funil', href: '/funnel', icon: Filter, permission: 'funnel.view', flag: 'MODULE_FUNNEL_ENABLED' },
+      { title: 'Orçamentos', href: '/quotes', icon: FileText, permission: 'quotes.view', flag: 'MODULE_QUOTES_ENABLED' },
+      { title: 'Projetos', href: '/projects', icon: FolderKanban, permission: 'projects.view', flag: 'MODULE_PROJECTS_ENABLED' },
+      { title: 'OS', href: '/service-orders', icon: ClipboardList, permission: 'service_orders.view', flag: 'MODULE_SERVICE_ORDERS_ENABLED' },
+      { title: 'Vendas', href: '/sales', icon: ShoppingCart, permission: 'sales.view', flag: 'MODULE_SALES_ENABLED' },
     ]
   },
   {
@@ -86,23 +86,23 @@ const navGroups: NavGroup[] = [
         title: 'Financeiro',
         href: '/financial',
         icon: DollarSign,
-        roles: ['MASTER', 'DEV', 'FINANCEIRO'],
+        permission: 'financial.view',
         flag: 'MODULE_FINANCIAL_ENABLED',
         children: [
           { title: 'Contas a Receber', href: '/financial/receivables' },
           { title: 'Contas a Pagar', href: '/financial/payables' },
         ]
       },
-      { title: 'Fornecedores', href: '/suppliers', icon: Building2, roles: ['MASTER', 'DEV', 'ENGENHEIRO'], flag: 'MODULE_SUPPLIERS_ENABLED' },
-      { title: 'Estoque', href: '/inventory', icon: Package, roles: ['MASTER', 'DEV', 'COMPRAS', 'ENGENHEIRO'], flag: 'MODULE_INVENTORY_ENABLED' },
+      { title: 'Fornecedores', href: '/suppliers', icon: Building2, permission: 'suppliers.view', flag: 'MODULE_SUPPLIERS_ENABLED' },
+      { title: 'Estoque', href: '/inventory', icon: Package, permission: 'inventory.view', flag: 'MODULE_INVENTORY_ENABLED' },
     ]
   },
   {
     label: 'GESTÃO & DADOS',
     items: [
-      { title: 'Configurações', href: '/settings', icon: Settings, roles: ['MASTER', 'DEV'], flag: 'MODULE_SETTINGS_ENABLED' },
-      { title: 'Funcionários', href: '/employees', icon: Users, roles: ['MASTER', 'DEV'], flag: 'MODULE_EMPLOYEES_ENABLED' },
-      { title: 'Área DEV', href: '/dev', icon: Code, roles: ['DEV'] },
+      { title: 'Configurações', href: '/settings', icon: Settings, permission: 'settings.view', flag: 'MODULE_SETTINGS_ENABLED' },
+      { title: 'Funcionários', href: '/employees', icon: Users, permission: 'employees.view', flag: 'MODULE_EMPLOYEES_ENABLED' },
+      { title: 'Área DEV', href: '/dev', icon: Code, permission: 'dev.view' },
     ]
   }
 ];
@@ -110,7 +110,7 @@ const navGroups: NavGroup[] = [
 export function AppSidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const [flags, setFlags] = useState<Record<string, boolean>>({});
-  const { user, logout, hasRole, stopImpersonating, isImpersonating } = useAuth();
+  const { user, logout, can, stopImpersonating, isImpersonating } = useAuth();
   const location = useLocation();
 
   useEffect(() => {
@@ -130,9 +130,9 @@ export function AppSidebar() {
     return {
       ...group,
       items: group.items.filter((item) => {
-        const roleAllowed = !item.roles || hasRole(item.roles);
-        const flagAllowed = !item.flag || flags[item.flag] !== false; // Default to true if flag not found yet
-        return roleAllowed && flagAllowed;
+        const permissionAllowed = !item.permission || can(item.permission);
+        const flagAllowed = !item.flag || flags[item.flag] !== false;
+        return permissionAllowed && flagAllowed;
       })
     };
   }).filter(group => group.items.length > 0);

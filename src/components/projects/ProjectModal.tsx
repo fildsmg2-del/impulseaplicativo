@@ -103,20 +103,14 @@ const INSTALLATION_TYPE_OPTIONS: { value: InstallationType; label: string }[] = 
 ];
 
 export function ProjectModal({ project, open, onOpenChange, onSave, preselectedClientId }: ProjectModalProps) {
-  const { hasRole, user } = useAuth();
+  const { can, user } = useAuth();
   const navigate = useNavigate();
-  const isMaster = hasRole(['MASTER', 'DEV']);
-  const isVendedor = hasRole(['VENDEDOR']);
-  const isEngenheiro = hasRole(['ENGENHEIRO']);
-  const isFinanceiro = hasRole(['FINANCEIRO']);
-  const isTecnico = hasRole(['TECNICO']);
-  const isCompras = hasRole(['COMPRAS']);
-  const isPosVenda = hasRole(['POS_VENDA']);
+  const isMaster = can('dev.view'); // DEV has full access anyway, but for logic clarity
   
   const { data: financialSummary, refetch: refetchFinance } = useQuery({
     queryKey: ['project-financial-summary', project?.id],
     queryFn: () => transactionService.getSummary({ project_id: project?.id }),
-    enabled: !!project?.id && open && hasRole(['MASTER', 'DEV', 'FINANCEIRO']),
+    enabled: !!project?.id && open && can('financial.view'),
   });
 
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
@@ -144,51 +138,47 @@ export function ProjectModal({ project, open, onOpenChange, onSave, preselectedC
   // 6. PÓS VENDA - POS_VENDA
   // Verifica se o usuário pode editar o projeto baseado no status atual
   const canEditProject = (): boolean => {
-    if (isMaster) return true;
+    if (user?.role === 'DEV') return true;
     if (!project) return false;
     
+    // Check if user has overall project management permission
+    if (can('project.manage')) return true;
+    
+    // Still support role-specific editing for the current stage if no global permission
     const currentStatus = project.status;
-    
-    // POS_VENDA - apenas POS_VENDA
+    const isVendedor = user?.role === 'VENDEDOR';
+    const isEngenheiro = user?.role === 'ENGENHEIRO';
+    const isFinanceiro = user?.role === 'FINANCEIRO';
+    const isTecnico = user?.role === 'TECNICO';
+    const isCompras = user?.role === 'COMPRAS';
+    const isPosVenda = user?.role === 'POS_VENDA';
+
     if (currentStatus === 'POS_VENDA' && isPosVenda) return true;
-    
-    // VENDAS - apenas VENDEDOR
     if (currentStatus === 'VENDAS' && isVendedor) return true;
-    
-    // FINANCEIRO - apenas FINANCEIRO
     if (currentStatus === 'FINANCEIRO' && isFinanceiro) return true;
-    
-    // COMPRAS - apenas COMPRAS
     if (currentStatus === 'COMPRAS' && isCompras) return true;
-    
-    // ENGENHEIRO - apenas ENGENHEIRO
     if (currentStatus === 'ENGENHEIRO' && isEngenheiro) return true;
-    
-    // TECNICO - apenas TECNICO
     if (currentStatus === 'TECNICO' && isTecnico) return true;
     
     return false;
   };
 
   const canEditStage = (stageKey: string): boolean => {
-    if (isMaster) return true;
+    if (user?.role === 'DEV') return true;
+    if (can('project.manage')) return true;
+
+    const isVendedor = user?.role === 'VENDEDOR';
+    const isEngenheiro = user?.role === 'ENGENHEIRO';
+    const isFinanceiro = user?.role === 'FINANCEIRO';
+    const isTecnico = user?.role === 'TECNICO';
+    const isCompras = user?.role === 'COMPRAS';
+    const isPosVenda = user?.role === 'POS_VENDA';
     
-    // POS_VENDA - apenas POS_VENDA
     if (stageKey === 'POS_VENDA' && isPosVenda) return true;
-    
-    // VENDAS - apenas VENDEDOR
     if (stageKey === 'VENDAS' && isVendedor) return true;
-    
-    // FINANCEIRO - apenas FINANCEIRO
     if (stageKey === 'FINANCEIRO' && isFinanceiro) return true;
-    
-    // COMPRAS - apenas COMPRAS
     if (stageKey === 'COMPRAS' && isCompras) return true;
-    
-    // ENGENHEIRO - apenas ENGENHEIRO
     if (stageKey === 'ENGENHEIRO' && isEngenheiro) return true;
-    
-    // TECNICO - apenas TECNICO
     if (stageKey === 'TECNICO' && isTecnico) return true;
     
     return false;
@@ -678,7 +668,8 @@ export function ProjectModal({ project, open, onOpenChange, onSave, preselectedC
               const isCompleted = isCompletedStage(stage.key);
               
               // NEW: Restrict Financeiro tab to MASTER, DEV, FINANCEIRO
-              if (stage.key === 'FINANCEIRO' && !hasRole(['MASTER', 'DEV', 'FINANCEIRO'])) {
+              // NEW: Restrict Financeiro tab to permissions
+              if (stage.key === 'FINANCEIRO' && !can('financial.view')) {
                 return null;
               }
               

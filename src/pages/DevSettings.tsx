@@ -19,6 +19,8 @@ import { AnnouncementPanel } from "@/components/dev/AnnouncementPanel";
 import { UserPresenceBoard } from "@/components/dev/UserPresenceBoard";
 import { PwaSettings } from "@/components/dev/PwaSettings";
 import { DevUpdateManager } from "@/components/dev/DevUpdateManager";
+import { PermissionMatrix } from "@/components/dev/PermissionMatrix";
+import { UserPermissionEditor } from "@/components/dev/UserPermissionEditor";
 import { apiSettingsService, ApiSetting, ApiSettingInput } from "@/services/apiSettingsService";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -181,6 +183,7 @@ export default function DevSettings() {
               <TabsTrigger value="presence" className="data-[state=active]:bg-background text-xs sm:text-sm">👥 Online</TabsTrigger>
               <TabsTrigger value="pwa" className="data-[state=active]:bg-background text-xs sm:text-sm">📱 PWA</TabsTrigger>
               <TabsTrigger value="updates" className="data-[state=active]:bg-background">🚀 Novidades</TabsTrigger>
+              <TabsTrigger value="access" className="data-[state=active]:bg-background">🛡️ Acessos</TabsTrigger>
               <TabsTrigger value="impersonate" className="data-[state=active]:bg-background">Simulação</TabsTrigger>
               {CATEGORIES.map((cat) => (
                 <TabsTrigger key={cat.value} value={cat.value} className="data-[state=active]:bg-background">
@@ -245,6 +248,13 @@ export default function DevSettings() {
           <TabsContent value="updates">
             <div className="max-w-4xl mx-auto">
               <DevUpdateManager />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="access">
+            <div className="space-y-8 max-w-6xl mx-auto">
+              <PermissionMatrix />
+              <UserPermissionEditor />
             </div>
           </TabsContent>
 

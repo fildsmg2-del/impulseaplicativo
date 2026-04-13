@@ -38,18 +38,18 @@ export default function Financial() {
           <h1 className="text-3xl font-bold text-foreground">Dashboard Financeiro</h1>
           <p className="text-muted-foreground">Visão geral de saúde financeira e fluxo de caixa</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
           <Button 
               variant="outline" 
               onClick={() => navigate('/financial/receivables')}
-              className="hover:border-success hover:text-success"
+              className="flex-1 sm:flex-none hover:border-success hover:text-success"
           >
               Contas a Receber
           </Button>
           <Button 
               variant="outline" 
               onClick={() => navigate('/financial/payables')}
-              className="hover:border-destructive hover:text-destructive"
+              className="flex-1 sm:flex-none hover:border-destructive hover:text-destructive"
           >
               Contas a Pagar
           </Button>

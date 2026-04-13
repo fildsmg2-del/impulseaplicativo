@@ -168,14 +168,14 @@ export default function Projects() {
             Acompanhe o andamento das instalações
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
           {/* View Mode Toggle */}
-          <div className="flex items-center bg-muted rounded-lg p-1">
+          <div className="flex items-center bg-muted rounded-lg p-1 flex-1 sm:flex-none">
             <Button
               variant={viewMode === 'list' ? 'secondary' : 'ghost'}
               size="sm"
               onClick={() => setViewMode('list')}
-              className="h-8 px-3"
+              className="h-8 px-3 flex-1"
             >
               <List className="h-4 w-4" />
             </Button>
@@ -183,7 +183,7 @@ export default function Projects() {
               variant={viewMode === 'kanban' ? 'secondary' : 'ghost'}
               size="sm"
               onClick={() => setViewMode('kanban')}
-              className="h-8 px-3"
+              className="h-8 px-3 flex-1"
             >
               <LayoutGrid className="h-4 w-4" />
             </Button>
@@ -191,7 +191,7 @@ export default function Projects() {
               variant={viewMode === 'gantt' ? 'secondary' : 'ghost'}
               size="sm"
               onClick={() => setViewMode('gantt')}
-              className="h-8 px-3"
+              className="h-8 px-3 flex-1"
             >
               <Calendar className="h-4 w-4" />
             </Button>
@@ -201,10 +201,10 @@ export default function Projects() {
             variant={showArchived ? "secondary" : "outline"}
             size="sm"
             onClick={() => setShowArchived(!showArchived)}
-            className="h-10 rounded-xl gap-2"
+            className="h-10 rounded-xl gap-2 flex-1 sm:flex-none"
           >
             <FolderKanban className="h-4 w-4" />
-            {showArchived ? "Ocultar Concluídos" : "Ver Concluídos"}
+            <span className="truncate">{showArchived ? "Ocultar Concluídos" : "Ver Concluídos"}</span>
           </Button>
         </div>
       </div>

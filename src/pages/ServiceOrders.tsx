@@ -315,10 +315,10 @@ export default function ServiceOrders() {
                   className="pl-10"
                 />
               </div>
-              <Tabs value={statusFilter} onValueChange={setStatusFilter}>
-                <TabsList>
+              <Tabs value={statusFilter} onValueChange={setStatusFilter} className="w-full sm:w-auto">
+                <TabsList className="flex w-full overflow-x-auto justify-start h-auto p-1 bg-muted/50 scrollbar-none gap-1">
                   {STATUS_OPTIONS.map((option) => (
-                    <TabsTrigger key={option.value} value={option.value} className="relative">
+                    <TabsTrigger key={option.value} value={option.value} className="relative px-4 py-2 text-xs flex-shrink-0">
                       {option.label}
                       {option.value === 'VENCIDAS' && overdueCount > 0 && (
                         <span className="absolute -top-1 -right-1 h-4 w-4 text-[10px] bg-destructive text-destructive-foreground rounded-full flex items-center justify-center">

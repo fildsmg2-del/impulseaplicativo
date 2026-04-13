@@ -164,13 +164,13 @@ export default function DroneServices() {
           </p>
         </div>
 
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-3 bg-muted/50 p-1.5 rounded-2xl border border-border">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 w-full sm:w-auto">
+          <div className="flex items-center gap-2 bg-muted/50 p-1 rounded-2xl border border-border">
             <Button
               variant={viewMode === 'list' ? 'secondary' : 'ghost'}
               size="sm"
               onClick={() => setViewMode('list')}
-              className={cn("rounded-xl h-9", viewMode === 'list' && "shadow-sm bg-background")}
+              className={cn("rounded-xl h-9 flex-1 sm:flex-none", viewMode === 'list' && "shadow-sm bg-background")}
             >
               <List className="h-4 w-4 mr-2" />
               Lista
@@ -179,7 +179,7 @@ export default function DroneServices() {
               variant={viewMode === 'kanban' ? 'secondary' : 'ghost'}
               size="sm"
               onClick={() => setViewMode('kanban')}
-              className={cn("rounded-xl h-9", viewMode === 'kanban' && "shadow-sm bg-background")}
+              className={cn("rounded-xl h-9 flex-1 sm:flex-none", viewMode === 'kanban' && "shadow-sm bg-background")}
             >
               <LayoutGrid className="h-4 w-4 mr-2" />
               Kanban
@@ -188,7 +188,7 @@ export default function DroneServices() {
           
           <Button 
             onClick={() => { setSelectedService(null); setModalOpen(true); }}
-            className="rounded-2xl h-12 px-6 shadow-lg shadow-primary/20 animate-in zoom-in-50 duration-500"
+            className="rounded-2xl h-12 px-6 shadow-lg shadow-primary/20 animate-in zoom-in-50 duration-500 w-full sm:w-auto"
           >
             <PlusIcon className="h-5 w-5 mr-2" />
             Nova OS Drone

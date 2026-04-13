@@ -201,7 +201,7 @@ export default function SolarCalculator() {
                   <CardTitle className="text-lg text-impulse-gold">Sistema Recomendado</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <p className="text-sm text-gray-300">Potência</p>
                       <p className="text-3xl font-bold">{formatNumber(result.recommendedPowerKwp)} kWp</p>
@@ -223,7 +223,7 @@ export default function SolarCalculator() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <p className="text-sm text-muted-foreground">Mensal</p>
                       <p className="text-2xl font-bold text-impulse-dark">{formatNumber(result.monthlyGenerationKwh, 0)} kWh</p>
@@ -245,7 +245,7 @@ export default function SolarCalculator() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <p className="text-sm text-muted-foreground">Mensal</p>
                       <p className="text-2xl font-bold text-success">{formatCurrency(result.monthlySavings)}</p>

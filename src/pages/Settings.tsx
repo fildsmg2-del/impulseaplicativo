@@ -268,7 +268,7 @@ export default function Settings() {
       </div>
 
       <Tabs defaultValue="company" className="space-y-6">
-        <TabsList className="grid w-full max-w-4xl grid-cols-6">
+        <TabsList className="flex w-full overflow-x-auto justify-start h-auto p-1 bg-muted/20 scrollbar-none border-b rounded-none shrink-0 gap-2">
           <TabsTrigger value="company" className="gap-2">
             <Building2 className="h-4 w-4" />
             Empresa

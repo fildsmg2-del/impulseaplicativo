@@ -337,7 +337,7 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={cn(
         "flex flex-col overflow-hidden p-0 gap-0 rounded-3xl transition-all duration-500",
-        service ? "max-w-4xl h-[85vh]" : "max-w-2xl h-auto max-h-[90vh]"
+        service ? "max-w-4xl h-[95vh] md:h-[85vh]" : "max-w-2xl h-auto max-h-[95vh] md:max-h-[90vh]"
       )}>
         {service ? (
           <>
@@ -382,9 +382,9 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
               </Select>
             </div>
 
-            <div className="flex-1 flex min-h-0 overflow-hidden">
+            <div className="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden">
               {/* Left: Info */}
-              <div className="w-1/3 border-r border-border p-6 space-y-6 overflow-y-auto bg-muted/5">
+              <div className="w-full md:w-1/3 border-b md:border-b-0 md:border-r border-border p-4 md:p-6 space-y-6 overflow-y-auto bg-muted/5 max-h-[40vh] md:max-h-full">
                 <div className="space-y-4">
                   <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-muted-foreground/70">
                     <User className="h-4 w-4" />
@@ -617,7 +617,7 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 pb-6 md:pb-0">
               <div className="col-span-2 space-y-4 p-5 bg-muted/30 rounded-[32px] border border-border/50">
                 <div className="flex items-center justify-between px-1">
                   <Label className="text-sm font-black uppercase tracking-widest text-muted-foreground/80">Identificação do Cliente</Label>

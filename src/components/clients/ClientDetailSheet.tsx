@@ -265,7 +265,7 @@ export function ClientDetailSheet({
         </SheetHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="flex w-full overflow-x-auto justify-start h-auto p-1 bg-muted/20 scrollbar-none border-b rounded-none shrink-0 gap-1">
             <TabsTrigger value="info" className="flex items-center gap-1.5">
               <User className="h-4 w-4" />
               <span className="hidden sm:inline">Info</span>

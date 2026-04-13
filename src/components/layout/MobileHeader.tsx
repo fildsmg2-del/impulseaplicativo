@@ -1,6 +1,6 @@
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
-import { Wifi, WifiOff, Bell, User } from "lucide-react";
+import { Wifi, WifiOff, Bell, User, HelpCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import logoImpulse from "@/assets/logo-impulse.png";
 import { useOfflineSync } from "@/hooks/useOfflineSync";
@@ -34,6 +34,13 @@ export function MobileHeader() {
       </div>
 
       <div className="flex items-center gap-3">
+        <button 
+          onClick={() => window.dispatchEvent(new CustomEvent('toggle-support-chat'))}
+          className="p-2 hover:bg-white/10 rounded-full transition-colors text-white/80"
+          title="Suporte"
+        >
+          <HelpCircle className="h-5 w-5" />
+        </button>
         <UpdateBell />
         <div className="w-8 h-8 rounded-full bg-sidebar-accent border border-white/20 overflow-hidden flex items-center justify-center">
           {user?.avatar_url ? (

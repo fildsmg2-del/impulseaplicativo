@@ -600,8 +600,8 @@ export function ServiceOrderModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
-        <DialogHeader>
+      <DialogContent className="max-w-5xl h-[95vh] md:h-[90vh] overflow-hidden flex flex-col p-0 gap-0">
+        <DialogHeader className="p-4 md:p-6 border-b">
           <DialogTitle className="flex items-center gap-2">
             {serviceOrder ? 'Editar Ordem de Serviço' : 'Nova Ordem de Serviço'}
             {isOverdue && (
@@ -619,7 +619,7 @@ export function ServiceOrderModal({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto space-y-6 pr-2">
+        <div className="flex-1 overflow-y-auto space-y-6 p-4 md:p-6 pb-24 md:pb-6">
           {!serviceOrder ? (
             <div className="space-y-6 max-w-2xl mx-auto py-4">
               <div className="space-y-2">
@@ -691,12 +691,16 @@ export function ServiceOrderModal({
               </div>
             </div>
           ) : (
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-8">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-full overflow-hidden">
+              <TabsList className="flex w-full overflow-x-auto justify-start h-auto p-1 bg-muted/20 scrollbar-none border-b rounded-none shrink-0 gap-1">
                 {SECTOR_TABS.map((tab) => {
                   if (tab.roles && !hasRole(tab.roles)) return null;
                   return (
-                    <TabsTrigger key={tab.key} value={tab.key} className="text-xs">
+                    <TabsTrigger 
+                      key={tab.key} 
+                      value={tab.key} 
+                      className="px-4 py-2 text-[10px] sm:text-xs font-bold whitespace-nowrap data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-lg transition-all flex-shrink-0"
+                    >
                       {tab.label}
                     </TabsTrigger>
                   );

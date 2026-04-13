@@ -103,14 +103,14 @@ export function ChatWidget() {
   if (!user) return null;
 
   return (
-    <div className="fixed bottom-6 right-6 z-[9999]">
+    <div className="fixed bottom-6 right-6 z-[110]">
       <AnimatePresence>
         {isOpen && (
           <motion.div
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="absolute bottom-16 right-0 w-[380px] h-[550px] bg-card rounded-3xl border border-border shadow-2xl flex flex-col overflow-hidden backdrop-blur-sm"
+            className="absolute bottom-16 right-0 w-[calc(100vw-3rem)] sm:w-[380px] h-[70vh] sm:h-[550px] bg-card rounded-3xl border border-border shadow-2xl flex flex-col overflow-hidden backdrop-blur-sm"
           >
             {/* Header */}
             <div className="p-4 bg-primary text-primary-foreground flex items-center justify-between shadow-lg">
@@ -253,7 +253,7 @@ export function ChatWidget() {
         whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "h-14 w-14 rounded-2xl shadow-2xl flex items-center justify-center transition-all duration-500",
+          "h-14 w-14 rounded-2xl shadow-2xl items-center justify-center transition-all duration-500 hidden md:flex",
           isOpen 
             ? "bg-muted text-foreground rotate-90 border border-border" 
             : "bg-primary text-primary-foreground shadow-primary/20 border-2 border-primary-foreground/10"

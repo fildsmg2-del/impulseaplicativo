@@ -234,7 +234,7 @@ export default function DroneServices() {
                 )}
               </div>
               <div className="space-y-1 max-h-60 overflow-y-auto pr-2 no-scrollbar">
-                {pilots.filter(p => p.role === 'PILOTO' || p.role === 'DEV' || p.role === 'MASTER').map((pilot) => (
+                {pilots.filter(p => p.role === 'PILOTO' || p.role === 'CONSULTOR_TEC_DRONE').map((pilot) => (
                   <button
                     key={pilot.id}
                     onClick={() => setPilotFilter(pilotFilter === pilot.id ? null : pilot.id)}

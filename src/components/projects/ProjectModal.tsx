@@ -1005,7 +1005,8 @@ export function ProjectModal({ project, open, onOpenChange, onSave, preselectedC
                       <Input
                         type="date"
                         value={dates.estimated_end_date || ''}
-                        disabled
+                        onChange={(e) => handleStageDateChange(stage.key, 'estimated_end_date', e.target.value)}
+                        disabled={!isMaster && user?.role !== 'MASTER'}
                       />
                       <p className="text-xs text-muted-foreground">
                         *+3 dias úteis após início (feriados/domingos considerados)

@@ -167,6 +167,54 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
     }
   };
 
+  const handleUpdatePilot = async (newPilotId: string) => {
+    if (!service) return;
+    const isMasterOrDev = user?.role === 'MASTER' || user?.role === 'DEV';
+    if (!isMasterOrDev) {
+      toast.error('Apenas MASTER e DEV podem alterar o piloto designado.');
+      return;
+    }
+
+    try {
+      const selectedPilot = pilots.find(p => p.id === newPilotId);
+      await droneService.update(service.id, { technician_id: newPilotId });
+      
+      await droneLogService.create(
+        service.id, 
+        `Alterou piloto designado para: ${selectedPilot?.name || 'Novo Piloto'}`, 
+        user?.name || 'Sistema'
+      );
+      
+      toast.success('Piloto atualizado');
+      onSave(); // Refresh list
+      loadLogs(); // Refresh logs in modal
+    } catch (error) {
+      console.error('Error updating pilot:', error);
+      toast.error('Erro ao atualizar piloto');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!service) return;
+    const isMasterOrDev = user?.role === 'MASTER' || user?.role === 'DEV';
+    if (!isMasterOrDev) return;
+
+    if (!confirm('Tem certeza que deseja excluir permanentemente esta OS Drone?')) return;
+
+    try {
+      setLoading(true);
+      await droneService.delete(service.id);
+      toast.success('OS Drone excluída');
+      onSave();
+      onOpenChange(false);
+    } catch (error) {
+      console.error('Error deleting drone service:', error);
+      toast.error('Erro ao excluir OS Drone');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleStatusChange = async (newStatus: DroneServiceStatus) => {
     if (!service) return;
     try {
@@ -324,15 +372,29 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
                 </div>
 
                 <div className="space-y-4">
-                  <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-muted-foreground/70">
-                    <Clock className="h-4 w-4" />
-                    <span>Responsável</span>
-                  </div>
-                  <div className="p-3 rounded-2xl bg-muted/30 border border-border/50">
-                    <p className="text-sm font-bold text-foreground">
-                      {service.technician?.name || 'Não atribuído'}
-                    </p>
-                    <p className="text-xs text-muted-foreground">Piloto Operador</p>
+                  <div className="flex items-center gap-3 p-3 rounded-2xl bg-muted/30 border border-border/50">
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                      <User className="h-5 w-5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Piloto Operador</p>
+                      <Select 
+                        value={service.technician_id || ''} 
+                        onValueChange={handleUpdatePilot}
+                        disabled={user?.role !== 'MASTER' && user?.role !== 'DEV'}
+                      >
+                        <SelectTrigger className="h-7 p-0 border-none bg-transparent shadow-none hover:bg-transparent focus:ring-0 text-sm font-bold text-foreground">
+                          <SelectValue placeholder="Não atribuído" />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-2xl shadow-2xl border-border">
+                          {pilots.map(p => (
+                            <SelectItem key={p.id} value={p.id} className="rounded-xl">
+                              {p.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                 </div>
 
@@ -354,6 +416,20 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
                       </p>
                     </div>
                   </div>
+                </div>
+                
+                <div className="pt-4 mt-auto border-t border-border">
+                  {(user?.role === 'MASTER' || user?.role === 'DEV') && (
+                    <Button
+                      variant="ghost"
+                      onClick={handleDelete}
+                      disabled={loading}
+                      className="w-full rounded-2xl text-destructive hover:bg-destructive/10 h-12"
+                    >
+                      <Trash2 className="h-5 w-5 mr-2" />
+                      Excluir OS
+                    </Button>
+                  )}
                 </div>
               </div>
 

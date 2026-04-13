@@ -23,6 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { droneLogService } from '@/services/droneLogService';
 
 type ViewMode = 'list' | 'kanban';
 
@@ -54,9 +55,50 @@ export default function DroneServices() {
     return matchesSearch && matchesStatus;
   });
 
-  const handleServiceClick = (service: DroneService) => {
-    setSelectedService(service);
-    setModalOpen(true);
+  const [draggedService, setDraggedService] = useState<DroneService | null>(null);
+  const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
+
+  const handleDragStart = (e: React.DragEvent, service: DroneService) => {
+    setDraggedService(service);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent, statusKey: string) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (dragOverColumn !== statusKey) setDragOverColumn(statusKey);
+  };
+
+  const handleDrop = async (e: React.DragEvent, statusKey: string) => {
+    e.preventDefault();
+    setDragOverColumn(null);
+
+    if (!draggedService || draggedService.status === statusKey) {
+      setDraggedService(null);
+      return;
+    }
+
+    try {
+      const oldStatus = statusConfig[draggedService.status]?.label || draggedService.status;
+      const newStatus = statusConfig[statusKey as DroneServiceStatus]?.label || statusKey;
+      
+      await droneService.updateStatus(draggedService.id, statusKey as DroneServiceStatus);
+      
+      // Criar log de movimentação
+      await droneLogService.create(
+        draggedService.id,
+        `Movimentou OS: ${oldStatus} para ${newStatus}`,
+        user?.name || 'Usuário'
+      );
+      
+      toast.success(`OS movida para ${newStatus}`);
+      refetch();
+    } catch (error) {
+      console.error('Error moving drone service:', error);
+      toast.error('Erro ao mover OS');
+    } finally {
+      setDraggedService(null);
+    }
   };
 
   const statusConfig: Record<string, { label: string; color: string; icon: any }> = {
@@ -284,9 +326,16 @@ export default function DroneServices() {
               return sStatus === statusKey || (!statusConfig[sStatus] && statusKey === 'PENDENTE');
             });
             const StatusIcon = config.icon || Activity;
+            const isDragOver = dragOverColumn === statusKey;
             
             return (
-              <div key={statusKey} className="flex flex-col gap-4 min-w-[280px]">
+              <div 
+                key={statusKey} 
+                className="flex flex-col gap-4 min-w-[280px]"
+                onDragOver={(e) => handleDragOver(e, statusKey)}
+                onDrop={(e) => handleDrop(e, statusKey)}
+                onDragLeave={() => setDragOverColumn(null)}
+              >
                 <div className="flex items-center justify-between px-2">
                   <div className="flex items-center gap-2">
                     <StatusIcon className={cn("h-4 w-4", config.color.replace('bg-', 'text-'))} />
@@ -298,19 +347,33 @@ export default function DroneServices() {
                   <MoreHorizontal className="h-4 w-4 text-muted-foreground/30 cursor-pointer" />
                 </div>
                 
-                <div className="flex-1 bg-muted/20 rounded-[32px] p-3 space-y-3 border border-border/50 backdrop-blur-sm">
+                <div className={cn(
+                  "flex-1 bg-muted/20 rounded-[32px] p-3 space-y-3 border transition-all duration-300 backdrop-blur-sm",
+                  isDragOver ? "border-primary border-2 border-dashed bg-primary/5 scale-[1.02]" : "border-border/50"
+                )}>
                   {columnServices.map(service => (
                     <div
                       key={service.id}
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, service)}
                       onClick={() => handleServiceClick(service)}
-                      className="bg-card p-4 rounded-2xl border border-border shadow-sm hover:shadow-md hover:border-primary/30 transition-all cursor-pointer group"
+                      className={cn(
+                        "bg-card p-4 rounded-2xl border border-border shadow-sm hover:shadow-md hover:border-primary/30 transition-all cursor-grab active:cursor-grabbing group",
+                        draggedService?.id === service.id && "opacity-40 grayscale blur-[1px]"
+                      )}
                     >
                       <h4 className="font-bold text-sm text-foreground mb-1 group-hover:text-primary transition-colors truncate">
                         {service.client?.name || service.client_name || 'Cliente vago'}
                       </h4>
-                      <div className="flex items-center gap-2 mb-3">
-                        <MapPin className="h-3 w-3 text-muted-foreground" />
-                        <span className="text-[10px] text-muted-foreground truncate italic">{service.location_link || 'Sem local'}</span>
+                      <div className="flex flex-col gap-1 mb-3">
+                        <div className="flex items-center gap-2">
+                          <MapPin className="h-3 w-3 text-muted-foreground" />
+                          <span className="text-[10px] text-muted-foreground truncate italic">{service.location_link || 'Sem local'}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <User className="h-3 w-3 text-primary/60" />
+                          <span className="text-[10px] font-bold text-foreground/80">{service.technician?.name || 'Sem piloto'}</span>
+                        </div>
                       </div>
                       <div className="flex items-center justify-between pt-3 border-t border-border/50">
                         <Badge variant="outline" className="text-[9px] font-black h-5 px-1 bg-muted/30 border-none uppercase">

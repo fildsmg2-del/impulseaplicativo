@@ -19,7 +19,7 @@ export default function Funnel() {
         clientService.getAll(),
       ]);
       
-      let usersData: Awaited<ReturnType<typeof getUsers>> = [];
+      let usersData: any[] = [];
       try {
         usersData = await getUsers();
       } catch (err) {
@@ -61,15 +61,17 @@ export default function Funnel() {
     return names;
   }, [clients]);
 
-  const filteredQuotes = quotes.filter((quote) => {
-    if (!search.trim()) return true;
-    const clientName = quote.client_id ? clientNames[quote.client_id] : '';
-    return clientName?.toLowerCase().includes(search.toLowerCase());
-  });
+  const filteredQuotes = useMemo(() => {
+    return quotes.filter((quote) => {
+      if (!search.trim()) return true;
+      const clientName = (quote.client_id ? clientNames[quote.client_id] : '') || '';
+      return clientName.toLowerCase().includes(search.toLowerCase());
+    });
+  }, [quotes, search, clientNames]);
 
   return (
-    <>
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 animate-fade-in">
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-fade-in">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Funil</h1>
           <p className="text-muted-foreground mt-1">
@@ -78,7 +80,7 @@ export default function Funnel() {
         </div>
       </div>
 
-      <div className="flex gap-4 mb-6 animate-fade-in" style={{ animationDelay: '200ms' }}>
+      <div className="flex gap-4 animate-fade-in" style={{ animationDelay: '200ms' }}>
         <div className="relative flex-1">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
           <input
@@ -86,7 +88,7 @@ export default function Funnel() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar orçamento por cliente..."
-            className="w-full pl-12 pr-4 py-3 bg-card rounded-xl border border-border focus:outline-none focus:ring-2 focus:ring-impulse-gold focus:border-transparent transition-all"
+            className="w-full pl-12 pr-4 py-3 bg-card rounded-xl border border-border focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
           />
         </div>
       </div>
@@ -110,6 +112,6 @@ export default function Funnel() {
           )}
         </div>
       )}
-    </>
+    </div>
   );
 }

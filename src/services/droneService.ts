@@ -65,5 +65,26 @@ export const droneService = {
 
     if (error) throw error;
     return data as DroneService;
+  },
+
+  async update(id: string, service: Partial<DroneService>): Promise<DroneService> {
+    const { data, error } = await (supabase
+      .from('drone_services' as any) as any)
+      .update(service)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data as DroneService;
+  },
+
+  async delete(id: string): Promise<void> {
+    const { error } = await (supabase
+      .from('drone_services' as any) as any)
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
   }
 };

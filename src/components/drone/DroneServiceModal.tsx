@@ -59,6 +59,7 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
     area_hectares: '',
     service_description: ''
   });
+  const [isEditing, setIsEditing] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Masks
@@ -116,10 +117,21 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
   useEffect(() => {
     if (open) {
       loadInitialData();
-      if (service) {
-        setStatus(service.status);
-        loadLogs();
-      } else {
+        if (service) {
+          setStatus(service.status);
+          setFormData({
+            client_id: service.client_id || '',
+            client_name: service.client_name || '',
+            client_phone: service.client_phone || '',
+            client_document: service.client_document || '',
+            client_address_street: service.client_address_street || '',
+            technician_id: service.technician_id || '',
+            location_link: service.location_link || '',
+            area_hectares: service.area_hectares?.toString() || '',
+            service_description: service.service_description || ''
+          });
+          loadLogs();
+        } else {
         setStatus('PENDENTE');
         setFormData({
           client_id: '',
@@ -164,6 +176,26 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
       setLogs(data);
     } catch (error) {
       console.error('Error loading logs:', error);
+    }
+  };
+
+  const handleUpdateDetails = async () => {
+    if (!service) return;
+    try {
+      setLoading(true);
+      await droneService.update(service.id, {
+        area_hectares: parseFloat(formData.area_hectares) || undefined,
+        location_link: formData.location_link,
+        service_description: formData.service_description
+      });
+      toast.success('Informações atualizadas');
+      setIsEditing(false);
+      onSave(); // Refresh list
+    } catch (error) {
+      console.error('Error updating details:', error);
+      toast.error('Erro ao salvar alterações');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -406,23 +438,82 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
                 </div>
 
                 <div className="space-y-4">
-                  <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-muted-foreground/70">
-                    <Settings2 className="h-4 w-4" />
-                    <span>Detalhes Técnicos</span>
-                  </div>
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-muted-foreground">Área:</span>
-                      <span className="font-bold text-foreground">{service.area_hectares || 'N/A'} ha</span>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-muted-foreground/70">
+                      <Settings2 className="h-4 w-4" />
+                      <span>Detalhes Técnicos</span>
                     </div>
-                    <div className="h-px bg-border/50" />
-                    <div className="space-y-2">
-                      <span className="text-xs text-muted-foreground font-medium">Descrição:</span>
-                      <p className="text-xs text-foreground leading-relaxed whitespace-pre-wrap">
-                        {service.service_description || 'Sem descrição.'}
-                      </p>
-                    </div>
+                    {(user?.role === 'MASTER' || user?.role === 'DEV') && !isEditing && (
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => setIsEditing(true)}
+                        className="h-7 px-2 text-[10px] font-bold text-primary hover:bg-primary/10"
+                      >
+                        EDITAR
+                      </Button>
+                    )}
                   </div>
+                  
+                  {isEditing ? (
+                    <div className="space-y-4 animate-in fade-in duration-300">
+                      <div className="space-y-1">
+                        <Label className="text-[10px] uppercase font-bold text-muted-foreground">Área (ha)</Label>
+                        <Input 
+                          type="number" 
+                          value={formData.area_hectares}
+                          onChange={(e) => setFormData({...formData, area_hectares: e.target.value})}
+                          className="h-8 text-xs rounded-xl"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-[10px] uppercase font-bold text-muted-foreground">Localização</Label>
+                        <Input 
+                          value={formData.location_link}
+                          onChange={(e) => setFormData({...formData, location_link: e.target.value})}
+                          className="h-8 text-xs rounded-xl"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-[10px] uppercase font-bold text-muted-foreground">Descrição</Label>
+                        <Textarea 
+                          value={formData.service_description}
+                          onChange={(e) => setFormData({...formData, service_description: e.target.value})}
+                          className="min-h-[80px] text-xs rounded-xl p-2"
+                        />
+                      </div>
+                      <div className="flex gap-2 pt-2">
+                        <Button 
+                          onClick={handleUpdateDetails} 
+                          disabled={loading}
+                          className="flex-1 h-8 text-xs font-bold rounded-xl"
+                        >
+                          {loading ? <Loader2 className="h-3 w-3 animate-spin" /> : 'SALVAR'}
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          onClick={() => setIsEditing(false)}
+                          className="h-8 text-xs font-bold rounded-xl"
+                        >
+                          CANCELAR
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="text-muted-foreground">Área:</span>
+                        <span className="font-bold text-foreground">{service.area_hectares || 'N/A'} ha</span>
+                      </div>
+                      <div className="h-px bg-border/50" />
+                      <div className="space-y-2">
+                        <span className="text-xs text-muted-foreground font-medium">Descrição:</span>
+                        <p className="text-xs text-foreground leading-relaxed whitespace-pre-wrap">
+                          {service.service_description || 'Sem descrição.'}
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
                 
                 <div className="pt-4 mt-auto border-t border-border">

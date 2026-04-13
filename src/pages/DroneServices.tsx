@@ -47,6 +47,11 @@ export default function DroneServices() {
     queryFn: droneService.getAll,
   });
 
+  const handleServiceClick = (service: DroneService) => {
+    setSelectedService(service);
+    setModalOpen(true);
+  };
+
   // Carregar pilotos para mapear nomes localmente
   useEffect(() => {
     getUsers().then(setPilots).catch(console.error);
@@ -79,6 +84,7 @@ export default function DroneServices() {
 
   const handleDragOver = (e: React.DragEvent, statusKey: string) => {
     e.preventDefault();
+    e.stopPropagation();
     e.dataTransfer.dropEffect = 'move';
     if (dragOverColumn !== statusKey) setDragOverColumn(statusKey);
   };
@@ -361,10 +367,14 @@ export default function DroneServices() {
                   <MoreHorizontal className="h-4 w-4 text-muted-foreground/30 cursor-pointer" />
                 </div>
                 
-                <div className={cn(
-                  "flex-1 bg-muted/20 rounded-[32px] p-3 space-y-3 border transition-all duration-300 backdrop-blur-sm",
-                  isDragOver ? "border-primary border-2 border-dashed bg-primary/5 scale-[1.02]" : "border-border/50"
-                )}>
+                <div 
+                  onDragOver={(e) => handleDragOver(e, statusKey)}
+                  onDrop={(e) => handleDrop(e, statusKey)}
+                  className={cn(
+                    "flex-1 bg-muted/20 rounded-[32px] p-3 space-y-3 border transition-all duration-300 backdrop-blur-sm min-h-[500px]",
+                    isDragOver ? "border-primary border-2 border-dashed bg-primary/5 scale-[1.02]" : "border-border/50"
+                  )}
+                >
                   {columnServices.map(service => (
                     <div
                       key={service.id}

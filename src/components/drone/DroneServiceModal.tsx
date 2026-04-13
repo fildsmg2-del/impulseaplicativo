@@ -55,9 +55,9 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
     client_document: '',
     client_address_street: '',
     technician_id: '',
-    location: '',
+    location_link: '',
     area_hectares: '',
-    notes: ''
+    service_description: ''
   });
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -92,7 +92,7 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const { latitude, longitude } = pos.coords;
-        setFormData(prev => ({ ...prev, location: `Lat: ${latitude.toFixed(6)}, Lon: ${longitude.toFixed(6)}` }));
+        setFormData(prev => ({ ...prev, location_link: `Lat: ${latitude.toFixed(6)}, Lon: ${longitude.toFixed(6)}` }));
         toast.success('Localização capturada com sucesso');
       },
       (err) => {
@@ -128,9 +128,9 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
           client_document: '',
           client_address_street: '',
           technician_id: '',
-          location: '',
+          location_link: '',
           area_hectares: '',
-          notes: ''
+          service_description: ''
         });
         setIsManualClient(false);
       }
@@ -221,9 +221,9 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
         client_document: isManualClient ? formData.client_document : undefined,
         client_address_street: isManualClient ? formData.client_address_street : undefined,
         technician_id: formData.technician_id || undefined,
-        location: formData.location,
+        location_link: formData.location_link,
         area_hectares: parseFloat(formData.area_hectares) || undefined,
-        notes: formData.notes,
+        service_description: formData.service_description || 'Serviço de Drone', // Campo obrigatório
         status: 'PENDENTE'
       });
 
@@ -288,9 +288,9 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="PENDENTE">Pendente</SelectItem>
-                  <SelectItem value="EM_ANALISE">Em Análise</SelectItem>
-                  <SelectItem value="CONCLUIDA">Concluída</SelectItem>
-                  <SelectItem value="CANCELADA">Cancelada</SelectItem>
+                  <SelectItem value="TECNICO">Em Campo (Técnico)</SelectItem>
+                  <SelectItem value="REVISAO">Revisão</SelectItem>
+                  <SelectItem value="FINALIZADO">Finalizado</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -318,7 +318,7 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
                   </div>
                   <div className="p-3 rounded-2xl bg-muted/30 border border-border/50">
                     <p className="text-xs text-foreground leading-relaxed italic">
-                      {service.location || 'Localização não informada'}
+                      {service.location_link || 'Localização não informada'}
                     </p>
                   </div>
                 </div>
@@ -348,9 +348,9 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
                     </div>
                     <div className="h-px bg-border/50" />
                     <div className="space-y-2">
-                      <span className="text-xs text-muted-foreground font-medium">Anotações:</span>
+                      <span className="text-xs text-muted-foreground font-medium">Descrição:</span>
                       <p className="text-xs text-foreground leading-relaxed whitespace-pre-wrap">
-                        {service.notes || 'Sem anotações adicionais.'}
+                        {service.service_description || 'Sem descrição.'}
                       </p>
                     </div>
                   </div>
@@ -554,19 +554,19 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
                   <MapPin className="absolute left-4 top-4 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                   <Input 
                     placeholder="Endereço ou coordenadas..."
-                    value={formData.location}
-                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                    value={formData.location_link}
+                    onChange={(e) => setFormData({ ...formData, location_link: e.target.value })}
                     className="h-12 pl-12 rounded-2xl border-border bg-card"
                   />
                 </div>
               </div>
 
               <div className="col-span-2 space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/80 ml-1">Anotações Iniciais</Label>
+                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/80 ml-1">Descrição do Serviço</Label>
                 <Textarea 
-                  placeholder="Instruções para o piloto ou detalhes adicionais..."
-                  value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                  placeholder="Instruções para o piloto ou detalhes do serviço..."
+                  value={formData.service_description}
+                  onChange={(e) => setFormData({ ...formData, service_description: e.target.value })}
                   className="min-h-[100px] rounded-3xl border-border bg-card resize-none p-4"
                 />
               </div>

@@ -39,7 +39,7 @@ export default function DroneServices() {
   const filteredServices = services.filter((s) => {
     const searchLower = (search || '').toLowerCase();
     const clientName = (s.client?.name || s.client_name || '').toLowerCase();
-    const location = (s.location || '').toLowerCase();
+    const location = (s.location_link || '').toLowerCase();
     
     const matchesSearch = clientName.includes(searchLower) || location.includes(searchLower);
     const matchesStatus = !statusFilter || s.status === statusFilter;
@@ -53,9 +53,6 @@ export default function DroneServices() {
 
   const statusConfig: Record<string, { label: string; color: string; icon: any }> = {
     'PENDENTE': { label: 'Pendente', color: 'bg-amber-500', icon: Clock },
-    'EM_ANALISE': { label: 'Análise', color: 'bg-blue-500', icon: Activity },
-    'CONCLUIDA': { label: 'Concluída', color: 'bg-green-500', icon: CheckCircle2 },
-    'CANCELADA': { label: 'Cancelada', color: 'bg-red-500', icon: XCircle },
     'TECNICO': { label: 'Em Campo', color: 'bg-indigo-500', icon: User },
     'REVISAO': { label: 'Revisão', color: 'bg-purple-500', icon: Settings2 },
     'FINALIZADO': { label: 'Finalizado', color: 'bg-emerald-500', icon: CheckCircle2 },
@@ -226,7 +223,7 @@ export default function DroneServices() {
                     </h3>
                     <div className="flex items-center gap-1.5 mt-1 text-muted-foreground">
                       <MapPin className="h-3.5 w-3.5" />
-                      <span className="text-xs font-medium truncate">{service.location || 'Local não informado'}</span>
+                      <span className="text-xs font-medium truncate">{service.location_link || 'Local não informado'}</span>
                     </div>
                   </div>
 
@@ -288,7 +285,7 @@ export default function DroneServices() {
                       </h4>
                       <div className="flex items-center gap-2 mb-3">
                         <MapPin className="h-3 w-3 text-muted-foreground" />
-                        <span className="text-[10px] text-muted-foreground truncate italic">{service.location || 'Sem local'}</span>
+                        <span className="text-[10px] text-muted-foreground truncate italic">{service.location_link || 'Sem local'}</span>
                       </div>
                       <div className="flex items-center justify-between pt-3 border-t border-border/50">
                         <Badge variant="outline" className="text-[9px] font-black h-5 px-1 bg-muted/30 border-none uppercase">

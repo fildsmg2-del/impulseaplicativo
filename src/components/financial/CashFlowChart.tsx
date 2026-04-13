@@ -155,9 +155,9 @@ export function CashFlowChart() {
           </SelectContent>
         </Select>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-4 md:p-6">
         {/* Summary Cards */}
-        <div className="grid grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mb-6">
           <div className="p-3 rounded-lg bg-success/10 border border-success/20">
             <div className="flex items-center gap-2 mb-1">
               <TrendingUp className="h-4 w-4 text-success" />
@@ -185,11 +185,11 @@ export function CashFlowChart() {
 
         {/* Chart */}
         {loading ? (
-          <div className="h-[300px] flex items-center justify-center">
+          <div className="h-[250px] md:h-[300px] flex items-center justify-center">
             <p className="text-muted-foreground">Carregando...</p>
           </div>
         ) : (
-          <div className="h-[300px]">
+          <div className="h-[250px] md:h-[300px] w-full mt-4">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                 <defs>

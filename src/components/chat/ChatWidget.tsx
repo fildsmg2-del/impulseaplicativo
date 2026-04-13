@@ -103,7 +103,7 @@ export function ChatWidget() {
   if (!user) return null;
 
   return (
-    <div className="fixed bottom-6 right-6 z-[110]">
+    <div className="fixed bottom-20 md:bottom-6 right-6 z-[110]">
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -253,10 +253,10 @@ export function ChatWidget() {
         whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "h-14 w-14 rounded-2xl shadow-2xl items-center justify-center transition-all duration-500 hidden md:flex",
+          "h-14 w-14 rounded-2xl shadow-2xl flex items-center justify-center transition-all duration-500",
           isOpen 
             ? "bg-muted text-foreground rotate-90 border border-border" 
-            : "bg-primary text-primary-foreground shadow-primary/20 border-2 border-primary-foreground/10"
+            : "bg-impulse-gold text-white shadow-impulse-gold/20 border-2 border-white/10"
         )}
       >
         {isOpen ? <X className="h-6 w-6" /> : <MessageCircle className="h-7 w-7" />}

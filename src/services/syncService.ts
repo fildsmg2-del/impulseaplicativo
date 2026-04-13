@@ -3,6 +3,12 @@ import { IS_NATIVE_APP } from '@/lib/platform';
 import { serviceOrderService } from '@/services/serviceOrderService';
 import { droneService } from '@/services/droneService';
 import { clientService } from '@/services/clientService';
+import { supplierService } from '@/services/supplierService';
+import { projectService } from '@/services/projectService';
+import { serviceTypeService } from '@/services/serviceTypeService';
+import { accountService } from '@/services/accountService';
+import { costCenterService } from '@/services/costCenterService';
+import { getUsers } from '@/services/userService';
 
 /**
  * SyncService
@@ -28,10 +34,46 @@ export const syncService = {
         queryFn: () => droneService.getAll(),
       });
 
-      // 3. Carregar Clientes (Base básica)
+      // 3. Carregar Clientes
       await queryClient.prefetchQuery({
         queryKey: ['clients'],
         queryFn: () => clientService.getAll(),
+      });
+
+      // 4. Carregar Fornecedores
+      await queryClient.prefetchQuery({
+        queryKey: ['suppliers'],
+        queryFn: () => supplierService.getAll(),
+      });
+
+      // 5. Carregar Projetos
+      await queryClient.prefetchQuery({
+        queryKey: ['projects-all'],
+        queryFn: () => projectService.getAll(),
+      });
+
+      // 6. Carregar Tipos de Serviço (OS)
+      await queryClient.prefetchQuery({
+        queryKey: ['service-types-active'],
+        queryFn: () => serviceTypeService.getActive(),
+      });
+
+      // 7. Carregar Contas Bancárias
+      await queryClient.prefetchQuery({
+        queryKey: ['accounts-active'],
+        queryFn: () => accountService.getActive(),
+      });
+
+      // 8. Carregar Centros de Custo
+      await queryClient.prefetchQuery({
+        queryKey: ['cost-centers'],
+        queryFn: () => costCenterService.getAll(),
+      });
+
+      // 9. Carregar Usuários/Técnicos
+      await queryClient.prefetchQuery({
+        queryKey: ['users'],
+        queryFn: () => getUsers(),
       });
 
       console.log('[SyncService] Pré-carregamento concluído com sucesso.');

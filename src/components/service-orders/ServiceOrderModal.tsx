@@ -87,17 +87,46 @@ export function ServiceOrderModal({
     enabled: !!serviceOrder?.id && open && hasRole(['MASTER', 'DEV', 'FINANCEIRO']),
   });
   const [loading, setLoading] = useState(false);
-  const [clients, setClients] = useState<{ id: string; name: string }[]>([]);
-  const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
-  const [logs, setLogs] = useState<ServiceOrderLog[]>([]);
   const [newLogText, setNewLogText] = useState('');
   const [uploadingFile, setUploadingFile] = useState(false);
-  const [companySettings, setCompanySettings] = useState<CompanySettings | null>(null);
   const [activeTab, setActiveTab] = useState('INFO');
-  const [clientDetails, setClientDetails] = useState<Client | null>(null);
-  const [technicians, setTechnicians] = useState<UserWithRole[]>([]);
-  const [checklistItems, setChecklistItems] = useState<ServiceOrderChecklistItem[]>([]);
   const [currentSectorComment, setCurrentSectorComment] = useState('');
+  const [checklistItems, setChecklistItems] = useState<ServiceOrderChecklistItem[]>([]);
+
+  // ── Queries (Refactored for Cache/Offline) ────────────────────
+  const { data: clients = [] } = useQuery({
+    queryKey: ['clients'],
+    queryFn: clientService.getAll,
+    staleTime: 5 * 60 * 1000, 
+  });
+
+  const { data: serviceTypes = [] } = useQuery({
+    queryKey: ['service-types-active'],
+    queryFn: serviceTypeService.getActive,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const { data: allUsers = [] } = useQuery({
+    queryKey: ['users'],
+    queryFn: getUsers,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const { data: companySettings } = useQuery({
+    queryKey: ['company-settings'],
+    queryFn: getCompanySettings,
+    staleTime: 60 * 60 * 1000, // 1 hour
+  });
+
+  const technicians = useMemo(() => {
+    return allUsers.filter(u => u.role === 'TECNICO');
+  }, [allUsers]);
+
+  const { data: logs = [], refetch: refetchLogs } = useQuery({
+    queryKey: ['service-order-logs', serviceOrder?.id],
+    queryFn: () => serviceOrderLogService.getByServiceOrderId(serviceOrder!.id),
+    enabled: !!serviceOrder?.id && open,
+  });
 
   const [formData, setFormData] = useState({
     client_id: '',
@@ -111,12 +140,14 @@ export function ServiceOrderModal({
     assigned_to: '',
   });
 
+  const { data: clientDetails } = useQuery({
+    queryKey: ['client-details', formData.client_id],
+    queryFn: () => clientService.getById(formData.client_id),
+    enabled: !!formData.client_id,
+  });
+
   useEffect(() => {
     if (open) {
-      loadClients();
-      loadServiceTypes();
-      loadCompanySettings();
-      loadTechnicians();
       if (serviceOrder) {
         setFormData({
           client_id: serviceOrder.client_id || '',
@@ -133,7 +164,6 @@ export function ServiceOrderModal({
           assigned_to: serviceOrder.assigned_to || '',
         });
         setChecklistItems(serviceOrder.checklist_state || []);
-        loadLogs(serviceOrder.id);
       } else {
         const today = new Date().toISOString().split('T')[0];
         setFormData({
@@ -147,7 +177,6 @@ export function ServiceOrderModal({
           notes: prefilledNotes || '',
           assigned_to: preselectedTechnicianId || '',
         });
-        setLogs([]);
         setChecklistItems([]);
       }
       setActiveTab('INFO');
@@ -155,67 +184,8 @@ export function ServiceOrderModal({
     }
   }, [open, serviceOrder, preselectedClientId, preselectedTechnicianId, prefilledNotes]);
 
-  useEffect(() => {
-    const loadClientDetails = async () => {
-      if (!formData.client_id) {
-        setClientDetails(null);
-        return;
-      }
-      try {
-        const data = await clientService.getById(formData.client_id);
-        setClientDetails(data);
-      } catch (error) {
-        console.error('Error loading client details:', error);
-        setClientDetails(null);
-      }
-    };
-
-    loadClientDetails();
-  }, [formData.client_id]);
-
-  const loadClients = async () => {
-    try {
-      const data = await clientService.getAll();
-      setClients(data.map(c => ({ id: c.id, name: c.name })));
-    } catch (error) {
-      console.error('Error loading clients:', error);
-    }
-  };
-
-  const loadServiceTypes = async () => {
-    try {
-      const data = await serviceTypeService.getActive();
-      setServiceTypes(data);
-    } catch (error) {
-      console.error('Error loading service types:', error);
-    }
-  };
-
-  const loadCompanySettings = async () => {
-    try {
-      const data = await getCompanySettings();
-      setCompanySettings(data);
-    } catch (error) {
-      console.error('Error loading company settings:', error);
-    }
-  };
-
-  const loadTechnicians = async () => {
-    try {
-      const data = await getUsers();
-      setTechnicians(data.filter(userItem => userItem.role === 'TECNICO'));
-    } catch (error) {
-      console.error('Error loading technicians:', error);
-    }
-  };
-
-  const loadLogs = async (serviceOrderId: string) => {
-    try {
-      const data = await serviceOrderLogService.getByServiceOrderId(serviceOrderId);
-      setLogs(data);
-    } catch (error) {
-      console.error('Error loading logs:', error);
-    }
+  const loadLogs = () => {
+    refetchLogs();
   };
 
   const canEditSector = (sectorKey: string) => {

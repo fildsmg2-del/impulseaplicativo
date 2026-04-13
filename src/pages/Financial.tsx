@@ -33,23 +33,23 @@ export default function Financial() {
   return (
     <div className="p-6 space-y-8 animate-fade-in">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Dashboard Financeiro</h1>
-          <p className="text-muted-foreground">Visão geral de saúde financeira e fluxo de caixa</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">Dashboard Financeiro</h1>
+          <p className="text-sm text-muted-foreground">Visão geral de saúde financeira e fluxo de caixa</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
           <Button 
               variant="outline" 
               onClick={() => navigate('/financial/receivables')}
-              className="flex-1 sm:flex-none hover:border-success hover:text-success"
+              className="flex-1 sm:flex-none hover:border-success hover:text-success h-11"
           >
               Contas a Receber
           </Button>
           <Button 
               variant="outline" 
               onClick={() => navigate('/financial/payables')}
-              className="flex-1 sm:flex-none hover:border-destructive hover:text-destructive"
+              className="flex-1 sm:flex-none hover:border-destructive hover:text-destructive h-11"
           >
               Contas a Pagar
           </Button>
@@ -142,7 +142,7 @@ export default function Financial() {
               <p className="text-sm text-muted-foreground">Comparativo de entradas e saídas</p>
             </div>
           </CardHeader>
-          <CardContent className="h-[350px]">
+          <CardContent className="min-h-[350px] md:h-[400px]">
             <CashFlowChart />
           </CardContent>
         </Card>

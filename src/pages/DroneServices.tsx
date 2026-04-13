@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { 
   Activity, Search, Plus, List, LayoutGrid, Calendar, 
   Loader2, Filter, ChevronRight, MoreHorizontal, Clock,
-  CheckCircle2, AlertCircle, XCircle, MapPin
+  CheckCircle2, AlertCircle, XCircle, MapPin, User, Settings2
 } from 'lucide-react';
 import { droneService, DroneService, DroneServiceStatus } from '@/services/droneService';
 import { DroneServiceModal } from '@/components/drone/DroneServiceModal';
@@ -48,26 +48,31 @@ export default function DroneServices() {
     setModalOpen(true);
   };
 
-  const statusConfig: Record<DroneServiceStatus, { label: string; color: string; icon: any }> = {
+  const statusConfig: Record<string, { label: string; color: string; icon: any }> = {
     'PENDENTE': { label: 'Pendente', color: 'bg-amber-500', icon: Clock },
     'EM_ANALISE': { label: 'Análise', color: 'bg-blue-500', icon: Activity },
     'CONCLUIDA': { label: 'Concluída', color: 'bg-green-500', icon: CheckCircle2 },
     'CANCELADA': { label: 'Cancelada', color: 'bg-red-500', icon: XCircle },
+    'TECNICO': { label: 'Em Campo', color: 'bg-indigo-500', icon: User },
+    'REVISAO': { label: 'Revisão', color: 'bg-purple-500', icon: Settings2 },
+    'FINALIZADO': { label: 'Finalizado', color: 'bg-emerald-500', icon: CheckCircle2 },
   };
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="space-y-1">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-card/30 p-8 rounded-[40px] border border-border/50 backdrop-blur-xl group">
+        <div className="space-y-2">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-xl text-primary">
+            <div className="w-12 h-12 rounded-[22px] bg-primary/10 flex items-center justify-center text-primary rotate-3 group-hover:rotate-0 transition-transform duration-500">
               <Activity className="h-6 w-6" />
             </div>
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">Serviços Drone</h1>
+            <h1 className="text-4xl font-black tracking-tighter text-foreground uppercase italic">
+              Serviços <span className="text-primary">Drone</span>
+            </h1>
           </div>
-          <p className="text-muted-foreground font-medium">
-            Gerenciamento e acompanhamento de ordens de serviço de drone
+          <p className="text-muted-foreground font-medium max-w-md ml-1">
+            Gestão completa de mapeamento aéreo e processamento de dados.
           </p>
         </div>
 
@@ -103,24 +108,22 @@ export default function DroneServices() {
         </div>
       </div>
 
+      <div className="flex items-center gap-4 animate-in slide-in-from-left-5 duration-700 delay-150">
+        <div className="relative flex-1 group">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+          <Input 
+            placeholder="Buscar por cliente ou localização..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-12 h-14 rounded-2xl bg-card border-border/50 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
+          />
+        </div>
+        <Button variant="outline" className="h-14 w-14 rounded-2xl border-border bg-card shadow-sm hover:bg-muted transition-all active:scale-95">
+          <Filter className="h-5 w-5 text-foreground" />
+        </Button>
+      </div>
+
       {/* Filters & Summary */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-        <div className="lg:col-span-3 flex flex-col md:flex-row gap-3">
-          <div className="relative flex-1 group">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-            <Input
-              placeholder="Buscar por cliente ou localização..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-11 h-12 bg-card border-border rounded-2xl focus:ring-primary/20 transition-all"
-            />
-          </div>
-          
-          <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 no-scrollbar">
-            {Object.entries(statusConfig).map(([key, config]) => (
-              <Button
-                key={key}
-                variant={statusFilter === key ? 'secondary' : 'outline'}
                 size="sm"
                 onClick={() => setStatusFilter(statusFilter === key ? null : key as DroneServiceStatus)}
                 className={cn(
@@ -172,7 +175,7 @@ export default function DroneServices() {
       ) : viewMode === 'list' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in slide-in-from-bottom-5 duration-700">
           {filteredServices.map((service) => {
-            const config = statusConfig[service.status];
+            const config = statusConfig[service.status] || statusConfig['PENDENTE'];
             const StatusIcon = config.icon;
             
             return (
@@ -231,7 +234,10 @@ export default function DroneServices() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 min-h-[600px] overflow-x-auto pb-4 no-scrollbar">
           {Object.entries(statusConfig).map(([statusKey, config]) => {
-            const columnServices = filteredServices.filter(s => s.status === statusKey);
+            const columnServices = filteredServices.filter(s => {
+              const sStatus = s.status as string;
+              return sStatus === statusKey || (!statusConfig[sStatus] && statusKey === 'PENDENTE');
+            });
             const StatusIcon = config.icon;
             
             return (

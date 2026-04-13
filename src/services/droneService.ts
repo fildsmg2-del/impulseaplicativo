@@ -24,13 +24,25 @@ export interface DroneService {
 
 export const droneService = {
   async getAll(): Promise<DroneService[]> {
-    const { data, error } = await (supabase
-      .from('drone_services' as any) as any)
-      .select('*, client:clients(name), technician:profiles!technician_id(name)')
-      .order('created_at', { ascending: false });
+    try {
+      const { data, error } = await (supabase
+        .from('drone_services' as any) as any)
+        .select(`
+          *,
+          client:clients(name),
+          technician:profiles(name)
+        `)
+        .order('created_at', { ascending: false });
 
-    if (error) throw error;
-    return (data || []) as DroneService[];
+      if (error) {
+        console.error('Error fetching drone services:', error);
+        throw error;
+      }
+      return (data || []) as DroneService[];
+    } catch (error) {
+      console.error('DroneService.getAll failed:', error);
+      return [];
+    }
   },
 
   async updateStatus(id: string, status: DroneServiceStatus): Promise<void> {

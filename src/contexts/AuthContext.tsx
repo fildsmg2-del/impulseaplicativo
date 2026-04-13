@@ -252,7 +252,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const can = (permission: string): boolean => {
     if (!user) return false;
     if (user.role === 'DEV') return true;
-    return user.permissions?.includes(permission) ?? false;
+    
+    // Safety check: ensure permissions is an array to avoid crashes if data is malformed
+    if (!Array.isArray(user.permissions)) {
+      console.warn("User permissions is not an array:", user.permissions);
+      return false;
+    }
+    
+    return user.permissions.includes(permission);
   };
 
   return (

@@ -37,7 +37,7 @@ export default function DroneServices() {
   });
 
   const filteredServices = services.filter((s) => {
-    const searchLower = search.toLowerCase();
+    const searchLower = (search || '').toLowerCase();
     const clientName = (s.client?.name || s.client_name || '').toLowerCase();
     const location = (s.location || '').toLowerCase();
     
@@ -71,6 +71,13 @@ export default function DroneServices() {
       return "-";
     }
   };
+
+  if (isLoading) return (
+    <div className="flex flex-col items-center justify-center py-20 gap-4 opacity-50">
+      <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      <p className="text-sm font-bold uppercase tracking-widest">Sincronizando dados...</p>
+    </div>
+  );
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
@@ -169,12 +176,7 @@ export default function DroneServices() {
       </div>
 
       {/* Content */}
-      {isLoading ? (
-        <div className="flex flex-col items-center justify-center py-20 gap-4 opacity-50">
-          <Loader2 className="h-10 w-10 animate-spin text-primary" />
-          <p className="text-sm font-bold uppercase tracking-widest">Sincronizando dados...</p>
-        </div>
-      ) : filteredServices.length === 0 ? (
+      {filteredServices.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-32 bg-muted/20 rounded-[40px] border-2 border-dashed border-border/50 gap-6">
           <div className="w-20 h-20 rounded-3xl bg-muted flex items-center justify-center">
             <AlertCircle className="h-10 w-10 text-muted-foreground/30" />
@@ -259,7 +261,7 @@ export default function DroneServices() {
               const sStatus = s.status as string;
               return sStatus === statusKey || (!statusConfig[sStatus] && statusKey === 'PENDENTE');
             });
-            const StatusIcon = config.icon;
+            const StatusIcon = config.icon || Activity;
             
             return (
               <div key={statusKey} className="flex flex-col gap-4 min-w-[280px]">
@@ -321,3 +323,4 @@ export default function DroneServices() {
     </div>
   );
 }
+

@@ -34,14 +34,15 @@ export function UserImpersonator() {
     loadUsers();
   }, []);
 
-  const handleImpersonate = (target: UserWithRole) => {
-    impersonate({
+  const handleImpersonate = async (target: UserWithRole) => {
+    await impersonate({
       id: target.id,
       email: target.email,
       name: target.name,
       role: target.role,
       avatar_url: target.avatar_url || undefined,
       created_at: target.created_at,
+      permissions: [], // Base permissions, will be updated by impersonate fetch
     });
     toast({ title: `Simulando agora como ${target.name}` });
   };

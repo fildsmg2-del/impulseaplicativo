@@ -159,13 +159,80 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     sessionStorage.removeItem('real_user');
   };
 
-  const impersonate = (targetUser: UserProfile) => {
+  const impersonate = async (targetUser: UserProfile) => {
     if (!user || user.role !== 'DEV') return;
+    
+    // Guard checking if target user is valid
+    if (!targetUser || !targetUser.id) {
+      console.error("Invalid target user for impersonation");
+      return;
+    }
+
     const currentUser = realUser || user;
-    setRealUser(currentUser);
-    setUser(targetUser);
-    sessionStorage.setItem('real_user', JSON.stringify(currentUser));
-    sessionStorage.setItem('impersonated_user', JSON.stringify(targetUser));
+    
+    try {
+      // Fetch full profile including actual permissions from database for accurate simulation
+      const [{ data: profile }, { data: roleData }] = await Promise.all([
+        supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', targetUser.id)
+          .maybeSingle(),
+        supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', targetUser.id)
+          .maybeSingle(),
+      ]);
+
+      if (profile) {
+        const userRole = (roleData?.role as UserRole) || 'VENDEDOR';
+        
+        const [{ data: rolePerms }, { data: userPerms }] = await Promise.all([
+          supabase
+            .from('role_permissions')
+            .select('permission_id')
+            .eq('role', userRole),
+          supabase
+            .from('user_permissions_override')
+            .select('permission_id, enabled')
+            .eq('user_id', targetUser.id),
+        ]);
+
+        const effectivePermissions = new Set<string>();
+        rolePerms?.forEach(p => effectivePermissions.add(p.permission_id));
+        userPerms?.forEach(p => {
+          if (p.enabled) {
+            effectivePermissions.add(p.permission_id);
+          } else {
+            effectivePermissions.delete(p.permission_id);
+          }
+        });
+
+        const fullProfile: UserProfile = {
+          id: profile.id,
+          email: profile.email,
+          name: profile.name,
+          role: userRole,
+          avatar_url: profile.avatar_url || undefined,
+          created_at: profile.created_at,
+          permissions: Array.from(effectivePermissions),
+        };
+
+        setRealUser(currentUser);
+        setUser(fullProfile);
+        sessionStorage.setItem('real_user', JSON.stringify(currentUser));
+        sessionStorage.setItem('impersonated_user', JSON.stringify(fullProfile));
+      }
+    } catch (error) {
+      console.error("Error during impersonation fetch:", error);
+      // Fallback: at least set the basic info if fetch fails to avoid breaking everything
+      setRealUser(currentUser);
+      const fallbackUser = { ...targetUser, permissions: targetUser.permissions || [] };
+      setUser(fallbackUser);
+      sessionStorage.setItem('real_user', JSON.stringify(currentUser));
+      sessionStorage.setItem('impersonated_user', JSON.stringify(fallbackUser));
+    }
   };
 
   const stopImpersonating = () => {
@@ -185,7 +252,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const can = (permission: string): boolean => {
     if (!user) return false;
     if (user.role === 'DEV') return true;
-    return user.permissions.includes(permission);
+    return user.permissions?.includes(permission) ?? false;
   };
 
   return (

@@ -311,9 +311,9 @@ export default function Projects() {
             <>
               <div className="space-y-4">
                 {paginatedItems.map((project, i) => {
-                  const stage = getStageByKey(project.status, stages) || stages[0];
+                  const stage = getStageByKey(project.status, stages) || stages[0] || { color: 'bg-muted', label: 'Carregando...' };
                   const progress = calculateProjectProgress(
-                    project.checklist,
+                    project.checklist || {},
                     project.installation_type,
                     stages,
                     template,

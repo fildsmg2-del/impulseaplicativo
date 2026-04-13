@@ -325,7 +325,7 @@ export const calculateProjectProgress = (
   const totalItems = allChecklistItems.length;
   if (totalItems === 0) return 0;
 
-  const completedItems = allChecklistItems.filter((item) => checklist[item.key]).length;
+  const completedItems = allChecklistItems.filter((item) => (checklist || {})[item.key]).length;
   return Math.round((completedItems / totalItems) * 100);
 };
 

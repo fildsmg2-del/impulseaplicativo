@@ -20,7 +20,7 @@ export interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   isProfileLoaded: boolean;
-  impersonate: (user: UserProfile) => void;
+  impersonate: (user: UserProfile) => Promise<void>;
   stopImpersonating: () => void;
   login: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string, name: string) => Promise<{ error: Error | null }>;

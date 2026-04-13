@@ -329,6 +329,8 @@ export function ProjectModal({ project, open, onOpenChange, onSave, preselectedC
       
       for (const file of Array.from(files)) {
         const fileExt = file.name.split('.').pop()?.toLowerCase();
+        const userRole = (user as any)?.role;
+        
         if (!['jpg', 'jpeg', 'png', 'pdf'].includes(fileExt || '')) {
           toast.error(`Arquivo ${file.name} não suportado. Use JPG, PNG ou PDF.`);
           continue;

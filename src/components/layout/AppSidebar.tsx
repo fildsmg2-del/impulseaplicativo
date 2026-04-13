@@ -132,7 +132,8 @@ export function AppSidebar() {
     return {
       ...group,
       items: group.items.filter((item) => {
-        const roleAllowed = !item.restrictedRoles || !user || !item.restrictedRoles.includes(user.role);
+        const userRole = (user as any)?.role;
+        const roleAllowed = !item.restrictedRoles || !userRole || !item.restrictedRoles.includes(userRole);
         const permissionAllowed = !item.permission || can(item.permission);
         const flagAllowed = !item.flag || flags[item.flag] !== false;
         return roleAllowed && permissionAllowed && flagAllowed;

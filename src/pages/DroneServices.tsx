@@ -1,278 +1,278 @@
-import { useState, useMemo } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '@/hooks/use-auth';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Search, MoreHorizontal, Edit, Trash2, MapPin, Plane, Ruler, CheckCircle2, Clock, AlertCircle, FileText } from 'lucide-react';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { 
+  Activity, Search, Plus, List, LayoutGrid, Calendar, 
+  Loader2, Filter, ChevronRight, MoreHorizontal, Clock,
+  CheckCircle2, AlertCircle, XCircle
+} from 'lucide-react';
 import { droneService, DroneService, DroneServiceStatus } from '@/services/droneService';
 import { DroneServiceModal } from '@/components/drone/DroneServiceModal';
-import { pdfService } from '@/services/pdfService';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { PaginationControls } from '@/components/ui/pagination-controls';
-import { usePagination } from '@/hooks/use-pagination';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { toast } from 'sonner';
 
-const STATUS_CONFIG: Record<DroneServiceStatus, { label: string; color: string; icon: any }> = {
-  PENDENTE: { label: 'Aguardando', color: 'bg-amber-100 text-amber-700 border-amber-200', icon: Clock },
-  TECNICO: { label: 'Em Campo', color: 'bg-blue-100 text-blue-700 border-blue-200', icon: Plane },
-  REVISAO: { label: 'Em Revisão', color: 'bg-purple-100 text-purple-700 border-purple-200', icon: AlertCircle },
-  FINALIZADO: { label: 'Finalizado', color: 'bg-emerald-100 text-emerald-700 border-emerald-200', icon: CheckCircle2 },
-};
+type ViewMode = 'list' | 'kanban';
 
 export default function DroneServices() {
-  const queryClient = useQueryClient();
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedService, setSelectedService] = useState<DroneService | null>(null);
-  const [serviceToDelete, setServiceToDelete] = useState<string | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<DroneServiceStatus | null>(null);
 
-  const { user } = useAuth();
-  const { data: servicesRaw = [], isLoading } = useQuery({
-    queryKey: ['drone-services', statusFilter, search],
-    queryFn: () => droneService.getAll({ 
-        status: statusFilter === 'all' ? undefined : statusFilter as DroneServiceStatus,
-        search: search 
-    }),
+  const { data: services = [], isLoading, refetch } = useQuery({
+    queryKey: ['drone-services'],
+    queryFn: droneService.getAll,
   });
 
-  const sortedServices = useMemo(() => {
-    let result = [...servicesRaw];
-    if (!user) return [];
-    
-    if (user.role === 'PILOTO') {
-      result = result.filter(s => s.technician_id === user.id);
-    }
-
-    return result.sort((a, b) => {
-      const codeA = a.display_code || `DR-${a.id.slice(0, 4)}`;
-      const codeB = b.display_code || `DR-${b.id.slice(0, 4)}`;
-      return codeB.localeCompare(codeA, undefined, { numeric: true });
-    });
-  }, [servicesRaw, user]);
-
-  const {
-    currentPage,
-    totalPages,
-    paginatedItems,
-    goToPage,
-    startIndex,
-    endIndex,
-    totalItems
-  } = usePagination(sortedServices, { itemsPerPage: 15 });
-
-  const deleteMutation = useMutation({
-    mutationFn: droneService.delete,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['drone-services'] });
-      toast.success('Serviço excluído');
-    },
+  const filteredServices = services.filter((s) => {
+    const matchesSearch = s.client?.name?.toLowerCase().includes(search.toLowerCase()) || 
+                         s.location?.toLowerCase().includes(search.toLowerCase());
+    const matchesStatus = !statusFilter || s.status === statusFilter;
+    return matchesSearch && matchesStatus;
   });
 
-  const handleEdit = (service: DroneService) => {
+  const handleServiceClick = (service: DroneService) => {
     setSelectedService(service);
-    setIsModalOpen(true);
+    setModalOpen(true);
   };
 
-  const handleDelete = (id: string) => {
-    setServiceToDelete(id);
+  const statusConfig: Record<DroneServiceStatus, { label: string; color: string; icon: any }> = {
+    'PENDENTE': { label: 'Pendente', color: 'bg-amber-500', icon: Clock },
+    'EM_ANALISE': { label: 'Análise', color: 'bg-blue-500', icon: Activity },
+    'CONCLUIDA': { label: 'Concluída', color: 'bg-green-500', icon: CheckCircle2 },
+    'CANCELADA': { label: 'Cancelada', color: 'bg-red-500', icon: XCircle },
   };
 
   return (
-    <>
-      <div className="p-6 space-y-6">
-        <div className="flex justify-between items-center bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
-          <div>
-            <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-3">
-              <div className="p-2 bg-blue-600 rounded-lg text-white shadow-lg shadow-blue-200">
-                <Plane className="h-6 w-6" />
-              </div>
-              Operação de Drone
-            </h1>
-            <p className="text-slate-500 mt-1 font-medium">Gestão de Ordens de Serviço e Pulverização</p>
+    <div className="space-y-8 animate-in fade-in duration-700">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary/10 rounded-xl text-primary">
+              <Activity className="h-6 w-6" />
+            </div>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">Serviços Drone</h1>
           </div>
-          
-          <Button 
-            onClick={() => { setSelectedService(null); setIsModalOpen(true); }} 
-            className="bg-blue-600 hover:bg-blue-700 text-white gap-2 px-6 h-12 rounded-xl font-bold shadow-lg shadow-blue-100"
+          <p className="text-muted-foreground font-medium">
+            Gerenciamento e acompanhamento de ordens de serviço de drone
+          </p>
+        </div>
+
+        <div className="flex items-center gap-3 bg-muted/50 p-1.5 rounded-2xl border border-border">
+          <Button
+            variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+            size="sm"
+            onClick={() => setViewMode('list')}
+            className={cn("rounded-xl h-9", viewMode === 'list' && "shadow-sm bg-background")}
           >
-            <Plus className="h-5 w-5" /> Abrir Novo Serviço
+            <List className="h-4 w-4 mr-2" />
+            Lista
+          </Button>
+          <Button
+            variant={viewMode === 'kanban' ? 'secondary' : 'ghost'}
+            size="sm"
+            onClick={() => setViewMode('kanban')}
+            className={cn("rounded-xl h-9", viewMode === 'kanban' && "shadow-sm bg-background")}
+          >
+            <LayoutGrid className="h-4 w-4 mr-2" />
+            Kanban
           </Button>
         </div>
+      </div>
 
-        <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-            <div className="relative w-full md:w-96 group">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
-                <Input 
-                    placeholder="Buscar por cliente..." 
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
-                    className="pl-10 h-11 bg-white border-none shadow-sm rounded-xl"
-                />
-            </div>
-
-            <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 w-full md:w-auto">
-                <Button 
-                    variant={statusFilter === 'all' ? 'default' : 'outline'} 
-                    onClick={() => setStatusFilter('all')}
-                    className="rounded-full h-9 px-6 font-bold"
-                >
-                    Todos
-                </Button>
-                {Object.entries(STATUS_CONFIG).map(([key, config]) => (
-                    <Button 
-                        key={key}
-                        variant={statusFilter === key ? 'default' : 'outline'}
-                        onClick={() => setStatusFilter(key)}
-                        className={`rounded-full h-9 px-6 font-bold whitespace-nowrap ${statusFilter === key ? 'bg-blue-600' : ''}`}
-                    >
-                        {config.label}
-                    </Button>
-                ))}
-            </div>
+      {/* Filters & Summary */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+        <div className="lg:col-span-3 flex flex-col md:flex-row gap-3">
+          <div className="relative flex-1 group">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+            <Input
+              placeholder="Buscar por cliente ou localização..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-11 h-12 bg-card border-border rounded-2xl focus:ring-primary/20 transition-all"
+            />
+          </div>
+          
+          <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 no-scrollbar">
+            {Object.entries(statusConfig).map(([key, config]) => (
+              <Button
+                key={key}
+                variant={statusFilter === key ? 'secondary' : 'outline'}
+                size="sm"
+                onClick={() => setStatusFilter(statusFilter === key ? null : key as DroneServiceStatus)}
+                className={cn(
+                  "rounded-2xl h-12 px-4 whitespace-nowrap transition-all",
+                  statusFilter === key ? "bg-primary/10 border-primary/50 text-primary" : "bg-card border-border text-muted-foreground"
+                )}
+              >
+                <div className={cn("w-2 h-2 rounded-full mr-2", config.color)} />
+                {config.label}
+              </Button>
+            ))}
+          </div>
         </div>
 
-        <Card className="border-none shadow-sm overflow-hidden rounded-2xl">
-          <CardContent className="p-0">
-            {isLoading ? (
-                <div className="p-10 space-y-4">
-                    {[1, 2, 3].map(i => (
-                        <div key={i} className="h-12 w-full bg-slate-50 animate-pulse rounded-lg" />
-                    ))}
-                </div>
-            ) : sortedServices.length === 0 ? (
-                <div className="text-center py-20 bg-white dark:bg-slate-800">
-                    <Plane className="h-12 w-12 text-slate-200 mx-auto mb-4" />
-                    <p className="text-slate-400 font-medium">Nenhuma ordem de serviço encontrada.</p>
-                </div>
-            ) : (
-              <>
-                <Table>
-                  <TableHeader className="bg-slate-50 dark:bg-slate-900">
-                    <TableRow className="hover:bg-transparent border-slate-100">
-                      <TableHead className="font-bold text-slate-500 h-12">ID/OS</TableHead>
-                      <TableHead className="font-bold text-slate-500 h-12">Cliente</TableHead>
-                      <TableHead className="font-bold text-slate-500 h-12">Área</TableHead>
-                      <TableHead className="font-bold text-slate-500 h-12">Status</TableHead>
-                      <TableHead className="font-bold text-slate-500 h-12">Data Abertura</TableHead>
-                      <TableHead className="text-right font-bold text-slate-500 h-12">Ações</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {paginatedItems.map((service) => {
-                        const config = STATUS_CONFIG[service.status];
-                        return (
-                            <TableRow key={service.id} className="hover:bg-slate-50 border-slate-50 transition-colors group">
-                              <TableCell className="font-bold text-blue-600">
-                                {service.display_code || `DR-${service.id.slice(0, 4)}`}
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex flex-col">
-                                  <span className="font-bold text-slate-900 dark:text-white">{service.client_name}</span>
-                                  <span className="text-[10px] text-slate-400 uppercase font-medium">{service.client_document || 'Sem doc.'}</span>
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex items-center gap-1.5 font-bold text-slate-700">
-                                  <Ruler className="h-3.5 w-3.5 text-blue-500" />
-                                  {service.area_hectares ? `${service.area_hectares} ha` : '-'}
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                <Badge variant="outline" className={`font-bold px-3 py-1 gap-1.5 ${config.color} border-none`}>
-                                    <config.icon className="h-3 w-3" />
-                                    {config.label}
-                                </Badge>
-                              </TableCell>
-                              <TableCell className="text-slate-500 font-medium text-sm">
-                                {format(new Date(service.created_at), "dd/MM/yyyy", { locale: ptBR })}
-                              </TableCell>
-                              <TableCell className="text-right">
-                                <div className="flex items-center justify-end gap-2">
-                                  {service.location_link && (
-                                    <Button asChild variant="ghost" size="sm" className="h-8 w-8 p-0 text-slate-400 hover:text-rose-500">
-                                      <a href={service.location_link.startsWith('http') ? service.location_link : `https://${service.location_link}`} target="_blank" rel="noopener noreferrer">
-                                        <MapPin className="h-4 w-4" />
-                                      </a>
-                                    </Button>
-                                  )}
-                                  <DropdownMenu>
-                                      <DropdownMenuTrigger asChild>
-                                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-slate-400">
-                                              <MoreHorizontal className="h-4 w-4" />
-                                          </Button>
-                                      </DropdownMenuTrigger>
-                                      <DropdownMenuContent align="end" className="w-40 border-slate-100 shadow-xl rounded-xl">
-                                          <DropdownMenuItem onClick={() => handleEdit(service)} className="gap-2 cursor-pointer font-medium">
-                                              <Edit className="h-4 w-4 text-slate-400" /> Editar OS
-                                          </DropdownMenuItem>
-                                          <DropdownMenuItem onClick={() => pdfService.generateDetailedDronePDF(service)} className="gap-2 cursor-pointer font-medium text-emerald-600">
-                                              <FileText className="h-4 w-4" /> Exportar PDF
-                                          </DropdownMenuItem>
-                                          <DropdownMenuItem onClick={() => handleDelete(service.id)} className="gap-2 cursor-pointer font-medium text-rose-600">
-                                              <Trash2 className="h-4 w-4" /> Excluir OS
-                                          </DropdownMenuItem>
-                                      </DropdownMenuContent>
-                                  </DropdownMenu>
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                        );
-                    })}
-                  </TableBody>
-                </Table>
-                
-                <div className="p-4 border-t">
-                  <PaginationControls
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={goToPage}
-                    startIndex={startIndex}
-                    endIndex={endIndex}
-                    totalItems={totalItems}
-                  />
-                </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
-
-        <DroneServiceModal 
-          open={isModalOpen}
-          onOpenChange={setIsModalOpen}
-          service={selectedService}
-          onSuccess={() => queryClient.invalidateQueries({ queryKey: ['drone-services'] })}
-        />
-
-        <AlertDialog open={!!serviceToDelete} onOpenChange={(open) => !open && setServiceToDelete(null)}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Excluir OS de Drone</AlertDialogTitle>
-              <AlertDialogDescription>
-                Tem certeza que deseja excluir esta ordem de serviço? Esta ação não pode ser desfeita.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-              <AlertDialogAction
-                className="bg-destructive hover:bg-destructive/90"
-                onClick={() => {
-                  if (serviceToDelete) deleteMutation.mutate(serviceToDelete);
-                  setServiceToDelete(null);
-                }}
-              >
-                Excluir
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        <div className="bg-primary/5 border border-primary/10 rounded-2xl p-4 flex items-center justify-between">
+          <div className="space-y-0.5">
+            <p className="text-xs font-bold text-primary/70 uppercase tracking-widest">Total de OS</p>
+            <p className="text-2xl font-black text-primary">{filteredServices.length}</p>
+          </div>
+          <Activity className="h-8 w-8 text-primary/20" />
+        </div>
       </div>
-    </>
+
+      {/* Content */}
+      {isLoading ? (
+        <div className="flex flex-col items-center justify-center py-20 gap-4 opacity-50">
+          <Loader2 className="h-10 w-10 animate-spin text-primary" />
+          <p className="text-sm font-bold uppercase tracking-widest">Sincronizando dados...</p>
+        </div>
+      ) : filteredServices.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-32 bg-muted/20 rounded-[40px] border-2 border-dashed border-border/50 gap-6">
+          <div className="w-20 h-20 rounded-3xl bg-muted flex items-center justify-center">
+            <AlertCircle className="h-10 w-10 text-muted-foreground/30" />
+          </div>
+          <div className="text-center space-y-2">
+            <h3 className="text-xl font-bold text-foreground">Nenhuma OS encontrada</h3>
+            <p className="text-sm text-muted-foreground max-w-xs mx-auto">
+              Experimente ajustar seus filtros ou busca para encontrar o que procura.
+            </p>
+          </div>
+          <Button 
+            variant="outline" 
+            onClick={() => { setSearch(''); setStatusFilter(null); }}
+            className="rounded-2xl"
+          >
+            Limpar Filtros
+          </Button>
+        </div>
+      ) : viewMode === 'list' ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in slide-in-from-bottom-5 duration-700">
+          {filteredServices.map((service) => {
+            const config = statusConfig[service.status];
+            const StatusIcon = config.icon;
+            
+            return (
+              <div
+                key={service.id}
+                onClick={() => handleServiceClick(service)}
+                className="group relative bg-card rounded-[32px] border border-border p-6 hover:border-primary/50 hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500 cursor-pointer overflow-hidden"
+              >
+                {/* Status Indicator */}
+                <div className={cn("absolute top-0 right-0 w-32 h-32 -mr-16 -mt-16 rounded-full opacity-5 blur-2xl transition-all duration-500 group-hover:scale-150", config.color)} />
+                
+                <div className="flex items-start justify-between mb-6 relative z-10">
+                  <div className={cn("p-3 rounded-2xl text-white shadow-lg", config.color)}>
+                    <StatusIcon className="h-5 w-5" />
+                  </div>
+                  <Badge variant="secondary" className="bg-muted font-bold tracking-tight">
+                    #{service.id.slice(0, 8)}
+                  </Badge>
+                </div>
+
+                <div className="space-y-4 relative z-10">
+                  <div>
+                    <h3 className="text-lg font-black text-foreground group-hover:text-primary transition-colors line-clamp-1">
+                      {service.client?.name || 'Cliente não vinculado'}
+                    </h3>
+                    <div className="flex items-center gap-1.5 mt-1 text-muted-foreground">
+                      <MapPin className="h-3.5 w-3.5" />
+                      <span className="text-xs font-medium truncate">{service.location || 'Local não informado'}</span>
+                    </div>
+                  </div>
+
+                  <div className="h-px bg-border/50" />
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex flex-col">
+                      <span className="text-[10px] font-black uppercase text-muted-foreground/60 tracking-widest">Status</span>
+                      <span className={cn("text-sm font-bold", config.color.replace('bg-', 'text-'))}>{config.label}</span>
+                    </div>
+                    <div className="flex flex-col items-end">
+                    <span className="text-[10px] font-black uppercase text-muted-foreground/60 tracking-widest">Data</span>
+                      <span className="text-sm font-bold text-foreground">
+                        {format(new Date(service.created_at), "dd/MM/yy")}
+                      </span>
+                    </div>
+                  </div>
+
+                  <Button className="w-full rounded-2xl bg-muted hover:bg-primary hover:text-white text-foreground border-none shadow-none mt-2 group/btn font-bold transition-all duration-300">
+                    Ver Detalhes
+                    <ChevronRight className="h-4 w-4 ml-2 group-hover/btn:translate-x-1 transition-transform" />
+                  </Button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 min-h-[600px] overflow-x-auto pb-4 no-scrollbar">
+          {Object.entries(statusConfig).map(([statusKey, config]) => {
+            const columnServices = filteredServices.filter(s => s.status === statusKey);
+            const StatusIcon = config.icon;
+            
+            return (
+              <div key={statusKey} className="flex flex-col gap-4 min-w-[280px]">
+                <div className="flex items-center justify-between px-2">
+                  <div className="flex items-center gap-2">
+                    <StatusIcon className={cn("h-4 w-4", config.color.replace('bg-', 'text-'))} />
+                    <h3 className="font-black text-sm uppercase tracking-tighter text-foreground">{config.label}</h3>
+                    <Badge variant="secondary" className="bg-muted text-muted-foreground font-bold h-5 px-1.5">
+                      {columnServices.length}
+                    </Badge>
+                  </div>
+                  <MoreHorizontal className="h-4 w-4 text-muted-foreground/30 cursor-pointer" />
+                </div>
+                
+                <div className="flex-1 bg-muted/20 rounded-[32px] p-3 space-y-3 border border-border/50 backdrop-blur-sm">
+                  {columnServices.map(service => (
+                    <div
+                      key={service.id}
+                      onClick={() => handleServiceClick(service)}
+                      className="bg-card p-4 rounded-2xl border border-border shadow-sm hover:shadow-md hover:border-primary/30 transition-all cursor-pointer group"
+                    >
+                      <h4 className="font-bold text-sm text-foreground mb-1 group-hover:text-primary transition-colors truncate">
+                        {service.client?.name || 'Cliente vago'}
+                      </h4>
+                      <div className="flex items-center gap-2 mb-3">
+                        <MapPin className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-[10px] text-muted-foreground truncate italic">{service.location || 'Sem local'}</span>
+                      </div>
+                      <div className="flex items-center justify-between pt-3 border-t border-border/50">
+                        <Badge variant="outline" className="text-[9px] font-black h-5 px-1 bg-muted/30 border-none uppercase">
+                          #{service.id.slice(0, 6)}
+                        </Badge>
+                        <span className="text-[9px] font-bold text-muted-foreground">
+                          {format(new Date(service.created_at), "dd MMM", { locale: ptBR })}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {columnServices.length === 0 && (
+                    <div className="h-32 flex flex-col items-center justify-center opacity-30 gap-2">
+                      <div className={cn("w-8 h-8 rounded-full bg-muted border-2 border-dashed border-border flex items-center justify-center", config.color.replace('bg-', 'text-'))} />
+                      <p className="text-[10px] font-bold uppercase tracking-widest">Vazio</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      <DroneServiceModal
+        service={selectedService}
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+        onSave={refetch}
+      />
+    </div>
   );
 }

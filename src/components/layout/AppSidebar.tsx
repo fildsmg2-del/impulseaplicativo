@@ -24,6 +24,7 @@ import {
   ChevronDown,
   Plane,
   Target,
+  HelpCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
@@ -279,6 +280,15 @@ export function AppSidebar() {
             <UpdateBell className="shrink-0" />
           </div>
         )}
+        
+        <button
+          onClick={() => window.dispatchEvent(new CustomEvent('toggle-support-chat'))}
+          className="flex items-center gap-4 w-full px-5 py-4 mb-2 rounded-2xl text-sidebar-foreground hover:bg-white/5 transition-all duration-300 group"
+        >
+          <HelpCircle className="h-5 w-5 text-impulse-gold group-hover:scale-110 transition-transform" />
+          {!collapsed && <span className="text-sm font-medium">Suporte</span>}
+        </button>
+
         <button
           onClick={logout}
           className="flex items-center gap-4 w-full px-5 py-4 rounded-2xl text-sidebar-foreground hover:bg-red-500/10 hover:text-red-400 transition-all duration-300 group"

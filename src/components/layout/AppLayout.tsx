@@ -10,6 +10,7 @@ import { DirectMessageWatcher } from './DirectMessageWatcher';
 
 import { MobileHeader } from './MobileHeader';
 import { BottomNav } from './BottomNav';
+import { ChatWidget } from '../chat/ChatWidget';
 
 interface AppLayoutProps {
   children?: ReactNode;
@@ -44,6 +45,9 @@ export function AppLayout({ children }: AppLayoutProps) {
 
         {/* Mobile Bottom Nav */}
         <BottomNav />
+
+        {/* Support Chat Widget */}
+        <ChatWidget />
       </div>
     </div>
   );

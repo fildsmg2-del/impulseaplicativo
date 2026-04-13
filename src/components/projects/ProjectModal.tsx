@@ -761,10 +761,10 @@ export function ProjectModal({ project, open, onOpenChange, onSave, preselectedC
                     type="date"
                     value={estimatedEndDate}
                     onChange={(e) => setEstimatedEndDate(e.target.value)}
-                    disabled
+                    disabled={!isMaster && user?.role !== 'MASTER'}
                   />
                   <p className="text-xs text-muted-foreground">
-                    *+3 dias úteis após início (ajustado para feriados/domingos)
+                    *+3 dias úteis após início (feriados/domingos considerados)
                   </p>
                 </div>
               </div>

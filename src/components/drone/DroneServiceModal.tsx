@@ -58,6 +58,17 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
   });
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  const safeFormatDate = (dateStr: string | null | undefined, fmt: string = "dd/MM/yy") => {
+    if (!dateStr) return "-";
+    try {
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) return "-";
+      return format(date, fmt, { locale: ptBR });
+    } catch (e) {
+      return "-";
+    }
+  };
+
   useEffect(() => {
     if (open) {
       loadInitialData();
@@ -198,14 +209,14 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
                   <Activity className="h-6 w-6" />
                 </div>
                 <div>
-                  <DialogTitle className="text-xl font-bold">OS Drone {service.display_code || `#${service.id.slice(0, 8)}`}</DialogTitle>
+                  <DialogTitle className="text-xl font-bold">OS Drone {service.display_code || (service.id ? `#${service.id.slice(0, 8)}` : '---')}</DialogTitle>
                   <div className="flex items-center gap-2 mt-1">
                     <Badge variant="outline" className="bg-background/50 font-medium">
                       {service.client?.name || service.client_name || 'Cliente não vinculado'}
                     </Badge>
                     <div className="h-1 w-1 rounded-full bg-muted-foreground/30" />
                     <span className="text-xs text-muted-foreground font-medium">
-                      {format(new Date(service.created_at), "d 'de' MMMM", { locale: ptBR })}
+                      {safeFormatDate(service.created_at, "d 'de' MMMM")}
                     </span>
                   </div>
                 </div>

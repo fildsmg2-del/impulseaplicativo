@@ -37,8 +37,11 @@ export default function DroneServices() {
   });
 
   const filteredServices = services.filter((s) => {
-    const matchesSearch = s.client?.name?.toLowerCase().includes(search.toLowerCase()) || 
-                         s.location?.toLowerCase().includes(search.toLowerCase());
+    const searchLower = search.toLowerCase();
+    const clientName = (s.client?.name || s.client_name || '').toLowerCase();
+    const location = (s.location || '').toLowerCase();
+    
+    const matchesSearch = clientName.includes(searchLower) || location.includes(searchLower);
     const matchesStatus = !statusFilter || s.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -56,6 +59,17 @@ export default function DroneServices() {
     'TECNICO': { label: 'Em Campo', color: 'bg-indigo-500', icon: User },
     'REVISAO': { label: 'Revisão', color: 'bg-purple-500', icon: Settings2 },
     'FINALIZADO': { label: 'Finalizado', color: 'bg-emerald-500', icon: CheckCircle2 },
+  };
+
+  const safeFormatDate = (dateStr: string | null | undefined, fmt: string = "dd/MM/yy") => {
+    if (!dateStr) return "-";
+    try {
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) return "-";
+      return format(date, fmt, { locale: ptBR });
+    } catch (e) {
+      return "-";
+    }
   };
 
   return (
@@ -183,7 +197,7 @@ export default function DroneServices() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in slide-in-from-bottom-5 duration-700">
           {filteredServices.map((service) => {
             const config = statusConfig[service.status] || statusConfig['PENDENTE'];
-            const StatusIcon = config.icon;
+            const StatusIcon = config.icon || Activity;
             
             return (
               <div
@@ -199,7 +213,7 @@ export default function DroneServices() {
                     <StatusIcon className="h-5 w-5" />
                   </div>
                   <Badge variant="secondary" className="bg-muted font-bold tracking-tight">
-                    {service.display_code || `#${service.id.slice(0, 8)}`}
+                    {service.display_code || (service.id ? `#${service.id.slice(0, 8)}` : '---')}
                   </Badge>
                 </div>
 
@@ -224,7 +238,7 @@ export default function DroneServices() {
                     <div className="flex flex-col items-end">
                     <span className="text-[10px] font-black uppercase text-muted-foreground/60 tracking-widest">Data</span>
                       <span className="text-sm font-bold text-foreground">
-                        {format(new Date(service.created_at), "dd/MM/yy")}
+                        {safeFormatDate(service.created_at)}
                       </span>
                     </div>
                   </div>
@@ -268,7 +282,7 @@ export default function DroneServices() {
                       className="bg-card p-4 rounded-2xl border border-border shadow-sm hover:shadow-md hover:border-primary/30 transition-all cursor-pointer group"
                     >
                       <h4 className="font-bold text-sm text-foreground mb-1 group-hover:text-primary transition-colors truncate">
-                        {service.client?.name || 'Cliente vago'}
+                        {service.client?.name || service.client_name || 'Cliente vago'}
                       </h4>
                       <div className="flex items-center gap-2 mb-3">
                         <MapPin className="h-3 w-3 text-muted-foreground" />
@@ -276,10 +290,10 @@ export default function DroneServices() {
                       </div>
                       <div className="flex items-center justify-between pt-3 border-t border-border/50">
                         <Badge variant="outline" className="text-[9px] font-black h-5 px-1 bg-muted/30 border-none uppercase">
-                          {service.display_code || `#${service.id.slice(0, 6)}`}
+                          {service.display_code || (service.id ? `#${service.id.slice(0, 6)}` : '---')}
                         </Badge>
                         <span className="text-[9px] font-bold text-muted-foreground">
-                          {format(new Date(service.created_at), "dd MMM", { locale: ptBR })}
+                          {safeFormatDate(service.created_at, "dd MMM")}
                         </span>
                       </div>
                     </div>

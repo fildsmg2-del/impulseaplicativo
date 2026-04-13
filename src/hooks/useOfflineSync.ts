@@ -2,13 +2,14 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { offlineDB } from '@/lib/offline-db';
 import { toast } from 'sonner';
+import { IS_NATIVE_APP } from '@/lib/platform';
 
 export function useOfflineSync() {
   const [isOnline, setIsOnline] = useState(typeof window !== 'undefined' ? window.navigator.onLine : true);
   const [isSyncing, setIsSyncing] = useState(false);
 
   const processQueue = useCallback(async () => {
-    if (isSyncing) return;
+    if (!IS_NATIVE_APP || isSyncing) return;
     setIsSyncing(true);
 
     try {
@@ -87,6 +88,8 @@ export function useOfflineSync() {
   }, [isSyncing]);
 
   useEffect(() => {
+    if (!IS_NATIVE_APP) return;
+
     const handleOnline = () => {
       setIsOnline(true);
       processQueue();

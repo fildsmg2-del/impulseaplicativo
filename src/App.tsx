@@ -1,15 +1,17 @@
-import { lazy, Suspense } from "react";
+import React, { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
-import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Loader2 } from "lucide-react";
+import { IS_NATIVE_APP } from "@/lib/platform";
+import { createIDBPersister } from "@/lib/offline-persister";
+import { syncService } from "@/services/syncService";
 
 // ── Lazy-loaded pages (code splitting) ──────────────────────────
 const Index = lazy(() => import("./pages/Index"));
@@ -38,20 +40,20 @@ const DroneServices = lazy(() => import("./pages/DroneServices"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // ── Offline Persistence Configuration ──────────────────────────
-const queryClient = new QueryClient({
+export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000,       // 5 min
-      gcTime: 24 * 60 * 60 * 1000,    // 24 hours (keep data offline for a long time)
+      staleTime: IS_NATIVE_APP ? 5 * 60 * 1000 : 0, // No stale time on Web (always fresh)
+      gcTime: IS_NATIVE_APP ? 7 * 24 * 60 * 60 * 1000 : 0, // 7 days on Android, 0 on Web
       retry: 1,
-      refetchOnWindowFocus: false,
+      refetchOnWindowFocus: IS_NATIVE_APP ? false : true,
     },
   },
 });
 
-const persister = createSyncStoragePersister({
-  storage: window.localStorage,
-});
+// Only persist if running as a native app (Capacitor/Android)
+// Web (PC/PWA) stays online-first to avoid stale data issues.
+const persister = IS_NATIVE_APP ? createIDBPersister() : undefined;
 
 // ── Page loading fallback ───────────────────────────────────────
 const PageLoader = () => (
@@ -60,11 +62,14 @@ const PageLoader = () => (
   </div>
 );
 
-const App = () => (
-  <PersistQueryClientProvider 
-    client={queryClient}
-    persistOptions={{ persister }}
-  >
+const AppContent = () => {
+  React.useEffect(() => {
+    if (IS_NATIVE_APP) {
+      syncService.prefetchCriticalData();
+    }
+  }, []);
+
+  return (
     <AuthProvider>
       <TooltipProvider>
         <Toaster />
@@ -74,10 +79,8 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
-              {/* Public route for client signature */}
               <Route path="/orcamento/:token" element={<QuoteSignature />} />
 
-              {/* Protected Routes with Persistent Layout */}
               <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/clients" element={<ProtectedRoute requiredPermission="clients.view"><Clients /></ProtectedRoute>} />
@@ -107,6 +110,15 @@ const App = () => (
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>
+  );
+};
+
+const App = () => (
+  <PersistQueryClientProvider 
+    client={queryClient}
+    persistOptions={{ persister }}
+  >
+    <AppContent />
   </PersistQueryClientProvider>
 );
 

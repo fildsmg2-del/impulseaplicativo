@@ -39,6 +39,7 @@ interface NavItem {
   icon: React.ElementType;
   permission?: string;
   flag?: string;
+  restrictedRoles?: UserRole[];
   children?: { title: string; href: string }[];
 }
 
@@ -58,7 +59,7 @@ const navGroups: NavGroup[] = [
     label: 'UTILIDADES',
     items: [
       { title: 'Calculadora', href: '/calculator', icon: Calculator, permission: 'calculator.view', flag: 'MODULE_CALCULATOR_ENABLED' },
-      { title: 'Drone', href: '/drone', icon: Plane, permission: 'drone.view', flag: 'MODULE_DRONE_ENABLED' },
+      { title: 'Drone', href: '/drone', icon: Plane, permission: 'drone.view', flag: 'MODULE_DRONE_ENABLED', restrictedRoles: ['TECNICO'] },
     ]
   },
   {
@@ -76,7 +77,7 @@ const navGroups: NavGroup[] = [
       { title: 'Funil', href: '/funnel', icon: Filter, permission: 'funnel.view', flag: 'MODULE_FUNNEL_ENABLED' },
       { title: 'Orçamentos', href: '/quotes', icon: FileText, permission: 'quotes.view', flag: 'MODULE_QUOTES_ENABLED' },
       { title: 'Projetos', href: '/projects', icon: FolderKanban, permission: 'projects.view', flag: 'MODULE_PROJECTS_ENABLED' },
-      { title: 'OS', href: '/service-orders', icon: ClipboardList, permission: 'service_orders.view', flag: 'MODULE_SERVICE_ORDERS_ENABLED' },
+      { title: 'OS', href: '/service-orders', icon: ClipboardList, permission: 'service_orders.view', flag: 'MODULE_SERVICE_ORDERS_ENABLED', restrictedRoles: ['PILOTO', 'CONSULTOR_TEC_DRONE'] },
       { title: 'Vendas', href: '/sales', icon: ShoppingCart, permission: 'sales.view', flag: 'MODULE_SALES_ENABLED' },
     ]
   },
@@ -131,9 +132,10 @@ export function AppSidebar() {
     return {
       ...group,
       items: group.items.filter((item) => {
+        const roleAllowed = !item.restrictedRoles || !user || !item.restrictedRoles.includes(user.role);
         const permissionAllowed = !item.permission || can(item.permission);
         const flagAllowed = !item.flag || flags[item.flag] !== false;
-        return permissionAllowed && flagAllowed;
+        return roleAllowed && permissionAllowed && flagAllowed;
       })
     };
   }).filter(group => group.items.length > 0);

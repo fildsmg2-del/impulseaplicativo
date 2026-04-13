@@ -13,10 +13,18 @@ import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useAuth } from '@/hooks/use-auth';
+import { Navigate } from 'react-router-dom';
 
 type ViewMode = 'list' | 'kanban';
 
 export default function DroneServices() {
+  const { user } = useAuth();
+  
+  if (user?.role === 'TECNICO') {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [search, setSearch] = useState('');
   const [selectedService, setSelectedService] = useState<DroneService | null>(null);

@@ -20,6 +20,7 @@ import { serviceOrderLogService } from '@/services/serviceOrderLogService';
 import { ServiceOrderModal } from '@/components/service-orders/ServiceOrderModal';
 import { generateServiceOrderPDF } from '@/utils/serviceOrderPdfGenerator';
 import { getCompanySettings } from '@/services/companySettingsService';
+import { Navigate } from 'react-router-dom';
 
 const STATUS_OPTIONS = [
   { value: 'TODOS', label: 'Todos' },
@@ -31,9 +32,14 @@ const STATUS_OPTIONS = [
 ];
 
 export default function ServiceOrders() {
+  const { user, hasRole } = useAuth();
+
+  if (user?.role === 'PILOTO' || user?.role === 'CONSULTOR_TEC_DRONE') {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
-  const { hasRole, user } = useAuth();
   const [serviceOrders, setServiceOrders] = useState<ServiceOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');

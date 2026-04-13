@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Plus, Search, X, LayoutGrid, List, Calendar, Trash2 } from 'lucide-react';
+import { Plus, Search, X, LayoutGrid, List, Calendar, Trash2, FolderKanban } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Project, projectService, ProjectStatus } from '@/services/projectService';
 import { supabase } from '@/integrations/supabase/client';

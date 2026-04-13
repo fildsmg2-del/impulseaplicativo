@@ -15,6 +15,14 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useAuth } from '@/hooks/use-auth';
 import { Navigate } from 'react-router-dom';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 type ViewMode = 'list' | 'kanban';
 
@@ -193,63 +201,80 @@ export default function DroneServices() {
           </Button>
         </div>
       ) : viewMode === 'list' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in slide-in-from-bottom-5 duration-700">
-          {filteredServices.map((service) => {
-            const config = statusConfig[service.status] || statusConfig['PENDENTE'];
-            const StatusIcon = config.icon || Activity;
-            
-            return (
-              <div
-                key={service.id}
-                onClick={() => handleServiceClick(service)}
-                className="group relative bg-card rounded-[32px] border border-border p-6 hover:border-primary/50 hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500 cursor-pointer overflow-hidden"
-              >
-                {/* Status Indicator */}
-                <div className={cn("absolute top-0 right-0 w-32 h-32 -mr-16 -mt-16 rounded-full opacity-5 blur-2xl transition-all duration-500 group-hover:scale-150", config.color)} />
-                
-                <div className="flex items-start justify-between mb-6 relative z-10">
-                  <div className={cn("p-3 rounded-2xl text-white shadow-lg", config.color)}>
-                    <StatusIcon className="h-5 w-5" />
-                  </div>
-                  <Badge variant="secondary" className="bg-muted font-bold tracking-tight">
-                    {service.display_code || (service.id ? `#${service.id.slice(0, 8)}` : '---')}
-                  </Badge>
-                </div>
-
-                <div className="space-y-4 relative z-10">
-                  <div>
-                    <h3 className="text-lg font-black text-foreground group-hover:text-primary transition-colors line-clamp-1">
-                      {service.client?.name || service.client_name || 'Cliente não informado'}
-                    </h3>
-                    <div className="flex items-center gap-1.5 mt-1 text-muted-foreground">
-                      <MapPin className="h-3.5 w-3.5" />
-                      <span className="text-xs font-medium truncate">{service.location_link || 'Local não informado'}</span>
-                    </div>
-                  </div>
-
-                  <div className="h-px bg-border/50" />
-
-                  <div className="flex items-center justify-between">
-                    <div className="flex flex-col">
-                      <span className="text-[10px] font-black uppercase text-muted-foreground/60 tracking-widest">Status</span>
-                      <span className={cn("text-sm font-bold", config.color.replace('bg-', 'text-'))}>{config.label}</span>
-                    </div>
-                    <div className="flex flex-col items-end">
-                    <span className="text-[10px] font-black uppercase text-muted-foreground/60 tracking-widest">Área</span>
-                      <span className="text-sm font-bold text-foreground">
+        <div className="bg-card rounded-[32px] border border-border overflow-hidden animate-in slide-in-from-bottom-5 duration-700">
+          <Table>
+            <TableHeader className="bg-muted/30">
+              <TableRow className="border-border hover:bg-transparent">
+                <TableHead className="w-[100px] font-black text-[10px] uppercase tracking-widest pl-8">Código</TableHead>
+                <TableHead className="font-black text-[10px] uppercase tracking-widest">Cliente</TableHead>
+                <TableHead className="font-black text-[10px] uppercase tracking-widest">Piloto</TableHead>
+                <TableHead className="font-black text-[10px] uppercase tracking-widest">Localização</TableHead>
+                <TableHead className="font-black text-[10px] uppercase tracking-widest">Área</TableHead>
+                <TableHead className="font-black text-[10px] uppercase tracking-widest">Status</TableHead>
+                <TableHead className="w-[120px] font-black text-[10px] uppercase tracking-widest">Data</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredServices.map((service) => {
+                const config = statusConfig[service.status] || statusConfig['PENDENTE'];
+                return (
+                  <TableRow 
+                    key={service.id} 
+                    className="cursor-pointer border-border hover:bg-muted/30 transition-colors group"
+                    onClick={() => handleServiceClick(service)}
+                  >
+                    <TableCell className="pl-8 py-4 font-bold text-xs text-muted-foreground">
+                      <Badge variant="outline" className="rounded-lg bg-muted/30 border-none font-black text-primary">
+                        {service.display_code || `#${service.id.slice(0, 6)}`}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="py-4">
+                      <div className="flex flex-col">
+                        <span className="font-black text-sm text-foreground group-hover:text-primary transition-colors">
+                          {service.client?.name || service.client_name || 'Não informado'}
+                        </span>
+                        {service.client_phone && (
+                          <span className="text-[10px] text-muted-foreground">{service.client_phone}</span>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-4">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                          <User className="h-3 w-3" />
+                        </div>
+                        <span className="text-xs font-bold text-foreground">
+                          {service.technician?.name || 'Não atribuído'}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-4 max-w-[200px]">
+                      <div className="flex items-center gap-1.5 text-muted-foreground">
+                        <MapPin className="h-3.5 w-3.5 shrink-0" />
+                        <span className="text-xs truncate italic">{service.location_link || 'Sem local'}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-4">
+                      <Badge variant="secondary" className="bg-muted text-foreground font-black tracking-tight">
                         {service.area_hectares || '0'} ha
-                      </span>
-                    </div>
-                  </div>
-
-                  <Button className="w-full rounded-2xl bg-muted hover:bg-primary hover:text-white text-foreground border-none shadow-none mt-2 group/btn font-bold transition-all duration-300">
-                    Ver Detalhes
-                    <ChevronRight className="h-4 w-4 ml-2 group-hover/btn:translate-x-1 transition-transform" />
-                  </Button>
-                </div>
-              </div>
-            );
-          })}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="py-4">
+                      <div className="flex items-center gap-2">
+                        <div className={cn("w-2 h-2 rounded-full", config.color)} />
+                        <span className={cn("text-xs font-bold", config.color.replace('bg-', 'text-'))}>
+                          {config.label}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-4 text-xs font-medium text-muted-foreground">
+                      {safeFormatDate(service.created_at)}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 min-h-[600px] overflow-x-auto pb-4 no-scrollbar">

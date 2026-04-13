@@ -12,102 +12,142 @@ serve(async (req) => {
   }
 
   try {
-    const TELEGRAM_BOT_TOKEN = Deno.env.get('TELEGRAM_BOT_TOKEN');
-    const TELEGRAM_CHAT_ID = Deno.env.get('TELEGRAM_CHAT_ID');
-    const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
-    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
 
-    const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
-    const payload = await req.json();
-    
-    console.log('--- Bridge Activity ---');
-    console.log('Payload:', JSON.stringify(payload, null, 2));
+    const TELEGRAM_TOKEN = Deno.env.get('TELEGRAM_BOT_TOKEN');
+    const ADMIN_CHAT_ID = Deno.env.get('TELEGRAM_CHAT_ID');
+
+    const body = await req.json();
+    console.log("Recebido:", JSON.stringify(body));
 
     // ==========================================================
-    // CANAL 1: APP -> TELEGRAM (Outgoing)
-    // Identificado pelo gatilho do Supabase (payload.record)
+    // FLUXO 1: WEBHOOK DO TELEGRAM (ADMIN/SUPORTE RESPONDENDO)
     // ==========================================================
-    if (payload.record && !payload.record.is_from_dev) {
-      const { message, user_name, user_id, file_url, file_type } = payload.record;
-      
-      let telegramUrl = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
-      let body: any = {
-        chat_id: TELEGRAM_CHAT_ID,
-        parse_mode: 'HTML',
+    if (body.message && body.message.chat.id.toString() === ADMIN_CHAT_ID) {
+      const { message } = body;
+      const replyTo = message.reply_to_message;
+
+      if (!replyTo) {
+        console.log("Mensagem ignorada: Não é uma resposta.");
+        return new Response(JSON.stringify({ ok: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
+      // Tenta encontrar o UserID no texto da mensagem original (ID: uuid)
+      // O formato enviado pelo App é "ID: <code>USER_ID</code>"
+      const userIdMatch = replyTo.text?.match(/ID:\s+([a-f0-9-]{36})/i) || replyTo.caption?.match(/ID:\s+([a-f0-9-]{36})/i);
+      const targetUserId = userIdMatch ? userIdMatch[1] : null;
+
+      if (!targetUserId) {
+        console.error("UserID não encontrado na mensagem respondida.");
+        return new Response(JSON.stringify({ error: "UserID not found" }), { status: 404 });
+      }
+
+      let content = message.text || "";
+      let fileUrl = null;
+      let fileType = null;
+
+      // Tratar Mídia vinda do Telegram
+      if (message.photo || message.document) {
+        const fileId = message.photo ? message.photo[message.photo.length - 1].file_id : message.document.file_id;
+        const mimeType = message.photo ? "image/jpeg" : message.document.mime_type;
+        
+        const getFileRes = await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/getFile?file_id=${fileId}`);
+        const getFileData = await getFileRes.json();
+
+        if (getFileData.ok) {
+          const filePath = getFileData.result.file_path;
+          const downloadUrl = `https://api.telegram.org/file/bot${TELEGRAM_TOKEN}/${filePath}`;
+          const fileRes = await fetch(downloadUrl);
+          const fileBuffer = await fileRes.arrayBuffer();
+
+          const fileName = `${targetUserId}/${Date.now()}_${filePath.split('/').pop()}`;
+          const { data: uploadData, error: uploadError } = await supabaseClient.storage
+            .from("chat-attachments")
+            .upload(fileName, fileBuffer, { contentType: mimeType, upsert: true });
+
+          if (!uploadError) {
+            const { data: { publicUrl } } = supabaseClient.storage.from("chat-attachments").getPublicUrl(fileName);
+            fileUrl = publicUrl;
+            if (!content) content = message.photo ? "📷 Foto" : "📄 Arquivo";
+            fileType = message.photo ? "image" : "document";
+          }
+        }
+      }
+
+      // Salvar a resposta no banco (Impulse usa dev_chat_messages)
+      const { error: insertError } = await supabaseClient.from("dev_chat_messages").insert({
+        user_id: targetUserId,
+        user_name: 'Suporte Dev',
+        message: content,
+        is_from_dev: true,
+        file_url: fileUrl,
+        file_type: fileType,
+        telegram_message_id: message.message_id
+      });
+
+      if (insertError) throw insertError;
+      return new Response(JSON.stringify({ ok: true }));
+    }
+
+    // ==========================================================
+    // FLUXO 2: APP -> TELEGRAM (CLIENTE ENVIANDO)
+    // Gatilho do Banco envia o registro aqui (payload.record)
+    // ==========================================================
+    const record = body.record || body;
+    if (record && record.user_id && !record.is_from_dev) {
+      const { message: userMsg, user_id, user_name, file_url, file_type } = record;
+
+      const caption = `<b>🛡️ Suporte Impulse</b>\n` +
+                      `<b>De:</b> ${user_name}\n\n` +
+                      `${userMsg || ""}\n\n` +
+                      `<code>ID: ${user_id}</code>`;
+
+      let tgMethod = "sendMessage";
+      let tgBody: any = {
+        chat_id: ADMIN_CHAT_ID,
+        parse_mode: "HTML",
       };
-
-      const formattedMessage = `<b>🛡️ Suporte Impulse</b>\n\n<b>De:</b> ${user_name}\n<b>ID:</b> <code>${user_id}</code>\n\n<b>Mensagem:</b>\n${message}\n\n#Suporte #NovoTicket`;
 
       if (file_url) {
         if (file_type === 'image') {
-          telegramUrl = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`;
-          body.photo = file_url;
-          body.caption = formattedMessage;
+          tgMethod = "sendPhoto";
+          tgBody.photo = file_url;
+          tgBody.caption = caption;
         } else {
-          telegramUrl = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument`;
-          body.document = file_url;
-          body.caption = formattedMessage;
+          tgMethod = "sendDocument";
+          tgBody.document = file_url;
+          tgBody.caption = caption;
         }
       } else {
-        body.text = formattedMessage;
+        tgBody.text = caption;
       }
 
-      const res = await fetch(telegramUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
+      const tgUrl = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/${tgMethod}`;
+      const tgRes = await fetch(tgUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(tgBody),
       });
 
-      return new Response(JSON.stringify({ success: true, direction: 'outgoing' }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    // ==========================================================
-    // CANAL 2: TELEGRAM -> APP (Incoming / Response)
-    // Identificado pelo Webhook do Telegram (payload.message)
-    // ==========================================================
-    if (payload.message) {
-      const { text, reply_to_message } = payload.message;
-
-      // Só processamos respostas (Replies) para saber para qual usuário enviar
-      if (reply_to_message && reply_to_message.text) {
-        // Tenta extrair o User ID da mensagem original (formato <code>USER_ID</code>)
-        const idMatch = reply_to_message.text.match(/ID:\s+([a-f0-9-]{36})/i);
-        
-        if (idMatch) {
-          const targetUserId = idMatch[1];
-          console.log('Replying to User ID:', targetUserId);
-
-          // Insere a resposta no Chat de Suporte do App
-          const { error } = await supabase
-            .from('dev_chat_messages')
-            .insert({
-              user_id: targetUserId,
-              user_name: 'Suporte Dev',
-              message: text || 'Arquivo/Mídia recebida do Telegram',
-              is_from_dev: true,
-              // Opcional: Adicionar link de arquivo se vier do telegram
-            });
-
-          if (error) throw error;
-          
-          return new Response(JSON.stringify({ success: true, direction: 'incoming' }), {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          });
-        }
+      const tgData = await tgRes.json();
+      if (tgData.ok) {
+        // Atualiza o registro com o ID do Telegram para futuras respostas
+        await supabaseClient
+          .from("dev_chat_messages")
+          .update({ telegram_message_id: tgData.result.message_id })
+          .eq("id", record.id);
       }
+
+      return new Response(JSON.stringify({ success: true }));
     }
 
-    return new Response(JSON.stringify({ success: true, status: 'ignored' }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return new Response(JSON.stringify({ ok: true, status: 'no_action' }));
 
   } catch (error: any) {
-    console.error('Error:', error.message);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    console.error("telegram-support error:", error);
+    return new Response(JSON.stringify({ error: error.message }), { status: 200 });
   }
 });

@@ -30,7 +30,10 @@ export const droneService = {
     try {
       const { data, error } = await (supabase
         .from('drone_services' as any) as any)
-        .select('*')
+        .select(`
+          *,
+          technician:profiles(name)
+        `)
         .order('created_at', { ascending: false });
 
       if (error) {

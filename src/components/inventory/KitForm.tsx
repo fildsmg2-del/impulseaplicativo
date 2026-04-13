@@ -316,7 +316,7 @@ export function KitForm({
           {/* Basic Info Row 1 */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label>Nome do distribuidor *</Label>
+              <Label>Nome do distribuidor</Label>
               <Input
                 value={formData.distributor_name || ''}
                 onChange={(e) => setFormData(prev => ({ ...prev, distributor_name: e.target.value }))}
@@ -325,7 +325,7 @@ export function KitForm({
             </div>
             <div>
               <Label className="flex items-center gap-1">
-                Custo *
+                Custo
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <HelpCircle className="h-3.5 w-3.5 text-muted-foreground" />
@@ -360,7 +360,7 @@ export function KitForm({
               />
             </div>
             <div>
-              <Label>Código do Kit *</Label>
+              <Label>Código do Kit</Label>
               <Input
                 value={formData.kit_code || ''}
                 onChange={(e) => setFormData(prev => ({ ...prev, kit_code: e.target.value }))}

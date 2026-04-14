@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { format, addDays, isPast } from 'date-fns';
+import { format, addDays, isPast, isValid } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { X, Send, Paperclip, FileDown, AlertTriangle, MessageSquare, Loader2, User, Calendar, Clock, Upload, Trash2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -18,6 +18,7 @@ import { serviceOrderLogService } from '@/services/serviceOrderLogService';
 import { clientService } from '@/services/clientService';
 import { getUsers } from '@/services/userService';
 import { storageService } from '@/services/storageService';
+import { serviceTypeService } from '@/services/serviceTypeService';
 
 interface ServiceOrderModalProps {
   serviceOrder: ServiceOrder | null;
@@ -80,13 +81,30 @@ export function ServiceOrderModal({
     checklist_state: []
   });
 
+  const safeFormatDate = (dateStr: string | null | undefined, fmt: string = "dd/MM/yyyy") => {
+    if (!dateStr) return "";
+    try {
+      const date = new Date(dateStr.includes('T') ? dateStr : dateStr + 'T00:00:00');
+      if (!isValid(date)) return "";
+      return format(date, fmt, { locale: ptBR });
+    } catch (e) { return ""; }
+  };
+
   useEffect(() => {
     if (serviceOrder) {
+      const parseDate = (d: string | null | undefined) => {
+        if (!d) return '';
+        try {
+          const date = new Date(d.includes('T') ? d : d + 'T00:00:00');
+          return isValid(date) ? format(date, 'yyyy-MM-dd') : '';
+        } catch (e) { return ''; }
+      };
+
       setFormData({
         ...serviceOrder,
-        opening_date: serviceOrder.opening_date ? format(new Date(serviceOrder.opening_date + 'T00:00:00'), 'yyyy-MM-dd') : '',
-        deadline_date: serviceOrder.deadline_date ? format(new Date(serviceOrder.deadline_date + 'T00:00:00'), 'yyyy-MM-dd') : '',
-        execution_date: serviceOrder.execution_date ? format(new Date(serviceOrder.execution_date + 'T00:00:00'), 'yyyy-MM-dd') : ''
+        opening_date: parseDate(serviceOrder.opening_date),
+        deadline_date: parseDate(serviceOrder.deadline_date),
+        execution_date: parseDate(serviceOrder.execution_date)
       });
       setActiveTab('details');
     } else {
@@ -394,7 +412,7 @@ export function ServiceOrderModal({
                         <div className="flex justify-between items-center mb-1">
                           <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{log.created_by_name || 'Sistema'}</span>
                           <span className="text-[10px] text-muted-foreground/50 font-medium">
-                            {format(new Date(log.created_at), 'dd/MM/yyyy HH:mm')}
+                            {safeFormatDate(log.created_at, 'dd/MM/yyyy HH:mm')}
                           </span>
                         </div>
                         <p className="text-sm text-foreground leading-relaxed">{log.description}</p>

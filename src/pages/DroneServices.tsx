@@ -1,7 +1,9 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { 
-  CheckCircle2, AlertCircle, XCircle, MapPin, User, Settings2, Trash2
+  CheckCircle2, AlertCircle, XCircle, MapPin, User, Settings2, Trash2,
+  Loader2, Plane, List, LayoutGrid, Plus as PlusIcon, Search, Filter,
+  Clock, Activity, MoreHorizontal
 } from 'lucide-react';
 import { getUsers, UserWithRole } from '@/services/userService';
 import { toast } from 'sonner';
@@ -376,7 +378,7 @@ export default function DroneServices() {
                       </div>
                     </TableCell>
                     <TableCell className="py-4 text-xs font-bold text-foreground">
-                      {service.opening_date ? format(new Date(service.opening_date + 'T00:00:00'), 'dd/MM/yy') : safeFormatDate(service.created_at)}
+                      {service.opening_date ? safeFormatDate(service.opening_date + 'T00:00:00', 'dd/MM/yy') : safeFormatDate(service.created_at)}
                     </TableCell>
                     <TableCell className="py-4 text-right pr-8">
                       {(user?.role === 'MASTER' || user?.role === 'DEV') && (
@@ -472,7 +474,7 @@ export default function DroneServices() {
                           {service.display_code || (service.id ? `#${service.id.slice(0, 6)}` : '---')}
                         </Badge>
                         <span className="text-[9px] font-bold text-muted-foreground mr-1">
-                          {service.opening_date ? format(new Date(service.opening_date + 'T00:00:00'), "dd MMM") : safeFormatDate(service.created_at, "dd MMM")}
+                          {service.opening_date ? safeFormatDate(service.opening_date + 'T00:00:00', "dd MMM") : safeFormatDate(service.created_at, "dd MMM")}
                         </span>
                         {(user?.role === 'MASTER' || user?.role === 'DEV') && (
                           <Button 

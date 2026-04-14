@@ -52,10 +52,22 @@ export default function ServiceOrders() {
   const [preselectedTechnicianId, setPreselectedTechnicianId] = useState<string | undefined>();
   const [prefilledNotes, setPrefilledNotes] = useState<string | undefined>();
 
+  const safeFormatDate = (dateStr: string | null | undefined, fmt: string = "dd/MM/yyyy") => {
+    if (!dateStr) return "-";
+    try {
+      const date = new Date(dateStr.includes('T') ? dateStr : dateStr + 'T00:00:00');
+      if (isNaN(date.getTime())) return "-";
+      return format(date, fmt, { locale: ptBR });
+    } catch (e) {
+      return "-";
+    }
+  };
+
   const isOrderOverdue = (order: ServiceOrder) => {
-    return order.deadline_date && 
-      order.status !== 'CONCLUIDO' && 
-      isPast(new Date(order.deadline_date));
+    if (!order.deadline_date) return false;
+    try {
+      return order.status !== 'CONCLUIDO' && isPast(new Date(order.deadline_date.includes('T') ? order.deadline_date : order.deadline_date + 'T00:00:00'));
+    } catch (e) { return false; }
   };
 
   const getDaysUntilDeadline = (order: ServiceOrder) => {
@@ -251,7 +263,7 @@ export default function ServiceOrders() {
     if (order.status === 'CONCLUIDO') {
       return (
         <span className="text-xs text-muted-foreground">
-          {format(new Date(order.deadline_date + 'T00:00:00'), 'dd/MM/yyyy')}
+          {safeFormatDate(order.deadline_date)}
         </span>
       );
     }
@@ -276,7 +288,7 @@ export default function ServiceOrders() {
     
     return (
       <span className="text-xs text-muted-foreground">
-        {format(new Date(order.deadline_date + 'T00:00:00'), 'dd/MM/yyyy')}
+      {safeFormatDate(order.deadline_date)}
       </span>
     );
   };
@@ -371,8 +383,8 @@ export default function ServiceOrders() {
                           </TableCell>
                           <TableCell>
                             {order.opening_date
-                              ? format(new Date(order.opening_date + 'T00:00:00'), 'dd/MM/yyyy')
-                              : format(new Date(order.created_at), 'dd/MM/yyyy', { locale: ptBR })}
+                              ? safeFormatDate(order.opening_date)
+                              : safeFormatDate(order.created_at)}
                           </TableCell>
                           <TableCell>
                             {getDeadlineBadge(order)}

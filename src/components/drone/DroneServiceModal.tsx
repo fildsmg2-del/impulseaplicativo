@@ -33,7 +33,7 @@ import {
   SelectValue 
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { format } from 'date-fns';
+import { format, isValid } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 
@@ -132,6 +132,14 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
     if (open) {
       if (service) {
         setStatus(service.status);
+        const parseDate = (d: string | null | undefined) => {
+          if (!d) return '';
+          try {
+            const date = new Date(d.includes('T') ? d : d + 'T00:00:00');
+            return isValid(date) ? format(date, 'yyyy-MM-dd') : '';
+          } catch (e) { return ''; }
+        };
+
         setFormData({
           client_id: service.client_id || '',
           client_name: service.client_name || '',
@@ -142,8 +150,8 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
           location_link: service.location_link || '',
           area_hectares: service.area_hectares?.toString() || '',
           service_description: service.service_description || '',
-          opening_date: service.opening_date ? format(new Date(service.opening_date + 'T00:00:00'), 'yyyy-MM-dd') : format(new Date(service.created_at), 'yyyy-MM-dd'),
-          execution_date: service.execution_date ? format(new Date(service.execution_date + 'T00:00:00'), 'yyyy-MM-dd') : ''
+          opening_date: parseDate(service.opening_date) || (service.created_at ? format(new Date(service.created_at), 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd')),
+          execution_date: parseDate(service.execution_date)
         });
         setIsEditing(false);
       } else {
@@ -479,7 +487,7 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
                                   <div key={log.id} className={cn("flex flex-col gap-1 max-w-[85%]", log.created_by === user?.id ? "ml-auto items-end" : "items-start")}>
                                     <div className="flex items-center gap-2 px-1">
                                       <span className="text-[10px] font-black uppercase tracking-tighter text-muted-foreground">{log.created_by_name}</span>
-                                      <span className="text-[8px] text-muted-foreground/40">{format(new Date(log.created_at), "HH:mm")}</span>
+                                      <span className="text-[8px] text-muted-foreground/40">{safeFormatDate(log.created_at, "HH:mm")}</span>
                                     </div>
                                     <div className={cn("p-3 rounded-2xl text-xs shadow-sm shadow-black/5", log.created_by === user?.id ? "bg-primary text-primary-foreground rounded-tr-none" : "bg-card border border-border rounded-tl-none text-foreground")}>{log.message || (log as any).description}</div>
                                   </div>
@@ -508,7 +516,7 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
                             <div key={log.id} className={cn("flex flex-col gap-2", log.created_by === user?.id ? "items-end" : "items-start")}>
                               <div className="flex items-center gap-2">
                                 <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">{log.created_by_name?.charAt(0)}</div>
-                                <span className="text-[10px] font-bold text-muted-foreground">{log.created_by_name} • {format(new Date(log.created_at), "dd/MM HH:mm")}</span>
+                                <span className="text-[10px] font-bold text-muted-foreground">{log.created_by_name} • {safeFormatDate(log.created_at, "dd/MM HH:mm")}</span>
                               </div>
                               <div className={cn("max-w-[80%] p-4 rounded-3xl text-sm shadow-sm", log.created_by === user?.id ? "bg-primary text-primary-foreground rounded-tr-none" : "bg-card border border-border rounded-tl-none")}>
                                 {log.message || (log as any).description}

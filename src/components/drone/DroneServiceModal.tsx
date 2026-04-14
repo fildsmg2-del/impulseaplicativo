@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { 
   Loader2, Save, Trash2, User, MapPin, Plus as PlusIcon,
-  Settings2, Activity, MessageCircle, Clock
+  Settings2, Activity, MessageCircle, Clock, Send
 } from 'lucide-react';
 import { droneService, DroneService, DroneServiceStatus } from '@/services/droneService';
 import { droneLogService, DroneServiceLog } from '@/services/droneLogService';

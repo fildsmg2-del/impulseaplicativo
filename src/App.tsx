@@ -45,8 +45,10 @@ export const queryClient = new QueryClient({
     queries: {
       staleTime: IS_NATIVE_APP ? 30 * 60 * 1000 : 0, // 30 mins stable on Mobile
       gcTime: IS_NATIVE_APP ? 30 * 24 * 60 * 60 * 1000 : 0, // 30 days of persistence
-      retry: 1,
+      retry: IS_NATIVE_APP ? false : 1, // Don't retry on native when offline
       refetchOnWindowFocus: IS_NATIVE_APP ? false : true,
+      // offlineFirst: try fetch, if it fails use cached data
+      networkMode: IS_NATIVE_APP ? 'offlineFirst' : 'online',
     },
   },
 });

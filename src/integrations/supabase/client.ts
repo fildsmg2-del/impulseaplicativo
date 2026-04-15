@@ -3,43 +3,38 @@ import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
 import { offlineDB } from '@/lib/offline-db';
-import { IS_NATIVE_APP } from '@/lib/platform';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
-// Fetch Wrapper offline
+// Fetch Wrapper offline - intercepts mutations when offline and queues them
 const customOfflineFetch = async (url: RequestInfo | URL, options?: RequestInit): Promise<Response> => {
   const method = options?.method || 'GET';
   const urlString = url.toString();
 
-  // If we know we're offline and it's a mutation, enqueue immediately
+  // --- MUTATIONS (POST/PATCH/PUT/DELETE) ---
+  // If offline and it's a mutation, enqueue immediately without trying
   if (method !== 'GET' && !window.navigator.onLine) {
     console.log('[Offline] Enfileirando mutação offline:', method, urlString);
     return enqueueAndMock(url, options);
   }
 
+  // --- ATTEMPT THE REAL REQUEST ---
   try {
     const response = await fetch(url, options);
     return response;
   } catch (error) {
-    // Network error caught - we're actually offline
     if (error instanceof TypeError) {
-      // For mutations: save to queue for later sync
+      // Network error on a mutation: enqueue for later sync
       if (method !== 'GET') {
         console.log('[Offline] Erro de rede, enfileirando mutação:', method, urlString);
         return enqueueAndMock(url, options);
       }
 
-      // For GETs on native app: return empty response so TanStack Query 
-      // can fall back to its persisted cache instead of crashing
-      if (IS_NATIVE_APP) {
-        console.log('[Offline] Erro de rede em GET, retornando resposta vazia para uso do cache:', urlString);
-        return new Response(JSON.stringify([]), {
-          status: 200,
-          headers: { 'Content-Type': 'application/json' }
-        });
-      }
+      // Network error on GET: let it bubble up as an error
+      // TanStack Query will then fall back to cached data (if available)
+      // DO NOT return fake empty data here — that would overwrite the cache!
+      console.log('[Offline] GET falhou sem rede, TanStack Query usará cache:', urlString);
     }
     throw error;
   }

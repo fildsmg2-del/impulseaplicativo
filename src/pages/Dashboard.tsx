@@ -121,6 +121,14 @@ export default function Dashboard() {
     enabled: !!user?.id
   });
 
+  console.log('[Dashboard] Status:', { 
+    userId: user?.id, 
+    role: user?.role, 
+    isProfileLoaded, 
+    isLoadingSummary: loading,
+    hasData: !!summary 
+  });
+
   const isMasterOrDev = user?.role === 'MASTER' || user?.role === 'DEV';
   const isFinanceiro = user?.role === 'FINANCEIRO';
   const isVendedor = user?.role === 'VENDEDOR';

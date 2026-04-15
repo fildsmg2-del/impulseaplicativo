@@ -64,6 +64,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           ['financial.view', 'projects.view', 'clients.view', 'sales.view', 'quotes.view'].forEach(p => effectivePermissions.add(p));
         }
 
+        const fullProfile: UserProfile = {
+          id: profile.id,
+          email: profile.email,
+          name: profile.name,
+          role: userRole,
+          avatar_url: profile.avatar_url || undefined,
           created_at: profile.created_at,
           permissions: Array.from(effectivePermissions),
         };
@@ -95,42 +101,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log('[Auth] Evento de autenticação:', event);
         setSession(session);
         
         if (session?.user) {
-          setTimeout(() => {
-            fetchUserProfile(session.user.id).then(() => {
-              const savedImpersonation = sessionStorage.getItem('impersonated_user');
-              const savedRealUser = sessionStorage.getItem('real_user');
-              if (savedImpersonation && savedRealUser) {
-                try {
-                  const targetUser = JSON.parse(savedImpersonation);
-                  const originalUser = JSON.parse(savedRealUser);
-                  setUser(targetUser);
-                  setRealUser(originalUser);
-                } catch (e) {
-                  console.error("Error restoring impersonation", e);
-                }
-              }
-            });
-          }, 0);
-        } else {
+          fetchUserProfile(session.user.id);
+        } else if (event === 'SIGNED_OUT') {
           setUser(null);
           setRealUser(null);
           sessionStorage.removeItem('impersonated_user');
           sessionStorage.removeItem('real_user');
+          localStorage.removeItem('cached_user_profile');
         }
         
         setIsLoading(false);
       }
     );
 
+    // CRITICAL: Try to hydrate profile from cache IMMEDIATELY on boot
+    const hydrateOffline = () => {
+      const cached = localStorage.getItem('cached_user_profile');
+      if (cached) {
+        try {
+          const profile = JSON.parse(cached);
+          console.log('[Auth] Pré-hidratando perfil do cache offline:', profile.id);
+          setUser(profile);
+          setIsProfileLoaded(true);
+        } catch (e) {
+          console.error('[Auth] Erro ao carregar cache de perfil inicial', e);
+        }
+      }
+    };
+    
+    hydrateOffline();
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       if (session?.user) {
         fetchUserProfile(session.user.id);
+      } else {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     });
 
     return () => subscription.unsubscribe();

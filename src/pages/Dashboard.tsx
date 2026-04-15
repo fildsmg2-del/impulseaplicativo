@@ -56,7 +56,8 @@ async function fetchDashboardSummary(role: string, userId: string): Promise<Dash
   // 3: Drone Services
   if (isMasterOrDev || isDrone) {
     let q = supabase.from('drone_services').select('id, status, technician_id');
-    if (isDrone && !isMasterOrDev) q = q.eq('technician_id', userId);
+    // Apenas Pilotos são restringidos às suas próprias OS no dashboard
+    if (role === 'PILOTO' && !isMasterOrDev) q = q.eq('technician_id', userId);
     queries.push(q);
   } else { queries.push(Promise.resolve({ data: [] })); }
 

@@ -351,15 +351,15 @@ export default function MyArea() {
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-impulse-gold" />
           </div>
-        ) : filteredAndSortedProjects.length === 0 ? (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <FolderKanban className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold text-foreground mb-2">
-                Nenhum projeto encontrado
-              </h3>
-              <p className="text-muted-foreground">
-                {searchTerm ? 'Tente buscar com outro termo.' : 'Você não tem projetos nesta categoria.'}
+        ) : (isDroneRole ? filteredDroneServices.length === 0 : filteredAndSortedProjects.length === 0) ? (
+          <Card className="border-dashed">
+            <CardContent className="py-12 flex flex-col items-center justify-center text-center">
+              <div className="bg-muted p-3 rounded-full mb-4">
+                {isDroneRole ? <Plane className="h-6 w-6 text-muted-foreground" /> : <Folder className="h-6 w-6 text-muted-foreground" />}
+              </div>
+              <h3 className="text-lg font-semibold">{isDroneRole ? 'Nenhuma OS encontrada' : 'Nenhum projeto encontrado'}</h3>
+              <p className="text-muted-foreground text-sm">
+                {isDroneRole ? 'Você não tem ordens de serviço nesta categoria.' : 'Você não tem projetos nesta categoria.'}
               </p>
             </CardContent>
           </Card>

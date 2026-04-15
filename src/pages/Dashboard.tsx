@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { 
   FolderKanban, FileText, Wrench, Loader2, ChevronRight, AlertTriangle, 
   Clock, CheckCircle, PlusCircle, Users, BarChart3, TrendingUp, TrendingDown,
-  DollarSign
+  DollarSign, Plane, Activity
 } from 'lucide-react';
 import { SmartAlerts } from '@/components/dashboard/SmartAlerts';
 import { useAuth } from '@/hooks/use-auth';
@@ -36,7 +36,7 @@ async function fetchDashboardSummary(role: string, userId: string): Promise<Dash
   // 0: Projects
   if (isMasterOrDev || isEngenharia) {
     let q = supabase.from('projects').select('id, status, estimated_end_date, assigned_to');
-    if (isEngenharia && !isMasterOrDev) q = q.eq('assigned_to', userId);
+    if (role === 'TECNICO') q = q.eq('assigned_to', userId);
     queries.push(q);
   } else { queries.push(Promise.resolve({ data: [] })); }
 
@@ -50,7 +50,7 @@ async function fetchDashboardSummary(role: string, userId: string): Promise<Dash
   // 2: Service Orders (General)
   if (isMasterOrDev || isEngenharia) {
     let q = supabase.from('service_orders').select('id, status, deadline_date, assigned_to');
-    if (isEngenharia && !isMasterOrDev) q = q.eq('assigned_to', userId);
+    if (role === 'TECNICO') q = q.eq('assigned_to', userId);
     queries.push(q);
   } else { queries.push(Promise.resolve({ data: [] })); }
 

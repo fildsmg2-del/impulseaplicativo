@@ -20,7 +20,7 @@ import { FinancialAccountManager } from '@/components/settings/FinancialAccountM
 import { useAuth } from '@/hooks/use-auth';
 import { UserRole } from '@/types';
 import { useQueryClient } from '@tanstack/react-query';
-import { r2StorageService } from '@/services/r2StorageService';
+
 
 export default function Settings() {
   const queryClient = useQueryClient();
@@ -590,24 +590,24 @@ export default function Settings() {
                       if (user?.role === 'MASTER') return u.role !== 'DEV';
                       return true;
                     })
-                    .map((user) => (
-                      <TableRow key={user.id}>
-                      <TableCell className="font-medium">{user.name}</TableCell>
-                      <TableCell>{user.email}</TableCell>
+                    .map((u) => (
+                      <TableRow key={u.id}>
+                      <TableCell className="font-medium">{u.name}</TableCell>
+                      <TableCell>{u.email}</TableCell>
                       <TableCell>
-                        <Badge className={getRoleBadgeClass(user.role)}>
-                          {user.role}
+                        <Badge className={getRoleBadgeClass(u.role)}>
+                          {u.role}
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        {new Date(user.created_at).toLocaleDateString('pt-BR')}
+                        {new Date(u.created_at).toLocaleDateString('pt-BR')}
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => handleEditUser(user)}
+                            onClick={() => handleEditUser(u)}
                           >
                             <Pencil className="h-4 w-4" />
                           </Button>
@@ -621,13 +621,13 @@ export default function Settings() {
                               <AlertDialogHeader>
                                 <AlertDialogTitle>Remover Usuário</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                  Tem certeza que deseja remover {user.name}? Esta ação não pode ser desfeita.
+                                  Tem certeza que deseja remover {u.name}? Esta ação não pode ser desfeita.
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
                                 <AlertDialogCancel>Cancelar</AlertDialogCancel>
                                 <AlertDialogAction
-                                  onClick={() => handleDeleteUser(user.id)}
+                                  onClick={() => handleDeleteUser(u.id)}
                                   className="bg-destructive hover:bg-destructive/90"
                                 >
                                   Remover

@@ -114,17 +114,26 @@ export default function MyArea() {
 
   const droneServices = useMemo(() => {
     if (!isDroneRole) return [];
+    
+    // MASTER, DEV e CONSULTOR_TEC_DRONE veem tudo
+    if (hasRole(['MASTER', 'DEV', 'CONSULTOR_TEC_DRONE'])) {
+      return allDroneServices;
+    }
+
     return allDroneServices.filter(s => {
-      // Regra: ser o técnico ou o criador
+      // Piloto vê apenas o que foi designado a ele OU o que ele criou
       const isAssigned = s.technician_id === userId || s.created_by === userId;
       if (!isAssigned) return false;
 
-      // Pilotos não veem finalizadas
+      // Pilotos não veem finalizadas na lista principal de execução
+      // Mas permitimos que fiquem no array base para as contagens funcionarem se necessário
+      // No entanto, o filtro de 'em execução' cuidará disso.
+      // A pedido do usuário: "mesmo que o piloto esteja vinculado aquela OS apos concluida ele nao consegue ve-la"
       if (userRole === 'PILOTO' && s.status === 'FINALIZADO') return false;
 
       return true;
     });
-  }, [allDroneServices, userRole, userId, isDroneRole]);
+  }, [allDroneServices, userRole, userId, isDroneRole, hasRole]);
 
   // Carregar nomes dos clientes
   const { data: clientNames = {} } = useQuery({
@@ -268,7 +277,9 @@ export default function MyArea() {
   };
 
   const emExecucaoCount = isDroneRole
-    ? droneServices.filter(s => s.status !== 'FINALIZADO').length
+    ? (hasRole(['MASTER', 'DEV', 'CONSULTOR_TEC_DRONE']) 
+        ? allDroneServices.filter(s => s.status !== 'FINALIZADO').length
+        : droneServices.filter(s => s.status !== 'FINALIZADO').length)
     : (hasRole(['MASTER', 'DEV'])
         ? projects.filter(p => p.status !== 'POS_VENDA').length
         : projects.filter(p => {
@@ -276,7 +287,9 @@ export default function MyArea() {
           }).length);
   
   const concluidosCount = isDroneRole
-    ? droneServices.filter(s => s.status === 'FINALIZADO').length
+    ? (hasRole(['MASTER', 'DEV', 'CONSULTOR_TEC_DRONE']) 
+        ? allDroneServices.filter(s => s.status === 'FINALIZADO').length
+        : droneServices.filter(s => s.status === 'FINALIZADO').length)
     : (hasRole(['MASTER', 'DEV'])
         ? projects.filter(p => p.status === 'POS_VENDA').length
         : projects.filter(p =>

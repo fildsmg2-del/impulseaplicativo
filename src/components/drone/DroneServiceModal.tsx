@@ -327,7 +327,23 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
                     <Activity className="h-6 w-6" />
                   </div>
                   <div>
-                    <DialogTitle className="text-xl font-bold">OS Drone {service.display_code || (service.id ? `#${service.id.slice(0, 8)}` : '---')}</DialogTitle>
+                    <div className="flex items-center gap-3">
+                      <DialogTitle className="text-xl font-bold">OS Drone {service.display_code || `#${service.id.slice(0, 8)}`}</DialogTitle>
+                      <Select 
+                        value={status} 
+                        onValueChange={(val) => handleStatusChange(val as DroneServiceStatus)}
+                      >
+                        <SelectTrigger className="h-7 w-fit px-3 text-[10px] font-black uppercase tracking-widest rounded-lg border-primary/20 bg-primary/5 text-primary">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-xl border-border shadow-2xl">
+                          <SelectItem value="PENDENTE" className="text-[10px] font-bold uppercase">Pendente</SelectItem>
+                          <SelectItem value="TECNICO" className="text-[10px] font-bold uppercase">Técnico</SelectItem>
+                          <SelectItem value="REVISAO" className="text-[10px] font-bold uppercase">Revisão</SelectItem>
+                          <SelectItem value="FINALIZADO" className="text-[10px] font-bold uppercase">Finalizado</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                     <p className="text-xs text-muted-foreground font-medium mt-1">
                       {service.client?.name || service.client_name || 'Cliente não identificado'}
                     </p>
@@ -420,23 +436,9 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
                         {isEditing ? (
                           <div className="space-y-4 animate-in fade-in duration-300">
                             <div className="grid grid-cols-2 gap-2">
-                              <div className="space-y-1">
+                              <div className="space-y-1 col-span-2">
                                 <Label className="text-[10px] uppercase font-bold text-muted-foreground">Área (ha)</Label>
                                 <Input type="number" value={formData.area_hectares} onChange={(e) => setFormData({...formData, area_hectares: e.target.value})} className="h-8 text-xs rounded-xl" />
-                              </div>
-                              <div className="space-y-1">
-                                <Label className="text-[10px] uppercase font-bold text-muted-foreground">Status</Label>
-                                <Select value={status} onValueChange={(val) => handleStatusChange(val as DroneServiceStatus)}>
-                                  <SelectTrigger className="h-8 text-[10px] uppercase font-black rounded-xl border-primary/20 bg-primary/5 text-primary">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="PENDENTE">Pendente</SelectItem>
-                                    <SelectItem value="TECNICO">Técnico</SelectItem>
-                                    <SelectItem value="REVISAO">Revisão</SelectItem>
-                                    <SelectItem value="FINALIZADO">Finalizado</SelectItem>
-                                  </SelectContent>
-                                </Select>
                               </div>
                             </div>
                             <div className="grid grid-cols-2 gap-2">

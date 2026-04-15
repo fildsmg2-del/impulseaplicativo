@@ -14,6 +14,9 @@ import { useProjectStages } from '@/hooks/useProjectStages';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { supabase } from '@/integrations/supabase/client';
+import { droneService, DroneService } from '@/services/droneService';
+import { DroneServiceModal } from '@/components/drone/DroneServiceModal';
+import { Plane, Activity } from 'lucide-react';
 import {
   ToggleGroup,
   ToggleGroupItem,
@@ -74,14 +77,30 @@ export default function MyArea() {
 
   const userRole = user?.role || 'VENDEDOR';
   const userId = user?.id;
+  const isDroneRole = userRole === 'PILOTO' || userRole === 'CONSULTOR_TEC_DRONE';
 
-  const { data: allProjects = [], isLoading: loading, refetch: refetchProjects } = useQuery({
+  const { data: allProjects = [], isLoading: loadingProjects, refetch: refetchProjects } = useQuery({
     queryKey: ['projects-all'],
     queryFn: projectService.getAll,
     staleTime: 5 * 60 * 1000, // 5 minutes cache
+    enabled: !isDroneRole && !!user
   });
 
+  const { data: allDroneServices = [], isLoading: loadingDrone, refetch: refetchDrone } = useQuery({
+    queryKey: ['drone-services-all'],
+    queryFn: droneService.getAll,
+    staleTime: 5 * 60 * 1000,
+    enabled: isDroneRole && !!user
+  });
+
+  const loading = isDroneRole ? loadingDrone : loadingProjects;
+  const refetchAll = () => {
+    if (isDroneRole) refetchDrone();
+    else refetchProjects();
+  };
+
   const projects = useMemo(() => {
+    if (isDroneRole) return [];
     if (hasRole(['MASTER', 'DEV'])) {
       return allProjects;
     }
@@ -91,7 +110,21 @@ export default function MyArea() {
       return isProjectActiveForRole(p.status, assignedRole, userRole, assignedTo, userId) || 
              isProjectCompletedForRole(p.status, assignedRole, userRole, assignedTo, userId);
     });
-  }, [allProjects, hasRole, userRole, userId]);
+  }, [allProjects, hasRole, userRole, userId, isDroneRole]);
+
+  const droneServices = useMemo(() => {
+    if (!isDroneRole) return [];
+    return allDroneServices.filter(s => {
+      // Regra: ser o técnico ou o criador
+      const isAssigned = s.technician_id === userId || s.created_by === userId;
+      if (!isAssigned) return false;
+
+      // Pilotos não veem finalizadas
+      if (userRole === 'PILOTO' && s.status === 'FINALIZADO') return false;
+
+      return true;
+    });
+  }, [allDroneServices, userRole, userId, isDroneRole]);
 
   // Carregar nomes dos clientes
   const { data: clientNames = {} } = useQuery({
@@ -181,9 +214,40 @@ export default function MyArea() {
     return result;
   }, [projects, statusFilter, searchTerm, clientNames, userRole, userId, hasRole]);
 
+  const filteredDroneServices = useMemo(() => {
+    let result = [...droneServices];
+
+    // Filtros de status equivalentes
+    if (statusFilter === 'em_execucao') {
+      result = result.filter(s => s.status !== 'FINALIZADO');
+    } else if (statusFilter === 'concluidos') {
+      result = result.filter(s => s.status === 'FINALIZADO');
+    }
+
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      result = result.filter(s => 
+        (s.client_name || '').toLowerCase().includes(term) ||
+        (s.location_link || '').toLowerCase().includes(term) ||
+        (s.display_code || '').toLowerCase().includes(term)
+      );
+    }
+
+    result.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    return result;
+  }, [droneServices, statusFilter, searchTerm]);
+
+  const [selectedDroneService, setSelectedDroneService] = useState<DroneService | null>(null);
+  const [droneModalOpen, setDroneModalOpen] = useState(false);
+
   const handleProjectClick = (project: Project) => {
     setSelectedProject(project);
     setModalOpen(true);
+  };
+
+  const handleDroneClick = (service: DroneService) => {
+    setSelectedDroneService(service);
+    setDroneModalOpen(true);
   };
 
   const getStageLabel = (status: string) => {
@@ -203,23 +267,27 @@ export default function MyArea() {
     return colors[status] || 'bg-muted';
   };
 
-  const emExecucaoCount = hasRole(['MASTER', 'DEV'])
-    ? projects.filter(p => p.status !== 'POS_VENDA').length
-    : projects.filter(p => {
-        return isProjectActiveForRole(p.status, p.assigned_role, userRole, p.assigned_to, userId);
-      }).length;
+  const emExecucaoCount = isDroneRole
+    ? droneServices.filter(s => s.status !== 'FINALIZADO').length
+    : (hasRole(['MASTER', 'DEV'])
+        ? projects.filter(p => p.status !== 'POS_VENDA').length
+        : projects.filter(p => {
+            return isProjectActiveForRole(p.status, p.assigned_role, userRole, p.assigned_to, userId);
+          }).length);
   
-  const concluidosCount = hasRole(['MASTER', 'DEV'])
-    ? projects.filter(p => p.status === 'POS_VENDA').length
-    : projects.filter(p =>
-        isProjectCompletedForRole(
-          p.status,
-          p.assigned_role,
-          userRole,
-          p.assigned_to,
-          userId,
-        ),
-      ).length;
+  const concluidosCount = isDroneRole
+    ? droneServices.filter(s => s.status === 'FINALIZADO').length
+    : (hasRole(['MASTER', 'DEV'])
+        ? projects.filter(p => p.status === 'POS_VENDA').length
+        : projects.filter(p =>
+            isProjectCompletedForRole(
+              p.status,
+              p.assigned_role,
+              userRole,
+              p.assigned_to,
+              userId,
+            ),
+          ).length);
 
   return (
     <>
@@ -227,12 +295,12 @@ export default function MyArea() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-foreground">Minha Área</h1>
-            <p className="text-muted-foreground">
-              Projetos pendentes para você ({userRole})
+            <p className="text-muted-foreground text-sm">
+              {isDroneRole ? `Ordens de Serviço de Drone (${userRole})` : `Projetos pendentes para você (${userRole})`}
             </p>
           </div>
           <Badge variant="outline" className="text-impulse-gold border-impulse-gold w-fit">
-            {filteredAndSortedProjects.length} projeto(s)
+            {isDroneRole ? `${filteredDroneServices.length} OS encontrada(s)` : `${filteredAndSortedProjects.length} projeto(s)`}
           </Badge>
         </div>
 
@@ -282,9 +350,10 @@ export default function MyArea() {
               </p>
             </CardContent>
           </Card>
-        ) : (
+        ) : !isDroneRole ? (
           <div className="space-y-3">
             {filteredAndSortedProjects.map((project) => {
+              // ... existing project rendering logic
               const progress = calculateProjectProgress(
                 project.checklist || {},
                 project.installation_type,
@@ -292,6 +361,7 @@ export default function MyArea() {
                 template,
               );
               const clientName = project.client_id ? clientNames[project.client_id] : 'Cliente não vinculado';
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
               const isCompleted = hasRole(['MASTER', 'DEV'])
                 ? project.status === 'POS_VENDA'
                 : isProjectCompletedForRole(
@@ -307,7 +377,7 @@ export default function MyArea() {
               return (
                 <Card 
                   key={project.id} 
-                  className={`cursor-pointer hover:shadow-md transition-shadow ${isCompleted ? 'opacity-75' : ''}`}
+                  className={`cursor-pointer hover:shadow-md transition-shadow`}
                   onClick={() => handleProjectClick(project)}
                 >
                   <CardContent className="p-4">
@@ -369,6 +439,75 @@ export default function MyArea() {
               );
             })}
           </div>
+        ) : (
+          <div className="space-y-3">
+            {filteredDroneServices.map((service) => (
+              <Card 
+                key={service.id} 
+                className="cursor-pointer hover:shadow-md transition-all border-border/50 group"
+                onClick={() => handleDroneClick(service)}
+              >
+                <CardContent className="p-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-3 mb-2">
+                        <Badge className={`${service.status === 'FINALIZADO' ? 'bg-emerald-500' : 'bg-primary'} text-white shrink-0 font-bold text-[10px] items-center gap-1`}>
+                          <Plane className="h-3 w-3" />
+                          {service.status}
+                        </Badge>
+                        <span className="font-bold text-foreground truncate">
+                          {service.display_code || `#${service.id.slice(0, 8)}`}
+                        </span>
+                      </div>
+                      
+                      <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-1.5">
+                          <User className="h-3.5 w-3.5" />
+                          <span className="font-medium truncate max-w-[200px]">
+                            {service.client_name || 'Cliente manual'}
+                          </span>
+                        </div>
+                        
+                        {service.location_link && (
+                          <div className="flex items-center gap-1.5 max-w-[300px]">
+                            <MapPin className="h-3.5 w-3.5 shrink-0" />
+                            <span className="truncate italic">{service.location_link}</span>
+                          </div>
+                        )}
+                        
+                        <div className="flex items-center gap-1.5">
+                          <Calendar className="h-3.5 w-3.5" />
+                          <span>
+                            {format(new Date(service.created_at), 'dd/MM/yyyy', { locale: ptBR })}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-4 sm:w-48 justify-end">
+                      <div className="flex items-center gap-2 text-xs font-bold text-primary/70">
+                         <Activity className="h-3 w-3" />
+                         <span>{service.area_hectares || '0'} ha</span>
+                      </div>
+                    </div>
+
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="shrink-0 rounded-xl"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDroneClick(service);
+                      }}
+                    >
+                      Acessar OS
+                      <ArrowRight className="h-4 w-4 ml-1" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         )}
       </div>
 
@@ -377,6 +516,13 @@ export default function MyArea() {
         open={modalOpen}
         onOpenChange={setModalOpen}
         onSave={refetchProjects}
+      />
+
+      <DroneServiceModal
+        service={selectedDroneService}
+        open={droneModalOpen}
+        onOpenChange={setDroneModalOpen}
+        onSave={refetchDrone}
       />
     </>
   );

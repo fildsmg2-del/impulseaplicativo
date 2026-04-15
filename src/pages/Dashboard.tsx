@@ -170,7 +170,7 @@ export default function Dashboard() {
 
           {(isMasterOrDev || isEngenharia || isDrone) && !isVendedor && !isFinanceiro && (
             <>
-              <Button size="sm" onClick={() => navigate('/service-orders?new=true')}>
+              <Button size="sm" onClick={() => navigate(isDrone ? '/drone?new=true' : '/service-orders?new=true')}>
                 <Wrench className="h-4 w-4 mr-2" /> Nova O.S.
               </Button>
             </>
@@ -284,7 +284,7 @@ export default function Dashboard() {
 
         {/* Module: Ordens de Servico (Engenharia / Drone) */}
         {(isMasterOrDev || isEngenharia || isDrone) && (
-          <Link to="/service-orders" className="group">
+          <Link to={isDrone && !isMasterOrDev ? "/drone" : "/service-orders"} className="group">
             <div className="bg-card rounded-xl border border-border p-5 hover:shadow-lg hover:border-primary/30 transition-all hover-lift">
               <div className="flex items-center justify-between mb-4">
                 <div className={cn("p-2.5 rounded-xl", (summary?.serviceOrders.overdue || 0) > 0 ? "bg-destructive/10" : "bg-primary/10")}>
@@ -293,7 +293,7 @@ export default function Dashboard() {
                 <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
               </div>
               <h3 className="text-lg font-semibold text-foreground mb-3">
-                {user?.role === 'PILOTO' ? 'Minhas O.S.' : 'Ordens de Serviço'}
+                {isDrone && !isMasterOrDev ? 'OS de Drone' : (user?.role === 'TECNICO' ? 'Minhas O.S.' : 'Ordens de Serviço')}
               </h3>
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
@@ -302,7 +302,7 @@ export default function Dashboard() {
                   </span>
                   <span className="font-medium text-foreground">{summary?.serviceOrders.pending || 0}</span>
                 </div>
-                {(summary?.serviceOrders.overdue || 0) > 0 && (
+                {(summary?.serviceOrders.overdue || 0) > 0 && !isDrone && (
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-destructive flex items-center gap-2">
                       <AlertTriangle className="h-3.5 w-3.5" /> Vencidas

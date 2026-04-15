@@ -49,6 +49,7 @@ export default function DroneServices() {
   const [modalOpen, setModalOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<DroneServiceStatus | null>(null);
   const [pilotFilter, setPilotFilter] = useState<string | null>(null);
+  const [showCompleted, setShowCompleted] = useState(false);
   const [pilots, setPilots] = useState<UserWithRole[]>([]);
 
   const { data: services = [], isLoading, refetch } = useQuery({
@@ -74,8 +75,20 @@ export default function DroneServices() {
   const technicianNames = pilots.reduce((acc, p) => ({ ...acc, [p.id]: p.name }), {} as Record<string, string>);
 
   const filteredServices = services.filter((s) => {
+    const isPilot = user?.role === 'PILOTO';
+
     // Regra: Piloto vê apenas o que foi designado a ele OU o que ele criou
-    if (user?.role === 'PILOTO' && s.technician_id !== user.id && s.created_by !== user.id) {
+    if (isPilot && s.technician_id !== user.id && s.created_by !== user.id) {
+      return false;
+    }
+
+    // Regra: Piloto não vê OS finalizadas
+    if (isPilot && s.status === 'FINALIZADO') {
+      return false;
+    }
+
+    // Regra Geral: Esconder finalizados por padrão (a menos que o filtro esteja ativo)
+    if (!showCompleted && s.status === 'FINALIZADO') {
       return false;
     }
 
@@ -270,7 +283,7 @@ export default function DroneServices() {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
         <div className="lg:col-span-3 flex flex-col md:flex-row gap-3">
           <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 no-scrollbar">
-            {Object.entries(statusConfig).map(([key, config]) => (
+            {Object.entries(statusConfig).filter(([key]) => key !== 'FINALIZADO').map(([key, config]) => (
               <Button
                 key={key}
                 variant={statusFilter === key ? 'secondary' : 'outline'}
@@ -285,6 +298,25 @@ export default function DroneServices() {
                 {config.label}
               </Button>
             ))}
+            
+            {(user?.role !== 'PILOTO') && (
+              <Button
+                variant={showCompleted ? 'secondary' : 'outline'}
+                size="sm"
+                onClick={() => {
+                  setShowCompleted(!showCompleted);
+                  if (!showCompleted) setStatusFilter('FINALIZADO');
+                  else if (statusFilter === 'FINALIZADO') setStatusFilter(null);
+                }}
+                className={cn(
+                  "rounded-2xl h-12 px-4 whitespace-nowrap transition-all",
+                  showCompleted ? "bg-emerald-500/10 border-emerald-500/50 text-emerald-500" : "bg-card border-border text-muted-foreground"
+                )}
+              >
+                <CheckCircle2 className="h-4 w-4 mr-2" />
+                Concluídos
+              </Button>
+            )}
           </div>
         </div>
 

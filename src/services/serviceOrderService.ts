@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { UserRole } from '@/types';
+import { auditLogService } from '@/services/auditLogService';
 
 export interface ServiceOrder {
   id: string;
@@ -215,6 +216,9 @@ export const serviceOrderService = {
       const inserted = await serviceOrderService.addAttachments(data.id, attachments);
       parsed.attachments = [...parsed.attachments, ...inserted];
     }
+    
+    // Log Audit
+    await auditLogService.log('CREATE', 'SERVICE_ORDER', parsed.id, parsed.display_code || parsed.service_type);
 
     return parsed;
   },
@@ -248,6 +252,9 @@ export const serviceOrderService = {
         parsed.attachments = [...parsed.attachments, ...inserted];
       }
     }
+    
+    // Log Audit
+    await auditLogService.log('UPDATE', 'SERVICE_ORDER', parsed.id, parsed.display_code || parsed.service_type, { updateData });
 
     return parsed;
   },
@@ -329,5 +336,8 @@ export const serviceOrderService = {
       .eq('id', id);
 
     if (error) throw error;
+    
+    // Log Audit
+    await auditLogService.log('DELETE', 'SERVICE_ORDER', id, 'Ordem de Serviço (Excluída)');
   },
 };

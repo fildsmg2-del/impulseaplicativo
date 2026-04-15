@@ -49,9 +49,9 @@ serve(async (req) => {
       .eq("user_id", requestingUser.id)
       .single();
 
-    if (roleData?.role !== "MASTER") {
+    if (roleData?.role !== "MASTER" && roleData?.role !== "DEV") {
       return new Response(
-        JSON.stringify({ error: "Only MASTER users can create new users" }),
+        JSON.stringify({ error: "Only MASTER or DEV users can create new users" }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }

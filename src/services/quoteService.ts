@@ -1,6 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { Json } from '@/integrations/supabase/types';
 import { Client } from '@/services/clientService';
+import { auditLogService } from '@/services/auditLogService';
 
 export type QuoteStatus = 'DRAFT' | 'SENT' | 'APPROVED' | 'REJECTED';
 export type RoofType = 'CERAMICA' | 'FIBROCIMENTO' | 'METALICA' | 'LAJE';
@@ -200,6 +201,7 @@ export const quoteService = {
       .single();
 
     if (error) throw error;
+    await auditLogService.log('CREATE', 'QUOTE', data.id, 'Orçamento Gerado');
     return mapQuoteFromDb(data);
   },
 
@@ -218,6 +220,7 @@ export const quoteService = {
       .single();
 
     if (error) throw error;
+    await auditLogService.log('UPDATE', 'QUOTE', data.id, 'Orçamento Editado');
     return mapQuoteFromDb(data);
   },
 
@@ -241,6 +244,7 @@ export const quoteService = {
       .eq('id', id);
 
     if (error) throw error;
+    await auditLogService.log('DELETE', 'QUOTE', id, 'Orçamento Excluído');
   },
 
   async deleteMany(ids: string[]): Promise<void> {
@@ -274,6 +278,13 @@ export const quoteService = {
       .single();
 
     if (error) throw error;
+    
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let actionType: any = 'UPDATE';
+    if (status === 'APPROVED') actionType = 'APPROVE';
+    if (status === 'REJECTED') actionType = 'REJECT';
+    
+    await auditLogService.log(actionType, 'QUOTE', data.id, 'Alteração de Status de Orçamento', { novo_status: status });
     return mapQuoteFromDb(data);
   },
 

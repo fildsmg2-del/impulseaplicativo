@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { auditLogService } from '@/services/auditLogService';
 
 export type DroneServiceStatus = 'PENDENTE' | 'TECNICO' | 'REVISAO' | 'FINALIZADO';
 
@@ -55,6 +56,7 @@ export const droneService = {
       .eq('id', id);
 
     if (error) throw error;
+    await auditLogService.log('UPDATE', 'DRONE_SERVICE', id, 'OS Drone', { status });
   },
 
   async create(service: Partial<DroneService>): Promise<DroneService> {
@@ -65,6 +67,7 @@ export const droneService = {
       .single();
 
     if (error) throw error;
+    await auditLogService.log('CREATE', 'DRONE_SERVICE', data.id, data.display_code || 'OS Drone');
     return data as DroneService;
   },
 
@@ -77,6 +80,7 @@ export const droneService = {
       .single();
 
     if (error) throw error;
+    await auditLogService.log('UPDATE', 'DRONE_SERVICE', data.id, data.display_code || 'OS Drone', { detalhe: 'Edição de OS' });
     return data as DroneService;
   },
 
@@ -87,5 +91,6 @@ export const droneService = {
       .eq('id', id);
 
     if (error) throw error;
+    await auditLogService.log('DELETE', 'DRONE_SERVICE', id, 'OS Drone (Excluída)');
   }
 };

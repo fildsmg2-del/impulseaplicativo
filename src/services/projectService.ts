@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { auditLogService } from '@/services/auditLogService';
 import { buildInitialChecklist } from '@/components/projects/projectStagesConfig';
 import { calculateEstimatedEndDate } from '@/utils/businessDays';
 import { format } from 'date-fns';
@@ -114,6 +115,7 @@ export const projectService = {
       .single();
 
     if (error) throw error;
+    await auditLogService.log('CREATE', 'PROJECT', data.id, 'Execução de Projeto Solar');
     return {
       ...data,
       checklist: (data.checklist || {}) as Record<string, boolean>,
@@ -130,6 +132,7 @@ export const projectService = {
       .single();
 
     if (error) throw error;
+    await auditLogService.log('UPDATE', 'PROJECT', data.id, 'Atualização de Projeto', { tipo: 'Dados Gerais' });
     return {
       ...data,
       checklist: (data.checklist || {}) as Record<string, boolean>,
@@ -146,6 +149,7 @@ export const projectService = {
       .single();
 
     if (error) throw error;
+    await auditLogService.log('UPDATE', 'PROJECT', data.id, 'Atualização de Checklist', { alteracao: 'Checklist Modificado' });
     return {
       ...data,
       checklist: (data.checklist || {}) as Record<string, boolean>,
@@ -168,6 +172,7 @@ export const projectService = {
       .single();
 
     if (error) throw error;
+    await auditLogService.log('UPDATE', 'PROJECT', data.id, 'Alteração de Status', { novo_status: status });
     return {
       ...data,
       checklist: (data.checklist || {}) as Record<string, boolean>,
@@ -181,6 +186,7 @@ export const projectService = {
       .eq('id', id);
 
     if (error) throw error;
+    await auditLogService.log('DELETE', 'PROJECT', id, 'Projeto Excluído');
   },
 
   async getByStatus(status: ProjectStatus): Promise<Project[]> {

@@ -32,7 +32,9 @@ export type EntityType =
   | 'EMPLOYEE' 
   | 'ACTIVITY' 
   | 'TRANSACTION'
-  | 'USER';
+  | 'USER'
+  | 'SERVICE_ORDER'
+  | 'DRONE_SERVICE';
 
 export const auditLogService = {
   async log(

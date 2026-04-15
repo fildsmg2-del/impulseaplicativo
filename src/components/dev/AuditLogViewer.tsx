@@ -82,6 +82,8 @@ export function AuditLogViewer() {
               <SelectItem value="QUOTE">ORÇAMENTO</SelectItem>
               <SelectItem value="TRANSACTION">FINANCEIRO</SelectItem>
               <SelectItem value="USER">USUÁRIO</SelectItem>
+              <SelectItem value="SERVICE_ORDER">OS SOLAR</SelectItem>
+              <SelectItem value="DRONE_SERVICE">OS DRONE</SelectItem>
             </SelectContent>
           </Select>
         </div>

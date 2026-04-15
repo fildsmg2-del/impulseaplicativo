@@ -658,109 +658,103 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
             </div>
           </Tabs>
         ) : (
-          <div className="flex flex-col p-8 space-y-6">
-            <div className="flex items-center gap-4 mb-2">
-              <div className="w-14 h-14 rounded-[22px] bg-primary/10 flex items-center justify-center text-primary shadow-inner"><PlusIcon className="h-7 w-7" /></div>
-              <div>
-                <DialogTitle className="text-2xl font-black tracking-tight">Nova OS Drone</DialogTitle>
-                <p className="text-sm text-muted-foreground font-medium">Preencha os dados básicos para iniciar o serviço</p>
+          <div className="flex flex-col h-full overflow-hidden">
+            <div className="p-8 border-b border-border/50 bg-muted/30 flex-shrink-0">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-[22px] bg-primary/10 flex items-center justify-center text-primary shadow-inner"><PlusIcon className="h-7 w-7" /></div>
+                <div>
+                  <DialogTitle className="text-2xl font-black tracking-tight">Nova OS Drone</DialogTitle>
+                  <p className="text-sm text-muted-foreground font-medium">Preencha os dados básicos para iniciar o serviço</p>
+                </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 pb-6 md:pb-0">
-              <div className="col-span-2 space-y-4 p-5 bg-muted/30 rounded-[32px] border border-border/50">
-                <div className="flex items-center justify-between px-1">
-                  <Label className="text-sm font-black uppercase tracking-widest text-muted-foreground/80">Identificação do Cliente</Label>
-                </div>
+            <ScrollArea className="flex-1">
+              <div className="p-8 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 pb-6 md:pb-0">
+                  <div className="col-span-2 space-y-4 p-5 bg-muted/30 rounded-[32px] border border-border/50">
+                    <div className="flex items-center justify-between px-1">
+                      <Label className="text-sm font-black uppercase tracking-widest text-muted-foreground/80">Identificação do Cliente</Label>
+                    </div>
 
-                <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
+                    <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
+                      <div className="grid grid-cols-1 gap-4">
+                        <div className="space-y-2">
+                          <Label className="text-[10px] uppercase font-bold text-muted-foreground ml-1">Nome do Cliente (Obrigatório)</Label>
+                          <Input placeholder="Nome completo do cliente..." value={formData.client_name} onChange={(e) => setFormData({ ...formData, client_name: e.target.value, client_id: '' })} className="h-12 rounded-2xl bg-background border-border focus:ring-primary/20" />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label className="text-[10px] uppercase font-bold text-muted-foreground ml-1">Telefone</Label>
+                          <Input placeholder="(00) 00000-0000" value={formData.client_phone} onChange={(e) => setFormData({ ...formData, client_phone: maskPhone(e.target.value) })} className="h-12 rounded-2xl bg-background border-border focus:ring-primary/20" />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-[10px] uppercase font-bold text-muted-foreground ml-1">CPF/CNPJ</Label>
+                          <Input placeholder="000.000.000-00" value={formData.client_document} onChange={(e) => setFormData({ ...formData, client_document: maskDocument(e.target.value) })} className="h-12 rounded-2xl bg-background border-border focus:ring-primary/20" />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label className="text-[10px] uppercase font-bold text-muted-foreground ml-1">Endereço</Label>
+                        <Input placeholder="Rua, Número, Bairro..." value={formData.client_address_street} onChange={(e) => setFormData({ ...formData, client_address_street: e.target.value })} className="h-12 rounded-2xl bg-background border-border focus:ring-primary/20" />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/80 ml-1">Data de Abertura</Label>
+                      <Input type="date" value={formData.opening_date} onChange={(e) => setFormData({ ...formData, opening_date: e.target.value })} className="h-12 rounded-2xl bg-background border-border" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/80 ml-1">Área (ha)</Label>
+                      <div className="relative group">
+                        <Settings2 className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                        <Input type="number" step="0.01" placeholder="Ex: 50.5" value={formData.area_hectares} onChange={(e) => setFormData({ ...formData, area_hectares: e.target.value })} className="h-12 pl-12 rounded-2xl border-border bg-card" />
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="space-y-2">
-                    <Label className="text-[10px] uppercase font-bold text-muted-foreground ml-1">Vincular Cliente (Opcional)</Label>
-                    <Select value={formData.client_id} onValueChange={handleClientSelect}>
-                      <SelectTrigger className="h-12 rounded-2xl bg-background border-border">
-                        <SelectValue placeholder="Selecione um cliente cadastrado..." />
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/80 ml-1">Piloto Responsável</Label>
+                    <Select value={formData.technician_id} onValueChange={(val) => setFormData({ ...formData, technician_id: val })}>
+                      <SelectTrigger className="h-12 rounded-2xl border-border bg-card">
+                        <SelectValue placeholder="Selecionar Piloto" />
                       </SelectTrigger>
-                      <SelectContent className="rounded-2xl max-h-60">
-                        {clients.map(c => (
-                          <SelectItem key={c.id} value={c.id} className="rounded-xl">{c.name}</SelectItem>
+                      <SelectContent className="rounded-2xl">
+                        {pilots.map(p => (
+                          <SelectItem key={p.id} value={p.id} className="rounded-xl">{p.name}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
 
-                  <div className="grid grid-cols-1 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-[10px] uppercase font-bold text-muted-foreground ml-1">Nome do Cliente (Obrigatório)</Label>
-                      <Input placeholder="Nome completo do cliente..." value={formData.client_name} onChange={(e) => setFormData({ ...formData, client_name: e.target.value, client_id: '' })} className="h-12 rounded-2xl bg-background border-border focus:ring-primary/20" />
+                  <div className="col-span-2 space-y-2">
+                    <div className="flex items-center justify-between px-1">
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Localização</Label>
+                      <Button variant="ghost" size="sm" onClick={handleGetLocation} className="h-7 px-2 text-[10px] font-bold text-primary hover:text-primary hover:bg-primary/10 rounded-lg transition-all"><MapPin className="h-3 w-3 mr-1" />CAPTURAR GPS</Button>
+                    </div>
+                    <div className="relative group">
+                      <MapPin className="absolute left-4 top-4 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                      <Input placeholder="Endereço ou coordenadas..." value={formData.location_link} onChange={(e) => setFormData({ ...formData, location_link: e.target.value })} className="h-12 pl-12 rounded-2xl border-border bg-card" />
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-[10px] uppercase font-bold text-muted-foreground ml-1">Telefone</Label>
-                      <Input placeholder="(00) 00000-0000" value={formData.client_phone} onChange={(e) => setFormData({ ...formData, client_phone: maskPhone(e.target.value) })} className="h-12 rounded-2xl bg-background border-border focus:ring-primary/20" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-[10px] uppercase font-bold text-muted-foreground ml-1">CPF/CNPJ</Label>
-                      <Input placeholder="000.000.000-00" value={formData.client_document} onChange={(e) => setFormData({ ...formData, client_document: maskDocument(e.target.value) })} className="h-12 rounded-2xl bg-background border-border focus:ring-primary/20" />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-[10px] uppercase font-bold text-muted-foreground ml-1">Endereço</Label>
-                    <Input placeholder="Rua, Número, Bairro..." value={formData.client_address_street} onChange={(e) => setFormData({ ...formData, client_address_street: e.target.value })} className="h-12 rounded-2xl bg-background border-border focus:ring-primary/20" />
+                  <div className="col-span-2 space-y-2">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/80 ml-1">Descrição do Serviço</Label>
+                    <Textarea placeholder="Instruções para o piloto ou detalhes do serviço..." value={formData.service_description} onChange={(e) => setFormData({ ...formData, service_description: e.target.value })} className="min-h-[100px] rounded-3xl border-border bg-card resize-none p-4" />
                   </div>
                 </div>
               </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/80 ml-1">Data de Abertura</Label>
-                  <Input type="date" value={formData.opening_date} onChange={(e) => setFormData({ ...formData, opening_date: e.target.value })} className="h-12 rounded-2xl bg-background border-border" />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/80 ml-1">Área (ha)</Label>
-                  <div className="relative group">
-                    <Settings2 className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                    <Input type="number" step="0.01" placeholder="Ex: 50.5" value={formData.area_hectares} onChange={(e) => setFormData({ ...formData, area_hectares: e.target.value })} className="h-12 pl-12 rounded-2xl border-border bg-card" />
-                  </div>
-                </div>
-              </div>
+            </ScrollArea>
 
-              <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/80 ml-1">Piloto Responsável</Label>
-                <Select value={formData.technician_id} onValueChange={(val) => setFormData({ ...formData, technician_id: val })}>
-                  <SelectTrigger className="h-12 rounded-2xl border-border bg-card">
-                    <SelectValue placeholder="Selecionar Piloto" />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-2xl">
-                    {pilots.map(p => (
-                      <SelectItem key={p.id} value={p.id} className="rounded-xl">{p.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+            <div className="p-8 border-t border-border/50 bg-muted/30">
+              <div className="flex gap-3">
+                <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1 h-12 rounded-2xl font-bold border-border hover:bg-muted" disabled={loading}>Cancelar</Button>
+                <Button onClick={handleCreateService} className="flex-[2] h-12 rounded-2xl font-bold bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20" disabled={loading}>{loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <><Save className="h-5 w-5 mr-2" />Criar OS Drone</>}</Button>
               </div>
-
-              <div className="col-span-2 space-y-2">
-                <div className="flex items-center justify-between px-1">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">Localização</Label>
-                  <Button variant="ghost" size="sm" onClick={handleGetLocation} className="h-7 px-2 text-[10px] font-bold text-primary hover:text-primary hover:bg-primary/10 rounded-lg transition-all"><MapPin className="h-3 w-3 mr-1" />CAPTURAR GPS</Button>
-                </div>
-                <div className="relative group">
-                  <MapPin className="absolute left-4 top-4 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                  <Input placeholder="Endereço ou coordenadas..." value={formData.location_link} onChange={(e) => setFormData({ ...formData, location_link: e.target.value })} className="h-12 pl-12 rounded-2xl border-border bg-card" />
-                </div>
-              </div>
-
-              <div className="col-span-2 space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/80 ml-1">Descrição do Serviço</Label>
-                <Textarea placeholder="Instruções para o piloto ou detalhes do serviço..." value={formData.service_description} onChange={(e) => setFormData({ ...formData, service_description: e.target.value })} className="min-h-[100px] rounded-3xl border-border bg-card resize-none p-4" />
-              </div>
-            </div>
-
-            <div className="flex gap-3 pt-4">
-              <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1 h-12 rounded-2xl font-bold border-border hover:bg-muted" disabled={loading}>Cancelar</Button>
-              <Button onClick={handleCreateService} className="flex-[2] h-12 rounded-2xl font-bold bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20" disabled={loading}>{loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <><Save className="h-5 w-5 mr-2" />Criar OS Drone</>}</Button>
             </div>
           </div>
         )}

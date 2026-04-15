@@ -86,6 +86,7 @@ export default function DroneServices() {
     const matchesSearch = clientName.includes(searchLower) || location.includes(searchLower);
     const matchesStatus = !statusFilter || s.status === statusFilter;
     const matchesPilot = !pilotFilter || s.technician_id === pilotFilter;
+    
     return matchesSearch && matchesStatus && matchesPilot;
   });
 

@@ -297,8 +297,13 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
       });
 
       await droneLogService.create(newService.id, 'OS Drone criada no sistema', user?.name || 'Sistema');
+      
+      // Explicitly invalidate queries to force a fresh fetch from Supabase
+      const { useQueryClient } = await import('@tanstack/react-query');
+      // Note: We can't easily use hooks inside async functions, so we rely on the onSave refetch passed as prop
+      
       toast.success('OS Drone criada com sucesso');
-      onSave();
+      onSave(); // This is the refetch function from parent
       onOpenChange(false);
     } catch (error) {
       toast.error('Erro ao criar OS Drone');

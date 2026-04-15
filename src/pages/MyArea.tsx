@@ -5,7 +5,10 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
-import { Loader2, FolderKanban, User, Calendar, ArrowRight, Search, Filter } from 'lucide-react';
+import { 
+  Loader2, FolderKanban, User, Calendar, ArrowRight, Search, Filter, 
+  Folder, MapPin, Plane, Activity 
+} from 'lucide-react';
 import { projectService, Project } from '@/services/projectService';
 import { useAuth } from '@/hooks/use-auth';
 import { ProjectModal } from '@/components/projects/ProjectModal';
@@ -16,7 +19,6 @@ import { ptBR } from 'date-fns/locale';
 import { supabase } from '@/integrations/supabase/client';
 import { droneService, DroneService } from '@/services/droneService';
 import { DroneServiceModal } from '@/components/drone/DroneServiceModal';
-import { Plane, Activity } from 'lucide-react';
 import {
   ToggleGroup,
   ToggleGroupItem,
@@ -94,10 +96,6 @@ export default function MyArea() {
   });
 
   const loading = isDroneRole ? loadingDrone : loadingProjects;
-  const refetchAll = () => {
-    if (isDroneRole) refetchDrone();
-    else refetchProjects();
-  };
 
   const projects = useMemo(() => {
     if (isDroneRole) return [];
@@ -126,9 +124,6 @@ export default function MyArea() {
       if (!isAssigned) return false;
 
       // Pilotos não veem finalizadas na lista principal de execução
-      // Mas permitimos que fiquem no array base para as contagens funcionarem se necessário
-      // No entanto, o filtro de 'em execução' cuidará disso.
-      // A pedido do usuário: "mesmo que o piloto esteja vinculado aquela OS apos concluida ele nao consegue ve-la"
       if (userRole === 'PILOTO' && s.status === 'FINALIZADO') return false;
 
       return true;
@@ -194,6 +189,8 @@ export default function MyArea() {
 
     // Ordenar: em execução primeiro, depois por data
     result.sort((a, b) => {
+      const aId = a.id;
+      const bId = b.id;
       const aCompleted = hasRole(['MASTER', 'DEV']) 
         ? a.status === 'POS_VENDA'
         : isProjectCompletedForRole(
@@ -366,7 +363,6 @@ export default function MyArea() {
         ) : !isDroneRole ? (
           <div className="space-y-3">
             {filteredAndSortedProjects.map((project) => {
-              // ... existing project rendering logic
               const progress = calculateProjectProgress(
                 project.checklist || {},
                 project.installation_type,
@@ -374,18 +370,6 @@ export default function MyArea() {
                 template,
               );
               const clientName = project.client_id ? clientNames[project.client_id] : 'Cliente não vinculado';
-              // eslint-disable-next-line @typescript-eslint/no-unused-vars
-              const isCompleted = hasRole(['MASTER', 'DEV'])
-                ? project.status === 'POS_VENDA'
-                : isProjectCompletedForRole(
-                    project.status,
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    (project as any).assigned_role,
-                    userRole,
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    (project as any).assigned_to as string | undefined,
-                    userId,
-                  );
               
               return (
                 <Card 
@@ -398,7 +382,7 @@ export default function MyArea() {
                       {/* Info principal */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-3 mb-2">
-                          <Badge className={`${getStageColor(project.status)} text-white shrink-0`}>
+                          <Badge className={`${getStageColor(project.status)} text-white shrink-0 font-bold`}>
                             {getStageLabel(project.status)}
                           </Badge>
                           <span className="font-semibold text-foreground truncate">
@@ -409,7 +393,7 @@ export default function MyArea() {
                         <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                           <div className="flex items-center gap-1.5">
                             <User className="h-4 w-4" />
-                            <span className="truncate max-w-[200px]">{clientName}</span>
+                            <span className="truncate max-w-[200px] font-medium">{clientName}</span>
                           </div>
                           
                           {project.start_date && (

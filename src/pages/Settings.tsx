@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Building2, Users, Save, Plus, Pencil, Trash2, Loader2, Calculator, Wrench, ClipboardList, Landmark } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { getCompanySettings, updateCompanySettings, CompanySettings } from '@/services/companySettingsService';
-import { getUsers, updateUserRole, deleteUser, createUser, UserWithRole, CreateUserData } from '@/services/userService';
+import { getUsers, updateUserRole, deleteUser, createUser, UserWithRole, CreateUserData, updateUserPassword } from '@/services/userService';
 import { quoteSettingsService } from '@/services/quoteSettingsService';
 import { ServiceTypeManager } from '@/components/settings/ServiceTypeManager';
 import { ProjectChecklistTemplateManager } from '@/components/settings/ProjectChecklistTemplateManager';
@@ -60,6 +60,8 @@ export default function Settings() {
   const [isUserDialogOpen, setIsUserDialogOpen] = useState(false);
   const [isNewUserDialogOpen, setIsNewUserDialogOpen] = useState(false);
   const [selectedRole, setSelectedRole] = useState<UserRole>('VENDEDOR');
+  const [newPassword, setNewPassword] = useState('');
+  const [resettingPassword, setResettingPassword] = useState(false);
   
   // New user form state
   const [newUserData, setNewUserData] = useState<CreateUserData>({
@@ -162,6 +164,7 @@ export default function Settings() {
   const handleEditUser = (user: UserWithRole) => {
     setEditingUser(user);
     setSelectedRole(user.role);
+    setNewPassword('');
     setIsUserDialogOpen(true);
   };
 
@@ -183,6 +186,38 @@ export default function Settings() {
         description: 'Erro ao atualizar nível de acesso',
         variant: 'destructive'
       });
+    }
+  };
+
+  const handleResetPassword = async () => {
+    if (!editingUser || !newPassword) return;
+    
+    if (newPassword.length < 6) {
+      toast({
+        title: 'Erro',
+        description: 'A senha deve ter no mínimo 6 caracteres',
+        variant: 'destructive'
+      });
+      return;
+    }
+    
+    setResettingPassword(true);
+    try {
+      await updateUserPassword(editingUser.id, newPassword);
+      toast({
+        title: 'Sucesso',
+        description: 'Senha atualizada. O usuário já pode acessar com a nova senha.'
+      });
+      setNewPassword('');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao atualizar senha';
+      toast({
+        title: 'Erro',
+        description: errorMessage,
+        variant: 'destructive'
+      });
+    } finally {
+      setResettingPassword(false);
     }
   };
 
@@ -696,6 +731,29 @@ export default function Settings() {
                   {isDev && <SelectItem value="DEV">Desenvolvedor</SelectItem>}
                 </SelectContent>
               </Select>
+            </div>
+            
+            <div className="border-t pt-4 mt-2">
+              <h4 className="text-sm font-medium mb-3">Redefinir Senha Mestra</h4>
+              <div className="flex gap-2">
+                <Input
+                  type="password"
+                  placeholder="Nova senha (mín. 6 char)"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                />
+                <Button 
+                  type="button" 
+                  variant="secondary" 
+                  onClick={handleResetPassword} 
+                  disabled={!newPassword || resettingPassword}
+                >
+                  {resettingPassword ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Redefinir'}
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                A senha é alterada imediatamente, bypassando email.
+              </p>
             </div>
           </div>
           <DialogFooter>

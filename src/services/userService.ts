@@ -98,6 +98,37 @@ export async function updateUserRole(userId: string, role: 'MASTER' | 'ENGENHEIR
   }
 }
 
+export async function updateUserPassword(targetUserId: string, password: string): Promise<void> {
+  const { data: sessionData } = await supabase.auth.getSession();
+  const token = sessionData.session?.access_token;
+
+  if (!token) {
+    throw new Error('Not authenticated');
+  }
+
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const response = await fetch(
+    `${supabaseUrl}/functions/v1/update-user`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        targetUserId,
+        password,
+      }),
+    }
+  );
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.error || 'Failed to update user password');
+  }
+}
+
 export async function deleteUser(userId: string): Promise<void> {
   // Delete user role first
   const { error: roleError } = await supabase

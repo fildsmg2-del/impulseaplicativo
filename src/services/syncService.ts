@@ -12,7 +12,7 @@ import { getUsers } from '@/services/userService';
 import { Network } from '@capacitor/network';
 import { offlineDB } from '@/lib/offline-db';
 import { supabase } from '@/integrations/supabase/client';
-import { fetchDashboardSummary } from '@/pages/Dashboard';
+import { fetchDashboardSummary } from '@/services/dashboardService';
 
 /**
  * SyncService

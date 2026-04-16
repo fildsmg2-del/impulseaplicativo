@@ -57,6 +57,7 @@ export default function FinancialReceivables() {
     status?: string;
     category?: string;
     paymentMethod?: string;
+    clientId?: string;
   }>({
     startDate: startOfMonth(new Date()),
     endDate: endOfMonth(new Date()),
@@ -65,6 +66,7 @@ export default function FinancialReceivables() {
     status: undefined,
     category: undefined,
     paymentMethod: undefined,
+    clientId: undefined,
   });
 
   const [formData, setFormData] = useState<CreateTransactionData>({
@@ -208,14 +210,25 @@ export default function FinancialReceivables() {
   // Calculations
   const filteredTransactions = useMemo(() => {
     return transactions.filter(t => {
-        const matchesSearch = t.description.toLowerCase().includes(filters.search.toLowerCase());
+        const searchLower = filters.search.toLowerCase();
+        
+        // Search in description, category AND client names
+        const client = t.client_id ? clients.find(c => c.id === t.client_id) : null;
+        const clientName = (client?.name || t.client_name_manual || t.description || '').toLowerCase();
+        
+        const matchesSearch = 
+            t.description.toLowerCase().includes(searchLower) ||
+            (t.category || '').toLowerCase().includes(searchLower) ||
+            clientName.includes(searchLower);
+
         const matchesStatus = !filters.status || t.status === filters.status;
         const matchesCategory = !filters.category || t.category?.toLowerCase() === filters.category.toLowerCase();
         const matchesPayment = !filters.paymentMethod || t.payment_method === filters.paymentMethod;
+        const matchesClient = !filters.clientId || t.client_id === filters.clientId;
         
-        return matchesSearch && matchesStatus && matchesCategory && matchesPayment;
+        return matchesSearch && matchesStatus && matchesCategory && matchesPayment && matchesClient;
     });
-  }, [transactions, filters]);
+  }, [transactions, filters, clients]);
 
   const summary = useMemo(() => {
     const s = { vencidos: 0, hoje: 0, aVencer: 0, liquidados: 0, total: 0 };
@@ -276,6 +289,7 @@ export default function FinancialReceivables() {
             summary={summary}
             selectedCount={selectedIds.length}
             onExport={handleExport}
+            clients={clients}
             onBatchAction={(action) => {
                 if (action === 'markAsPaid') {
                     selectedIds.forEach(id => markAsPaidMutation.mutate(id));

@@ -11,6 +11,8 @@ import { Badge } from '@/components/ui/badge';
 import { useQuery } from '@tanstack/react-query';
 import { accountService } from '@/services/accountService';
 import { FINANCIAL_CATEGORIES, PAYMENT_METHODS } from '@/constants/financialConstants';
+import { Supplier } from '@/services/supplierService';
+import { Client } from '@/services/clientService';
 
 interface FinancialHeaderProps {
   type: 'RECEITA' | 'DESPESA';
@@ -22,6 +24,8 @@ interface FinancialHeaderProps {
       status?: string;
       category?: string;
       paymentMethod?: string;
+      supplierId?: string;
+      clientId?: string;
   };
   onFilterChange: (filters: {
       startDate: Date;
@@ -31,6 +35,8 @@ interface FinancialHeaderProps {
       status?: string;
       category?: string;
       paymentMethod?: string;
+      supplierId?: string;
+      clientId?: string;
   }) => void;
   summary: {
       vencidos: number;
@@ -42,9 +48,21 @@ interface FinancialHeaderProps {
   selectedCount?: number;
   onBatchAction?: (action: string) => void;
   onExport?: () => void;
+  suppliers?: Supplier[];
+  clients?: Client[];
 }
 
-export function FinancialHeader({ type, filters, onFilterChange, summary, selectedCount = 0, onBatchAction, onExport }: FinancialHeaderProps) {
+export function FinancialHeader({ 
+  type, 
+  filters, 
+  onFilterChange, 
+  summary, 
+  selectedCount = 0, 
+  onBatchAction, 
+  onExport,
+  suppliers = [],
+  clients = []
+}: FinancialHeaderProps) {
   const { data: accounts = [] } = useQuery({
     queryKey: ['accounts-active'],
     queryFn: accountService.getActive,
@@ -129,7 +147,7 @@ export function FinancialHeader({ type, filters, onFilterChange, summary, select
                 <Button variant="outline" className={`gap-2 h-10 ${filters.status || filters.category || filters.paymentMethod ? 'border-primary text-primary bg-primary/5' : 'text-slate-600'}`}>
                   <Filter className="h-4 w-4" />
                   Mais filtros
-                  {(filters.status || filters.category || filters.paymentMethod) && (
+                  {(filters.status || filters.category || filters.paymentMethod || filters.supplierId || filters.clientId) && (
                       <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-[10px] bg-primary text-white">Ativo</Badge>
                   )}
                 </Button>
@@ -137,7 +155,21 @@ export function FinancialHeader({ type, filters, onFilterChange, summary, select
             <PopoverContent className="w-80 p-4 space-y-4" align="end">
                 <div className="flex items-center justify-between border-b pb-2">
                     <h4 className="font-bold text-sm uppercase tracking-tight">Filtros Adicionais</h4>
-                    <Button variant="ghost" size="sm" onClick={() => onFilterChange({ ...filters, status: undefined, category: undefined, paymentMethod: undefined })} className="h-7 text-xs text-rose-500">Limpar</Button>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => onFilterChange({ 
+                        ...filters, 
+                        status: undefined, 
+                        category: undefined, 
+                        paymentMethod: undefined,
+                        supplierId: undefined,
+                        clientId: undefined
+                      })} 
+                      className="h-7 text-xs text-rose-500"
+                    >
+                      Limpar
+                    </Button>
                 </div>
                 
                 <div className="space-y-3">
@@ -185,6 +217,62 @@ export function FinancialHeader({ type, filters, onFilterChange, summary, select
                             </SelectContent>
                         </Select>
                     </div>
+
+                    {type === 'DESPESA' && (
+                        <div className="space-y-1.5 pt-2 border-t">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex justify-between items-center">
+                                Fornecedor
+                                {filters.supplierId && (
+                                    <button 
+                                        onClick={() => onFilterChange({ ...filters, supplierId: undefined })} 
+                                        className="text-rose-500 hover:text-rose-600 font-black text-[9px]"
+                                    >
+                                        REMOVER
+                                    </button>
+                                )}
+                            </label>
+                            <Select 
+                                value={filters.supplierId || 'all'} 
+                                onValueChange={(v) => onFilterChange({ ...filters, supplierId: v === 'all' ? undefined : v })}
+                            >
+                                <SelectTrigger className="h-9 text-xs">
+                                    <SelectValue placeholder="Todos os fornecedores" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">Todos os fornecedores</SelectItem>
+                                    {suppliers.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    )}
+
+                    {type === 'RECEITA' && (
+                        <div className="space-y-1.5 pt-2 border-t">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex justify-between items-center">
+                                Cliente
+                                {filters.clientId && (
+                                    <button 
+                                        onClick={() => onFilterChange({ ...filters, clientId: undefined })} 
+                                        className="text-rose-500 hover:text-rose-600 font-black text-[9px]"
+                                    >
+                                        REMOVER
+                                    </button>
+                                )}
+                            </label>
+                            <Select 
+                                value={filters.clientId || 'all'} 
+                                onValueChange={(v) => onFilterChange({ ...filters, clientId: v === 'all' ? undefined : v })}
+                            >
+                                <SelectTrigger className="h-9 text-xs">
+                                    <SelectValue placeholder="Todos os clientes" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">Todos os clientes</SelectItem>
+                                    {clients.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    )}
                 </div>
             </PopoverContent>
         </Popover>

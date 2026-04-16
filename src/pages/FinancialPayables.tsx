@@ -57,6 +57,7 @@ export default function FinancialPayables() {
     status?: string;
     category?: string;
     paymentMethod?: string;
+    supplierId?: string;
   }>({
     startDate: startOfMonth(new Date()),
     endDate: endOfMonth(new Date()),
@@ -65,6 +66,7 @@ export default function FinancialPayables() {
     status: undefined,
     category: undefined,
     paymentMethod: undefined,
+    supplierId: undefined,
   });
 
   const [formData, setFormData] = useState<CreateTransactionData>({
@@ -208,14 +210,25 @@ export default function FinancialPayables() {
   // Calculations
   const filteredTransactions = useMemo(() => {
     return transactions.filter(t => {
-        const matchesSearch = t.description.toLowerCase().includes(filters.search.toLowerCase());
+        const searchLower = filters.search.toLowerCase();
+        
+        // Search in description, category AND supplier names
+        const supplier = t.supplier_id ? suppliers.find(s => s.id === t.supplier_id) : null;
+        const supplierName = (supplier?.name || t.supplier_name_manual || '').toLowerCase();
+        
+        const matchesSearch = 
+            t.description.toLowerCase().includes(searchLower) ||
+            (t.category || '').toLowerCase().includes(searchLower) ||
+            supplierName.includes(searchLower);
+
         const matchesStatus = !filters.status || t.status === filters.status;
         const matchesCategory = !filters.category || t.category?.toLowerCase() === filters.category.toLowerCase();
         const matchesPayment = !filters.paymentMethod || t.payment_method === filters.paymentMethod;
+        const matchesSupplier = !filters.supplierId || t.supplier_id === filters.supplierId;
         
-        return matchesSearch && matchesStatus && matchesCategory && matchesPayment;
+        return matchesSearch && matchesStatus && matchesCategory && matchesPayment && matchesSupplier;
     });
-  }, [transactions, filters]);
+  }, [transactions, filters, suppliers]);
 
   const summary = useMemo(() => {
     const s = { vencidos: 0, hoje: 0, aVencer: 0, liquidados: 0, total: 0 };
@@ -275,6 +288,7 @@ export default function FinancialPayables() {
             summary={summary}
             selectedCount={selectedIds.length}
             onExport={handleExport}
+            suppliers={suppliers}
             onBatchAction={(action) => {
                 if (action === 'markAsPaid') {
                     selectedIds.forEach(id => markAsPaidMutation.mutate(id));

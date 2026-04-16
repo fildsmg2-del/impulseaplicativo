@@ -1451,6 +1451,112 @@ export type Database = {
         }
         Relationships: []
       }
+      drone_services: {
+        Row: {
+          id: string
+          client_id: string | null
+          status: string
+          area_hectares: number | null
+          service_description: string | null
+          location_link: string | null
+          opening_date: string | null
+          execution_date: string | null
+          estimated_start_date: string | null
+          estimated_completion_date: string | null
+          negotiated_conditions: string | null
+          created_at: string
+          updated_at: string
+          display_code: string | null
+          client_name: string | null
+          client_phone: string | null
+          client_document: string | null
+          client_address_street: string | null
+        }
+        Insert: {
+          id?: string
+          client_id?: string | null
+          status?: string
+          area_hectares?: number | null
+          service_description?: string | null
+          location_link?: string | null
+          opening_date?: string | null
+          execution_date?: string | null
+          estimated_start_date?: string | null
+          estimated_completion_date?: string | null
+          negotiated_conditions?: string | null
+          created_at?: string
+          updated_at?: string
+          display_code?: string | null
+          client_name?: string | null
+          client_phone?: string | null
+          client_document?: string | null
+          client_address_street?: string | null
+        }
+        Update: {
+          id?: string
+          client_id?: string | null
+          status?: string
+          area_hectares?: number | null
+          service_description?: string | null
+          location_link?: string | null
+          opening_date?: string | null
+          execution_date?: string | null
+          estimated_start_date?: string | null
+          estimated_completion_date?: string | null
+          negotiated_conditions?: string | null
+          created_at?: string
+          updated_at?: string
+          display_code?: string | null
+          client_name?: string | null
+          client_phone?: string | null
+          client_document?: string | null
+          client_address_street?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "drone_services_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      drone_service_logs: {
+        Row: {
+          id: string
+          drone_service_id: string
+          message: string
+          created_by: string | null
+          created_by_name: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          drone_service_id: string
+          message: string
+          created_by?: string | null
+          created_by_name?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          drone_service_id?: string
+          message?: string
+          created_by?: string | null
+          created_by_name?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "drone_service_logs_drone_service_id_fkey"
+            columns: ["drone_service_id"]
+            isOneToOne: false
+            referencedRelation: "drone_services"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -1495,6 +1601,8 @@ export type Database = {
         | "TECNICO"
         | "POS_VENDA"
         | "COMPRAS"
+        | "CONSULTOR_TEC_DRONE"
+        | "PILOTO"
       document_type: "CPF" | "CNPJ"
       product_category:
         | "MODULO"

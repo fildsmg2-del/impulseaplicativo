@@ -70,6 +70,7 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
     estimated_completion_date: ''
   });
   const [isEditing, setIsEditing] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
   const [transactionModal, setTransactionModal] = useState<{ open: boolean; type: 'RECEITA' | 'DESPESA' }>({ open: false, type: 'RECEITA' });
 
   const isPilot = user?.role === 'PILOTO';
@@ -633,8 +634,18 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
                          <ArrowUpCircle className="h-4 w-4 text-emerald-500" />
                        </div>
                        <p className="text-2xl font-black text-emerald-600">
-                         {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(financialSummary?.totalReceitas || 0)}
+                         {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format((financialSummary?.totalReceitas || 0) + (financialSummary?.receitasPendentes || 0))}
                        </p>
+                       <div className="flex items-center gap-1.5 pt-1">
+                          <Badge variant="outline" className="text-[8px] font-bold uppercase tracking-tighter px-1 h-3.5 border-emerald-500/20 text-emerald-600 bg-emerald-500/5">
+                            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(financialSummary?.totalReceitas || 0)} Pagos
+                          </Badge>
+                          {(financialSummary?.receitasPendentes || 0) > 0 && (
+                            <Badge variant="outline" className="text-[8px] font-bold uppercase tracking-tighter px-1 h-3.5 border-amber-500/20 text-amber-600 bg-amber-500/5">
+                              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(financialSummary.receitasPendentes)} Pendentes
+                            </Badge>
+                          )}
+                       </div>
                     </div>
 
                     <div className="p-5 rounded-3xl bg-rose-500/5 border border-rose-500/10 space-y-2">
@@ -643,18 +654,32 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
                          <ArrowDownCircle className="h-4 w-4 text-rose-500" />
                        </div>
                        <p className="text-2xl font-black text-rose-600">
-                         {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(financialSummary?.totalDespesas || 0)}
+                         {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format((financialSummary?.totalDespesas || 0) + (financialSummary?.despesasPendentes || 0))}
                        </p>
+                       <div className="flex items-center gap-1.5 pt-1">
+                          <Badge variant="outline" className="text-[8px] font-bold uppercase tracking-tighter px-1 h-3.5 border-rose-500/20 text-rose-600 bg-rose-500/5">
+                            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(financialSummary?.totalDespesas || 0)} Pagos
+                          </Badge>
+                          {(financialSummary?.despesasPendentes || 0) > 0 && (
+                            <Badge variant="outline" className="text-[8px] font-bold uppercase tracking-tighter px-1 h-3.5 border-amber-500/20 text-amber-600 bg-amber-500/5">
+                              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(financialSummary.despesasPendentes)} Pendentes
+                            </Badge>
+                          )}
+                       </div>
                     </div>
 
                     <div className="p-5 rounded-3xl bg-primary/5 border border-primary/10 space-y-2">
                        <div className="flex items-center justify-between">
-                         <span className="text-[10px] font-black uppercase tracking-widest text-primary/60">Lucro Líquido</span>
+                         <span className="text-[10px] font-black uppercase tracking-widest text-primary/60">Lucro Projetado</span>
                          <DollarSign className="h-4 w-4 text-primary" />
                        </div>
                        <p className="text-2xl font-black text-primary">
-                         {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(financialSummary?.saldo || 0)}
+                         {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
+                           ((financialSummary?.totalReceitas || 0) + (financialSummary?.receitasPendentes || 0)) - 
+                           ((financialSummary?.totalDespesas || 0) + (financialSummary?.despesasPendentes || 0))
+                         )}
                        </p>
+                       <p className="text-[9px] font-bold text-muted-foreground/60 italic">Cálculo baseado no total provisionado</p>
                     </div>
                   </div>
 
@@ -668,7 +693,10 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
                         size="sm" 
                         variant="outline" 
                         className="h-8 rounded-xl text-[10px] font-black uppercase tracking-widest border-emerald-500/20 text-emerald-600 hover:bg-emerald-500/5"
-                        onClick={() => setTransactionModal({ open: true, type: 'RECEITA' })}
+                        onClick={() => {
+                          setSelectedTransaction(null);
+                          setTransactionModal({ open: true, type: 'RECEITA' });
+                        }}
                       >
                         <PlusIcon className="h-3 w-3 mr-1" /> Receita
                       </Button>
@@ -676,7 +704,10 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
                         size="sm" 
                         variant="outline" 
                         className="h-8 rounded-xl text-[10px] font-black uppercase tracking-widest border-rose-500/20 text-rose-600 hover:bg-rose-500/5"
-                        onClick={() => setTransactionModal({ open: true, type: 'DESPESA' })}
+                        onClick={() => {
+                          setSelectedTransaction(null);
+                          setTransactionModal({ open: true, type: 'DESPESA' });
+                        }}
                       >
                         <PlusIcon className="h-3 w-3 mr-1" /> Despesa
                       </Button>
@@ -723,7 +754,16 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
                                 {tx.status === 'PAGO' ? 'Pago' : 'Pendente'}
                               </Badge>
                             </div>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-8 w-8 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={() => {
+                                setSelectedTransaction(tx);
+                                setTransactionModal({ open: true, type: tx.type });
+                              }}
+                              title="Editar Lançamento"
+                            >
                               <ExternalLink className="h-4 w-4 text-muted-foreground" />
                             </Button>
                           </div>
@@ -736,23 +776,34 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
                 {transactionModal.open && (
                   <TransactionFormModal
                     open={transactionModal.open}
-                    onOpenChange={(open) => setTransactionModal({ ...transactionModal, open })}
+                    onOpenChange={(open) => {
+                      setTransactionModal({ ...transactionModal, open });
+                      if (!open) setSelectedTransaction(null);
+                    }}
                     type={transactionModal.type}
+                    transaction={selectedTransaction}
                     onSubmit={async (data, installments) => {
                       try {
-                        const loadingToast = toast.loading('Registrando lançamento...');
-                        if (installments > 1) {
-                            await transactionService.createBatch({ ...data, drone_service_id: service?.id, client_id: service?.client_id }, installments);
+                        const loadingToast = toast.loading(selectedTransaction ? 'Atualizando lançamento...' : 'Registrando lançamento...');
+                        
+                        if (selectedTransaction) {
+                          await transactionService.update(selectedTransaction.id, data);
                         } else {
+                          if (installments > 1) {
+                            await transactionService.createBatch({ ...data, drone_service_id: service?.id, client_id: service?.client_id }, installments);
+                          } else {
                             await transactionService.create({ ...data, drone_service_id: service?.id, client_id: service?.client_id });
+                          }
                         }
+                        
                         toast.dismiss(loadingToast);
-                        toast.success('Lançamento registrado com sucesso!');
+                        toast.success(selectedTransaction ? 'Lançamento atualizado!' : 'Lançamento registrado!');
                         setTransactionModal({ ...transactionModal, open: false });
+                        setSelectedTransaction(null);
                         refetchFinance();
                         refetchTransactions();
                       } catch (err) {
-                        toast.error('Erro ao registrar lançamento');
+                        toast.error('Erro ao processar lançamento');
                       }
                     }}
                   />

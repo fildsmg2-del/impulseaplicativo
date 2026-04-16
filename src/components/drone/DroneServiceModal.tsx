@@ -235,25 +235,26 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
     try {
       setLoading(true);
       await droneService.update(service.id, {
-        area_hectares: formData.area_hectares ? parseFloat(formData.area_hectares) : undefined,
-        location_link: formData.location_link || undefined,
-        service_description: formData.service_description || undefined,
-        opening_date: formData.opening_date || undefined,
-        execution_date: formData.execution_date || undefined,
-        client_id: formData.client_id || undefined,
+        area_hectares: formData.area_hectares ? parseFloat(formData.area_hectares) : null,
+        location_link: formData.location_link || null,
+        service_description: formData.service_description || null,
+        opening_date: formData.opening_date || null,
+        execution_date: formData.execution_date || null,
+        client_id: formData.client_id || null,
         client_name: formData.client_name,
-        client_phone: formData.client_phone || undefined,
-        client_document: formData.client_document || undefined,
-        client_address_street: formData.client_address_street || undefined,
-        negotiated_conditions: formData.negotiated_conditions || undefined,
-        estimated_start_date: formData.estimated_start_date || undefined,
-        estimated_completion_date: formData.estimated_completion_date || undefined
+        client_phone: formData.client_phone || null,
+        client_document: formData.client_document || null,
+        client_address_street: formData.client_address_street || null,
+        negotiated_conditions: formData.negotiated_conditions || null,
+        estimated_start_date: formData.estimated_start_date || null,
+        estimated_completion_date: formData.estimated_completion_date || null
       });
       toast.success('Informações atualizadas');
       setIsEditing(false);
       onSave();
-    } catch (error) {
-      toast.error('Erro ao salvar alterações');
+    } catch (error: any) {
+      console.error('Error updating drone service details:', error);
+      toast.error('Erro ao salvar alterações: ' + (error.message || 'Erro desconhecido'));
     } finally {
       setLoading(false);
     }
@@ -343,10 +344,11 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
         service_description: formData.service_description || 'Serviço de Drone',
         status: 'PENDENTE',
         opening_date: formData.opening_date || format(new Date(), 'yyyy-MM-dd'),
-        estimated_start_date: formData.estimated_start_date || undefined,
-        estimated_completion_date: formData.estimated_completion_date || undefined,
-        negotiated_conditions: formData.negotiated_conditions || undefined,
-        created_by: user?.id
+        execution_date: formData.execution_date || null,
+        estimated_start_date: formData.estimated_start_date || null,
+        estimated_completion_date: formData.estimated_completion_date || null,
+        negotiated_conditions: formData.negotiated_conditions || null,
+        created_by: user?.id || null
       });
 
       await droneLogService.create(newService.id, 'OS Drone criada no sistema', user?.name || 'Sistema');
@@ -356,8 +358,9 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
       toast.success('OS Drone criada com sucesso');
       onSave(); // This is the refetch function from parent
       onOpenChange(false);
-    } catch (error) {
-      toast.error('Erro ao criar OS Drone');
+    } catch (error: any) {
+      console.error('Error creating drone service:', error);
+      toast.error('Erro ao criar OS Drone: ' + (error.message || 'Erro desconhecido'));
     } finally {
       setLoading(false);
     }

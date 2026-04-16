@@ -17,6 +17,9 @@ export interface DroneService {
   location_link?: string;
   opening_date?: string;
   execution_date?: string;
+  estimated_start_date?: string;
+  estimated_completion_date?: string;
+  negotiated_conditions?: string;
   created_at: string;
   updated_at: string;
   display_code?: string;

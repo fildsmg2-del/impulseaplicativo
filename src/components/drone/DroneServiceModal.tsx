@@ -60,9 +60,15 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
     technician_id: '',
     location_link: '',
     area_hectares: '',
-    service_description: ''
+    service_description: '',
+    negotiated_conditions: '',
+    estimated_start_date: '',
+    estimated_completion_date: ''
   });
   const [isEditing, setIsEditing] = useState(false);
+
+  const isPilot = user?.role === 'PILOTO';
+  const canSeeNegotiated = ['MASTER', 'DEV', 'FINANCEIRO', 'CONSULTOR_TEC_DRONE'].includes(user?.role || '');
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Data fetching with React Query for reliability and cache reuse
@@ -152,7 +158,10 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
           area_hectares: service.area_hectares?.toString() || '',
           service_description: service.service_description || '',
           opening_date: parseDate(service.opening_date) || (service.created_at ? format(new Date(service.created_at), 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd')),
-          execution_date: parseDate(service.execution_date)
+          execution_date: parseDate(service.execution_date),
+          estimated_start_date: parseDate(service.estimated_start_date),
+          estimated_completion_date: parseDate(service.estimated_completion_date),
+          negotiated_conditions: service.negotiated_conditions || ''
         });
         setIsEditing(false);
       } else {
@@ -167,7 +176,10 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
           area_hectares: '',
           service_description: '',
           opening_date: format(new Date(), 'yyyy-MM-dd'),
-          execution_date: ''
+          execution_date: '',
+          estimated_start_date: '',
+          estimated_completion_date: '',
+          negotiated_conditions: ''
         });
         setIsEditing(false);
       }
@@ -205,10 +217,12 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
         opening_date: formData.opening_date,
         execution_date: formData.execution_date || undefined,
         client_id: formData.client_id || undefined,
-        client_name: formData.client_name,
         client_phone: formData.client_phone,
         client_document: formData.client_document,
-        client_address_street: formData.client_address_street
+        client_address_street: formData.client_address_street,
+        negotiated_conditions: formData.negotiated_conditions,
+        estimated_start_date: formData.estimated_start_date || undefined,
+        estimated_completion_date: formData.estimated_completion_date || undefined
       });
       toast.success('Informações atualizadas');
       setIsEditing(false);
@@ -224,9 +238,20 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
     if (!service) return;
     try {
       const selectedPilot = pilots.find(p => p.id === newPilotId);
+      
+      // Question: should I prompt for completion date? 
+      // The user wants to "perguntar ele a data prevista pra conclução" when assigning.
+      // I'll add a check: if no estimated_completion_date, suggest setting one.
+      
       await droneService.update(service.id, { technician_id: newPilotId });
       await droneLogService.create(service.id, `Alterou piloto designado para: ${selectedPilot?.name || 'Novo Piloto'}`, user?.name || 'Sistema');
       toast.success('Piloto atualizado');
+      
+      if (!formData.estimated_completion_date) {
+        setIsEditing(true);
+        toast.info('Por favor, informe a data prevista de conclusão.');
+      }
+      
       onSave();
       refetchLogs();
     } catch (error) {
@@ -293,6 +318,9 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
         service_description: formData.service_description || 'Serviço de Drone',
         status: 'PENDENTE',
         opening_date: formData.opening_date,
+        estimated_start_date: formData.estimated_start_date || undefined,
+        estimated_completion_date: formData.estimated_completion_date || undefined,
+        negotiated_conditions: formData.negotiated_conditions || undefined,
         created_by: user?.id
       });
 
@@ -408,8 +436,12 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
                             <Select 
                               value={service.technician_id || ''} 
                               onValueChange={handleUpdatePilot}
+                              disabled={isPilot}
                             >
-                              <SelectTrigger className="h-7 p-0 border-none bg-transparent shadow-none hover:bg-transparent focus:ring-0 text-sm font-bold text-foreground">
+                              <SelectTrigger className={cn(
+                                "h-7 p-0 border-none bg-transparent shadow-none hover:bg-transparent focus:ring-0 text-sm font-bold text-foreground",
+                                isPilot && "opacity-50 cursor-not-allowed"
+                              )}>
                                 <SelectValue placeholder="Não atribuído" />
                               </SelectTrigger>
                               <SelectContent className="rounded-2xl shadow-2xl border-border">
@@ -428,7 +460,7 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
                             <Settings2 className="h-4 w-4" />
                             <span>Detalhes Técnicos</span>
                           </div>
-                          {!isEditing && (
+                          {(!isEditing && !isPilot) && (
                             <Button variant="ghost" size="sm" onClick={() => setIsEditing(true)} className="h-7 px-2 text-[10px] font-bold text-primary hover:bg-primary/10">EDITAR</Button>
                           )}
                         </div>
@@ -455,10 +487,26 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
                               <Label className="text-[10px] uppercase font-bold text-muted-foreground">GPS / Localização</Label>
                               <Input value={formData.location_link} onChange={(e) => setFormData({...formData, location_link: e.target.value})} className="h-8 text-xs rounded-xl" />
                             </div>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="space-y-1">
+                                <Label className="text-[10px] uppercase font-bold text-muted-foreground">Previsão Início</Label>
+                                <Input type="date" value={formData.estimated_start_date} onChange={(e) => setFormData({...formData, estimated_start_date: e.target.value})} className="h-8 text-xs rounded-xl" />
+                              </div>
+                              <div className="space-y-1">
+                                <Label className="text-[10px] uppercase font-bold text-muted-foreground">Previsão Conclusão</Label>
+                                <Input type="date" value={formData.estimated_completion_date} onChange={(e) => setFormData({...formData, estimated_completion_date: e.target.value})} className="h-8 text-xs rounded-xl" />
+                              </div>
+                            </div>
                             <div className="space-y-1">
                               <Label className="text-[10px] uppercase font-bold text-muted-foreground">Descrição</Label>
                               <Textarea value={formData.service_description} onChange={(e) => setFormData({...formData, service_description: e.target.value})} className="min-h-[80px] text-xs rounded-xl p-2" />
                             </div>
+                            {canSeeNegotiated && (
+                              <div className="space-y-1">
+                                <Label className="text-[10px] uppercase font-bold text-primary">Condições Negociadas</Label>
+                                <Textarea value={formData.negotiated_conditions} onChange={(e) => setFormData({...formData, negotiated_conditions: e.target.value})} className="min-h-[80px] text-xs rounded-xl p-2 border-primary/20" />
+                              </div>
+                            )}
                             <div className="flex gap-2 pt-2">
                               <Button onClick={handleUpdateDetails} disabled={loading} className="flex-1 h-8 text-xs font-bold rounded-xl">{loading ? <Loader2 className="h-3 w-3 animate-spin" /> : 'SALVAR'}</Button>
                               <Button variant="outline" onClick={() => setIsEditing(false)} className="h-8 text-xs font-bold rounded-xl">CANCELAR</Button>
@@ -478,20 +526,36 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
                               <span className="text-muted-foreground">Execução:</span>
                               <span className="font-bold text-foreground">{service.execution_date ? safeFormatDate(service.execution_date, "dd/MM/yyyy") : "Pendente"}</span>
                             </div>
+                            <div className="flex justify-between items-center text-xs">
+                              <span className="text-muted-foreground">Prev. Início:</span>
+                              <span className="font-bold text-foreground">{service.estimated_start_date ? safeFormatDate(service.estimated_start_date, "dd/MM/yyyy") : "N/A"}</span>
+                            </div>
+                            <div className="flex justify-between items-center text-xs">
+                              <span className="text-muted-foreground">Prev. Conclusão:</span>
+                              <span className="font-bold text-foreground">{service.estimated_completion_date ? safeFormatDate(service.estimated_completion_date, "dd/MM/yyyy") : "N/A"}</span>
+                            </div>
                             <div className="h-px bg-border/50" />
                             <div className="space-y-2">
                               <span className="text-xs text-muted-foreground font-medium">Descrição:</span>
                               <p className="text-xs text-foreground leading-relaxed whitespace-pre-wrap">{service.service_description || 'Sem descrição.'}</p>
                             </div>
+                            {canSeeNegotiated && service.negotiated_conditions && (
+                              <div className="space-y-2 p-3 rounded-xl bg-primary/5 border border-primary/10">
+                                <span className="text-[10px] text-primary font-black uppercase tracking-widest">Condições Negociadas:</span>
+                                <p className="text-xs text-foreground leading-relaxed whitespace-pre-wrap">{service.negotiated_conditions}</p>
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>
                       
-                      <div className="pt-4 mt-auto border-t border-border">
-                        <Button variant="ghost" onClick={handleDelete} disabled={loading} className="w-full rounded-2xl text-destructive hover:bg-destructive/10 h-10 text-xs font-bold">
-                          <Trash2 className="h-4 w-4 mr-2" /> Excluir OS Drone
-                        </Button>
-                      </div>
+                      {!isPilot && (
+                        <div className="pt-4 mt-auto border-t border-border">
+                          <Button variant="ghost" onClick={handleDelete} disabled={loading} className="w-full rounded-2xl text-destructive hover:bg-destructive/10 h-10 text-xs font-bold">
+                            <Trash2 className="h-4 w-4 mr-2" /> Excluir OS Drone
+                          </Button>
+                        </div>
+                      )}
                     </div>
 
                     <div className="flex-1 space-y-6">
@@ -752,6 +816,24 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
                   <div className="col-span-2 space-y-2">
                     <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/80 ml-1">Descrição do Serviço</Label>
                     <Textarea placeholder="Instruções para o piloto ou detalhes do serviço..." value={formData.service_description} onChange={(e) => setFormData({ ...formData, service_description: e.target.value })} className="min-h-[100px] rounded-3xl border-border bg-card resize-none p-4" />
+                  </div>
+
+                  {canSeeNegotiated && (
+                    <div className="col-span-2 space-y-2">
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-primary ml-1">Condições Negociadas</Label>
+                      <Textarea placeholder="Detalhes financeiros ou condições especiais..." value={formData.negotiated_conditions} onChange={(e) => setFormData({ ...formData, negotiated_conditions: e.target.value })} className="min-h-[100px] rounded-3xl border-primary/20 bg-card resize-none p-4" />
+                    </div>
+                  )}
+
+                  <div className="col-span-2 grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/80 ml-1">Previsão de Início</Label>
+                      <Input type="date" value={formData.estimated_start_date} onChange={(e) => setFormData({ ...formData, estimated_start_date: e.target.value })} className="h-12 rounded-2xl bg-background border-border" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/80 ml-1">Previsão de Conclusão</Label>
+                      <Input type="date" value={formData.estimated_completion_date} onChange={(e) => setFormData({ ...formData, estimated_completion_date: e.target.value })} className="h-12 rounded-2xl bg-background border-border" />
+                    </div>
                   </div>
                 </div>
               </div>

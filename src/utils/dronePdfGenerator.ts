@@ -135,7 +135,7 @@ export async function generateDroneServicePDF(
 
   yPos += 10;
   doc.setFillColor(250, 250, 250);
-  doc.roundedRect(margin, yPos, pageWidth - 2 * margin, 50, 3, 3, 'F');
+  doc.roundedRect(margin, yPos, pageWidth - 2 * margin, 66, 3, 3, 'F');
 
   yPos += 8;
   doc.setTextColor(0, 0, 0);
@@ -162,6 +162,18 @@ export async function generateDroneServicePDF(
   doc.text('Data Execução:', margin + 5, yPos);
   doc.setFont('helvetica', 'normal');
   doc.text(formatDate(service.execution_date), margin + 45, yPos);
+
+  yPos += 8;
+  doc.setFont('helvetica', 'bold');
+  doc.text('Prev. Início:', margin + 5, yPos);
+  doc.setFont('helvetica', 'normal');
+  doc.text(formatDate(service.estimated_start_date), margin + 45, yPos);
+
+  yPos += 8;
+  doc.setFont('helvetica', 'bold');
+  doc.text('Prev. Conclusão:', margin + 5, yPos);
+  doc.setFont('helvetica', 'normal');
+  doc.text(formatDate(service.estimated_completion_date), margin + 45, yPos);
 
   yPos += 8;
   doc.setFont('helvetica', 'bold');

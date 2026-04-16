@@ -359,6 +359,9 @@ export default function DroneServices() {
                 <TableHead className="font-black text-[10px] uppercase tracking-widest">Piloto</TableHead>
                 <TableHead className="font-black text-[10px] uppercase tracking-widest">Localização</TableHead>
                 <TableHead className="font-black text-[10px] uppercase tracking-widest">Área</TableHead>
+                {(user?.role === 'MASTER' || user?.role === 'DEV' || user?.role === 'CONSULTOR_TEC_DRONE') && (
+                  <TableHead className="font-black text-[10px] uppercase tracking-widest text-emerald-500">Lucro</TableHead>
+                )}
                 <TableHead className="font-black text-[10px] uppercase tracking-widest">Status</TableHead>
                 <TableHead className="w-[120px] font-black text-[10px] uppercase tracking-widest">Abertura</TableHead>
                 <TableHead className="w-[80px] font-black text-[10px] uppercase tracking-widest text-right pr-8">Ações</TableHead>
@@ -409,6 +412,16 @@ export default function DroneServices() {
                         {service.area_hectares || '0'} ha
                       </Badge>
                     </TableCell>
+                    {(user?.role === 'MASTER' || user?.role === 'DEV' || user?.role === 'CONSULTOR_TEC_DRONE') && (
+                      <TableCell className="py-4">
+                        <span className={cn(
+                          "text-xs font-black italic",
+                          (service.profit || 0) >= 0 ? "text-emerald-500" : "text-rose-500"
+                        )}>
+                          {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(service.profit || 0)}
+                        </span>
+                      </TableCell>
+                    )}
                     <TableCell className="py-4">
                       <div className="flex items-center gap-2">
                         <div className={cn("w-2 h-2 rounded-full", config.color)} />

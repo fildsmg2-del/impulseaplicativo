@@ -62,7 +62,10 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
     service_description: '',
     negotiated_conditions: '',
     estimated_start_date: '',
-    estimated_completion_date: ''
+    estimated_completion_date: '',
+    total_value: '',
+    total_expenses: '',
+    profit: ''
   });
   const [isEditing, setIsEditing] = useState(false);
 
@@ -160,7 +163,10 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
           execution_date: parseDate(service.execution_date),
           estimated_start_date: parseDate(service.estimated_start_date),
           estimated_completion_date: parseDate(service.estimated_completion_date),
-          negotiated_conditions: service.negotiated_conditions || ''
+          negotiated_conditions: service.negotiated_conditions || '',
+          total_value: service.total_value?.toString() || '0',
+          total_expenses: service.total_expenses?.toString() || '0',
+          profit: service.profit?.toString() || '0'
         });
         setIsEditing(false);
       } else {
@@ -178,7 +184,10 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
           execution_date: '',
           estimated_start_date: '',
           estimated_completion_date: '',
-          negotiated_conditions: ''
+          negotiated_conditions: '',
+          total_value: '0',
+          total_expenses: '0',
+          profit: '0'
         });
         setIsEditing(false);
       }
@@ -222,7 +231,10 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
         client_address_street: formData.client_address_street,
         negotiated_conditions: formData.negotiated_conditions,
         estimated_start_date: formData.estimated_start_date || undefined,
-        estimated_completion_date: formData.estimated_completion_date || undefined
+        estimated_completion_date: formData.estimated_completion_date || undefined,
+        total_value: parseFloat(formData.total_value) || 0,
+        total_expenses: parseFloat(formData.total_expenses) || 0,
+        profit: parseFloat(formData.profit) || 0
       });
       toast.success('Informações atualizadas');
       setIsEditing(false);
@@ -318,9 +330,11 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
         service_description: formData.service_description || 'Serviço de Drone',
         status: 'PENDENTE',
         opening_date: formData.opening_date,
-        estimated_start_date: formData.estimated_start_date || undefined,
         estimated_completion_date: formData.estimated_completion_date || undefined,
         negotiated_conditions: formData.negotiated_conditions || undefined,
+        total_value: parseFloat(formData.total_value) || 0,
+        total_expenses: parseFloat(formData.total_expenses) || 0,
+        profit: parseFloat(formData.profit) || 0,
         created_by: user?.id
       });
 
@@ -379,6 +393,9 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
                 <div className="flex items-center gap-2">
                   <TabsList className="bg-muted/50 p-1 h-10 rounded-xl">
                     <TabsTrigger value="info" className="rounded-lg px-4 h-8 text-xs font-bold uppercase tracking-wider">Geral</TabsTrigger>
+                    {canSeeNegotiated && (
+                      <TabsTrigger value="financial" className="rounded-lg px-4 h-8 text-xs font-bold uppercase tracking-wider">Financeiro</TabsTrigger>
+                    )}
                     <TabsTrigger value="history" className="rounded-lg px-4 h-8 text-xs font-bold uppercase tracking-wider">Histórico</TabsTrigger>
                     <TabsTrigger value="attachments" className="rounded-lg px-4 h-8 text-xs font-bold uppercase tracking-wider flex gap-2"><Paperclip className="h-3 w-3" /> Anexos</TabsTrigger>
                   </TabsList>
@@ -592,6 +609,114 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
                             </div>
                           </div>
                        </div>
+                    </div>
+                  </div>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="financial" className="m-0 h-full overflow-y-auto">
+                <div className="p-8 space-y-8 animate-in fade-in duration-500">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="p-6 rounded-[32px] bg-emerald-500/5 border border-emerald-500/10 space-y-4">
+                      <div className="flex items-center gap-3 text-emerald-600">
+                        <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 flex items-center justify-center">
+                          <PlusIcon className="h-5 w-5" />
+                        </div>
+                        <span className="text-xs font-black uppercase tracking-widest">Valor Recebido</span>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-[10px] font-bold text-emerald-600/60 uppercase ml-1">Total Cobrado (R$)</Label>
+                        <Input 
+                          type="number" 
+                          value={formData.total_value} 
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            const total = parseFloat(val) || 0;
+                            const expenses = parseFloat(formData.total_expenses) || 0;
+                            setFormData({...formData, total_value: val, profit: (total - expenses).toString()});
+                          }} 
+                          className="h-14 rounded-2xl bg-background border-emerald-500/20 text-emerald-700 font-bold text-lg focus:ring-emerald-500/20" 
+                        />
+                      </div>
+                    </div>
+
+                    <div className="p-6 rounded-[32px] bg-rose-500/5 border border-rose-500/10 space-y-4">
+                      <div className="flex items-center gap-3 text-rose-600">
+                        <div className="w-10 h-10 rounded-2xl bg-rose-500/10 flex items-center justify-center">
+                          <Trash2 className="h-5 w-5" />
+                        </div>
+                        <span className="text-xs font-black uppercase tracking-widest">Gasto / Despesa</span>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-[10px] font-bold text-rose-600/60 uppercase ml-1">Total Gasto (R$)</Label>
+                        <Input 
+                          type="number" 
+                          value={formData.total_expenses} 
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            const expenses = parseFloat(val) || 0;
+                            const total = parseFloat(formData.total_value) || 0;
+                            setFormData({...formData, total_expenses: val, profit: (total - expenses).toString()});
+                          }} 
+                          className="h-14 rounded-2xl bg-background border-rose-500/20 text-rose-700 font-bold text-lg focus:ring-rose-500/20" 
+                        />
+                      </div>
+                    </div>
+
+                    <div className="p-6 rounded-[32px] bg-primary/5 border border-primary/10 space-y-4 shadow-lg shadow-primary/5">
+                      <div className="flex items-center gap-3 text-primary">
+                        <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center">
+                          <Activity className="h-5 w-5" />
+                        </div>
+                        <span className="text-xs font-black uppercase tracking-widest">Lucro Líquido</span>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-[10px] font-bold text-primary/60 uppercase ml-1">Margem Realizada (R$)</Label>
+                        <Input 
+                          type="number" 
+                          value={formData.profit} 
+                          onChange={(e) => setFormData({...formData, profit: e.target.value})} 
+                          className="h-14 rounded-2xl bg-background border-primary/20 text-primary font-bold text-lg focus:ring-primary/20" 
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-8 rounded-[40px] bg-muted/30 border border-border/50 space-y-6">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-2xl bg-background flex items-center justify-center text-primary border border-border">
+                        <Settings2 className="h-5 w-5" />
+                      </div>
+                      <h4 className="text-sm font-black uppercase tracking-tighter">Resumo de Viabilidade</h4>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <div className="space-y-4">
+                        <div className="flex justify-between items-end border-b border-border/50 pb-2">
+                          <span className="text-xs font-bold text-muted-foreground uppercase">Resultado Nominal</span>
+                          <span className={cn(
+                            "text-xl font-black italic",
+                            (parseFloat(formData.profit) || 0) >= 0 ? "text-emerald-500" : "text-rose-500"
+                          )}>
+                            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(parseFloat(formData.profit) || 0)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-end border-b border-border/50 pb-2">
+                          <span className="text-xs font-bold text-muted-foreground uppercase">Rentabilidade</span>
+                          <span className="text-lg font-black italic text-foreground/80">
+                            {formData.total_value && parseFloat(formData.total_value) > 0 
+                              ? ((parseFloat(formData.profit) / parseFloat(formData.total_value)) * 100).toFixed(1) + '%' 
+                              : '0%'}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <div className="flex flex-col justify-center">
+                         <Button onClick={handleUpdateDetails} disabled={loading} className="h-14 rounded-[22px] font-black uppercase tracking-widest shadow-lg shadow-primary/20 active:scale-95 transition-all">
+                            {loading ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <Save className="h-5 w-5 mr-2" />}
+                            Salvar Dados Financeiros
+                         </Button>
+                      </div>
                     </div>
                   </div>
                 </div>

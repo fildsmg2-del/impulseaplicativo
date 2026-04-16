@@ -592,6 +592,11 @@ export default function DroneServices() {
         </div>
       )}
 
+      <DroneServiceModal
+        service={selectedService}
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+        onSave={refetch}
       />
     </div>
   );

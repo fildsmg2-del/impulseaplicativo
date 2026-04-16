@@ -64,6 +64,8 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
     area_hectares: '',
     service_description: '',
     negotiated_conditions: '',
+    opening_date: '',
+    execution_date: '',
     estimated_start_date: '',
     estimated_completion_date: ''
   });
@@ -169,9 +171,18 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
         };
 
         setFormData({
+          client_id: service.client_id || '',
+          client_name: service.client?.name || service.client_name || '',
+          client_phone: service.client_phone || '',
+          client_document: service.client_document || '',
+          client_address_street: service.client_address_street || '',
+          technician_id: service.technician_id || '',
           location_link: service.location_link || '',
           area_hectares: service.area_hectares?.toString() || '',
           service_description: service.service_description || '',
+          opening_date: parseDate(service.opening_date) || (service.created_at ? format(new Date(service.created_at), 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd')),
+          execution_date: parseDate(service.execution_date),
+          estimated_start_date: parseDate(service.estimated_start_date),
           estimated_completion_date: parseDate(service.estimated_completion_date),
           negotiated_conditions: service.negotiated_conditions || ''
         });
@@ -187,6 +198,9 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
           location_link: '',
           area_hectares: '',
           service_description: '',
+          opening_date: format(new Date(), 'yyyy-MM-dd'),
+          execution_date: '',
+          estimated_start_date: '',
           estimated_completion_date: '',
           negotiated_conditions: ''
         });

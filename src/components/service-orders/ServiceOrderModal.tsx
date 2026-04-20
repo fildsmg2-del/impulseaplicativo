@@ -249,21 +249,27 @@ export function ServiceOrderModal({
       await serviceOrderLogService.create({
         service_order_id: serviceOrder.id,
         description: newLog,
-        sector: 'POS_VENDA', // Setor padrão para logs manuais
+        sector: user?.role || 'GERAL',
         created_by_name: user?.name || 'Sistema',
         created_by_role: user?.role || 'VENDEDOR'
       });
       setNewLog('');
-    } catch (error) {
+      refetchLogs();
+      toast({
+        title: "Sucesso",
+        description: "Comentário adicionado.",
+      });
+    } catch (error: any) {
+      console.error('Erro ao adicionar log:', error);
       toast({
         title: "Erro",
-        description: "Não foi possível adicionar o comentário.",
+        description: error.message || "Não foi possível adicionar o comentário.",
         variant: "destructive"
       });
     }
   };
 
-  const { data: logs = [] } = useQuery({
+  const { data: logs = [], refetch: refetchLogs } = useQuery({
     queryKey: ['service-order-logs', serviceOrder?.id],
     queryFn: () => serviceOrderLogService.getByServiceOrderId(serviceOrder!.id),
     enabled: open && !!serviceOrder?.id

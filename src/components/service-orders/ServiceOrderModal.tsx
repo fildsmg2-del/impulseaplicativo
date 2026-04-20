@@ -2,8 +2,10 @@ import { useState, useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { format, addDays, isPast, isValid } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { X, Send, Paperclip, FileDown, AlertTriangle, MessageSquare, Loader2, User, Calendar, Clock, Upload, Trash2 } from 'lucide-react';
+import { X, Send, Paperclip, FileDown, AlertTriangle, MessageSquare, Loader2, User, Calendar, Clock, Upload, Trash2, CheckCircle2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -42,6 +44,23 @@ export function ServiceOrderModal({
   const { toast } = useToast();
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('details');
+  const [showRoleSelector, setShowRoleSelector] = useState(false);
+  const [selectedTargetRole, setSelectedTargetRole] = useState<string | null>(null);
+  const [selectedAssigneeId, setSelectedAssigneeId] = useState('');
+  const [sendingToRole, setSendingToRole] = useState(false);
+
+  // Cargos disponíveis para envio na OS
+  const OS_ROLE_OPTIONS: { role: string; label: string; description: string }[] = [
+    { role: 'VENDEDOR',   label: 'Vendedor',        description: 'Setor de Vendas' },
+    { role: 'ENGENHEIRO', label: 'Engenheiro',       description: 'Engenharia / Projetos' },
+    { role: 'TECNICO',    label: 'Técnico',          description: 'Equipe Técnica (selecione o técnico)' },
+    { role: 'FINANCEIRO', label: 'Financeiro',       description: 'Setor Financeiro' },
+    { role: 'POS_VENDA',  label: 'Pós-Venda',        description: 'Pós-Venda e Suporte' },
+    { role: 'COMPRAS',    label: 'Compras',          description: 'Setor de Compras' },
+  ];
+
+  const isTechnicianSelected = selectedTargetRole === 'TECNICO';
+  const canConfirmSend = Boolean(selectedTargetRole) && (!isTechnicianSelected || Boolean(selectedAssigneeId));
   const [loading, setLoading] = useState(false);
   const [newLog, setNewLog] = useState('');
   
@@ -123,6 +142,49 @@ export function ServiceOrderModal({
       setActiveTab('details');
     }
   }, [serviceOrder, open, preselectedClientId, preselectedTechnicianId, prefilledNotes]);
+
+  const handleSendToRole = async () => {
+    if (!serviceOrder || !selectedTargetRole) return;
+    try {
+      setSendingToRole(true);
+      const targetRole = OS_ROLE_OPTIONS.find(r => r.role === selectedTargetRole);
+
+      // Se TECNICO, atualiza o assigned_to; senão mantém
+      const updatePayload: Record<string, unknown> = {
+        status: 'EM_TRATAMENTO',
+      };
+      if (isTechnicianSelected && selectedAssigneeId) {
+        updatePayload.assigned_to = selectedAssigneeId;
+      }
+
+      await serviceOrderService.update({ id: serviceOrder.id, ...updatePayload } as any);
+
+      // Log automático
+      const assigneeName = isTechnicianSelected
+        ? allUsers.find(u => u.id === selectedAssigneeId)?.name || 'Técnico'
+        : targetRole?.label || selectedTargetRole;
+
+      await serviceOrderLogService.create({
+        service_order_id: serviceOrder.id,
+        description: `OS enviada para o cargo "${targetRole?.label || selectedTargetRole}"${isTechnicianSelected ? ` — Técnico: ${assigneeName}` : ''}.`,
+        sector: selectedTargetRole,
+        created_by_name: user?.name || 'Sistema',
+        created_by_role: user?.role || 'VENDEDOR',
+      });
+
+      toast({ title: 'Enviado!', description: `OS encaminhada para ${targetRole?.label}.` });
+      setShowRoleSelector(false);
+      setSelectedTargetRole(null);
+      setSelectedAssigneeId('');
+      onSave();
+      onOpenChange(false);
+    } catch (error) {
+      console.error(error);
+      toast({ title: 'Erro', description: 'Não foi possível enviar a OS.', variant: 'destructive' });
+    } finally {
+      setSendingToRole(false);
+    }
+  };
 
   const handleSave = async () => {
     if (!formData.client_id || !formData.service_type_id) {
@@ -382,6 +444,91 @@ export function ServiceOrderModal({
                 <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1 h-12 rounded-2xl font-bold border-border" disabled={loading}>
                   Cancelar
                 </Button>
+
+                {/* Botão Enviar para Cargo — só aparece quando editando uma OS existente */}
+                {serviceOrder && (
+                  <AlertDialog
+                    open={showRoleSelector}
+                    onOpenChange={(next) => {
+                      setShowRoleSelector(next);
+                      if (!next) { setSelectedTargetRole(null); setSelectedAssigneeId(''); }
+                    }}
+                  >
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="secondary"
+                        disabled={sendingToRole}
+                        className="flex-1 h-12 rounded-2xl font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-lg"
+                      >
+                        {sendingToRole ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Send className="h-4 w-4 mr-2" />}
+                        Enviar para Cargo
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent className="max-w-md z-[200]">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Enviar OS para qual cargo?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Selecione o cargo de destino para esta ordem de serviço.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+
+                      <div className="py-4 space-y-2">
+                        {OS_ROLE_OPTIONS.map(({ role, label, description }) => (
+                          <button
+                            key={role}
+                            onClick={() => { setSelectedTargetRole(role); setSelectedAssigneeId(''); }}
+                            className={`w-full flex items-center justify-between p-3 rounded-lg border transition-all text-left ${
+                              selectedTargetRole === role
+                                ? 'border-blue-500 bg-blue-500/10 text-blue-700'
+                                : 'border-border hover:bg-muted'
+                            }`}
+                          >
+                            <div>
+                              <p className="font-medium">{label}</p>
+                              <p className="text-xs text-muted-foreground">{description}</p>
+                            </div>
+                            {selectedTargetRole === role && <CheckCircle2 className="h-5 w-5 text-blue-500" />}
+                          </button>
+                        ))}
+
+                        {/* Seleção de técnico específico */}
+                        {isTechnicianSelected && (
+                          <div className="mt-3 space-y-2">
+                            <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                              <User className="h-3 w-3 inline mr-1" />Técnico responsável
+                            </Label>
+                            <Select value={selectedAssigneeId} onValueChange={setSelectedAssigneeId}>
+                              <SelectTrigger className="h-10 rounded-xl">
+                                <SelectValue placeholder="Selecione um técnico" />
+                              </SelectTrigger>
+                              <SelectContent className="z-[210]">
+                                {technicians.map(tech => (
+                                  <SelectItem key={tech.id} value={tech.id}>{tech.name}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <p className="text-xs text-muted-foreground">Obrigatório para envio ao técnico.</p>
+                          </div>
+                        )}
+                      </div>
+
+                      <AlertDialogFooter>
+                        <AlertDialogCancel onClick={() => { setSelectedTargetRole(null); setSelectedAssigneeId(''); }}>
+                          Cancelar
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={handleSendToRole}
+                          disabled={!canConfirmSend || sendingToRole}
+                          className="bg-blue-600 hover:bg-blue-700"
+                        >
+                          {sendingToRole ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                          Confirmar Envio
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
+
                 <Button onClick={handleSave} disabled={loading} className="flex-[2] h-12 rounded-2xl font-bold bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20">
                   {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Salvar Alterações'}
                 </Button>

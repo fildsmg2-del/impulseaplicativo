@@ -561,7 +561,16 @@ export function ServiceOrderModal({
 
               <ScrollArea className="flex-1 h-[400px]">
                 <div className="space-y-4 py-4">
-                  {logs.length === 0 ? (
+                  {formData.notes && (
+                    <div className="bg-primary/5 p-4 rounded-3xl border border-primary/20 space-y-2">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-primary">DESCRIÇÃO / NOTAS DO SERVIÇO</span>
+                      </div>
+                      <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">{formData.notes}</p>
+                    </div>
+                  )}
+
+                  {logs.length === 0 && !formData.notes ? (
                     <div className="h-full flex flex-col items-center justify-center text-muted-foreground py-12 gap-3 opacity-50">
                       <MessageSquare className="h-12 w-12" />
                       <p className="text-sm font-medium">Nenhum comentário registrado</p>

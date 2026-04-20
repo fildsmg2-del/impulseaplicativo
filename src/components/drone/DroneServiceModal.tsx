@@ -755,7 +755,29 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
                           </div>
                           <ScrollArea className="flex-1 p-4" ref={scrollRef}>
                             <div className="space-y-4">
-                              {logs.length === 0 ? (
+                              {formData.service_description && (
+                                <div className="flex flex-col gap-1 max-w-[85%] items-start">
+                                  <div className="flex items-center gap-2 px-1">
+                                    <span className="text-[10px] font-black uppercase tracking-tighter text-primary">DESCRIÇÃO DO SERVIÇO</span>
+                                  </div>
+                                  <div className="p-3 rounded-2xl text-xs shadow-sm shadow-black/5 bg-primary/5 border border-primary/10 text-foreground whitespace-pre-wrap rounded-tl-none">
+                                    {formData.service_description}
+                                  </div>
+                                </div>
+                              )}
+
+                              {formData.negotiated_conditions && canSeeNegotiated && (
+                                <div className="flex flex-col gap-1 max-w-[85%] items-start">
+                                  <div className="flex items-center gap-2 px-1">
+                                    <span className="text-[10px] font-black uppercase tracking-tighter text-amber-600">CONDIÇÕES NEGOCIADAS</span>
+                                  </div>
+                                  <div className="p-3 rounded-2xl text-xs shadow-sm shadow-black/5 bg-amber-500/5 border border-amber-500/10 text-foreground whitespace-pre-wrap rounded-tl-none">
+                                    {formData.negotiated_conditions}
+                                  </div>
+                                </div>
+                              )}
+
+                              {logs.length === 0 && !formData.service_description ? (
                                 <div className="h-full flex flex-col items-center justify-center text-muted-foreground/30 py-20 gap-3">
                                   <Activity className="h-10 w-10 opacity-20" />
                                   <p className="text-xs font-bold uppercase tracking-tighter">Nenhuma atividade</p>

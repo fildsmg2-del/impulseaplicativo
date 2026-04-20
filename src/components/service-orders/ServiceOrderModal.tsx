@@ -445,8 +445,8 @@ export function ServiceOrderModal({
                   Cancelar
                 </Button>
 
-                {/* Botão Enviar para Cargo — só aparece quando editando uma OS existente */}
-                {serviceOrder && (
+                {/* Botão Enviar para Cargo — só para DEV/MASTER/ENGENHEIRO editando OS existente */}
+                {serviceOrder && ['MASTER', 'DEV', 'ENGENHEIRO'].includes(user?.role || '') && (
                   <AlertDialog
                     open={showRoleSelector}
                     onOpenChange={(next) => {

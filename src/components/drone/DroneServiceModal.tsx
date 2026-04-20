@@ -13,8 +13,19 @@ import { Textarea } from '@/components/ui/textarea';
 import { 
   Loader2, Save, Trash2, User, MapPin, Plus as PlusIcon,
   Settings2, Activity, MessageCircle, Send, Paperclip, FileDown, Upload, X,
-  ArrowUpCircle, ArrowDownCircle, DollarSign, ExternalLink
+  ArrowUpCircle, ArrowDownCircle, DollarSign, ExternalLink, CheckCircle2
 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { storageService } from '@/services/storageService';
@@ -72,6 +83,23 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
   const [isEditing, setIsEditing] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
   const [transactionModal, setTransactionModal] = useState<{ open: boolean; type: 'RECEITA' | 'DESPESA' }>({ open: false, type: 'RECEITA' });
+  const [showRoleSelector, setShowRoleSelector] = useState(false);
+  const [selectedTargetRole, setSelectedTargetRole] = useState<string | null>(null);
+  const [selectedAssigneeId, setSelectedAssigneeId] = useState('');
+  const [sendingToRole, setSendingToRole] = useState(false);
+
+  // Cargos disponíveis para envio
+  const OS_ROLE_OPTIONS: { role: string; label: string; description: string }[] = [
+    { role: 'VENDEDOR',   label: 'Vendedor',        description: 'Setor de Vendas' },
+    { role: 'ENGENHEIRO', label: 'Engenheiro',       description: 'Engenharia / Projetos' },
+    { role: 'PILOTO',     label: 'Piloto',           description: 'Equipe de Drone (selecione o piloto)' },
+    { role: 'FINANCEIRO', label: 'Financeiro',       description: 'Setor Financeiro' },
+    { role: 'POS_VENDA',  label: 'Pós-Venda',        description: 'Pós-Venda e Suporte' },
+    { role: 'COMPRAS',    label: 'Compras',          description: 'Setor de Compras' },
+  ];
+
+  const isTechnicianSelected = selectedTargetRole === 'PILOTO';
+  const canConfirmSend = Boolean(selectedTargetRole) && (!isTechnicianSelected || Boolean(selectedAssigneeId));
 
   const isPilot = user?.role === 'PILOTO';
   const canSeeNegotiated = ['MASTER', 'DEV', 'FINANCEIRO', 'CONSULTOR_TEC_DRONE'].includes(user?.role || '');
@@ -298,6 +326,47 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
       toast.error('Erro ao excluir OS Drone');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSendToRole = async () => {
+    if (!service || !selectedTargetRole) return;
+    try {
+      setSendingToRole(true);
+      const targetRole = OS_ROLE_OPTIONS.find(r => r.role === selectedTargetRole);
+
+      const updatePayload: Partial<DroneService> = {
+        status: (selectedTargetRole === 'PILOTO' ? 'TECNICO' : 'PENDENTE') as DroneServiceStatus
+      };
+
+      if (isTechnicianSelected && selectedAssigneeId) {
+        updatePayload.technician_id = selectedAssigneeId;
+      }
+
+      await droneService.update(service.id, updatePayload);
+
+      // Log automático
+      const assigneeName = isTechnicianSelected
+        ? allUsers.find(u => u.id === selectedAssigneeId)?.name || 'Piloto'
+        : targetRole?.label || selectedTargetRole;
+
+      await droneLogService.create(
+        service.id, 
+        `OS Drone enviada para o cargo "${targetRole?.label || selectedTargetRole}"${isTechnicianSelected ? ` — Piloto: ${assigneeName}` : ''}.`,
+        user?.name || 'Sistema'
+      );
+
+      toast.success(`OS Drone encaminhada para ${targetRole?.label}.`);
+      setShowRoleSelector(false);
+      setSelectedTargetRole(null);
+      setSelectedAssigneeId('');
+      onSave();
+      onOpenChange(false);
+    } catch (error) {
+      console.error(error);
+      toast.error('Não foi possível enviar a OS Drone.');
+    } finally {
+      setSendingToRole(false);
     }
   };
 
@@ -583,6 +652,90 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
                           <Button variant="ghost" onClick={handleDelete} disabled={loading} className="w-full rounded-2xl text-destructive hover:bg-destructive/10 h-10 text-xs font-bold">
                             <Trash2 className="h-4 w-4 mr-2" /> Excluir OS Drone
                           </Button>
+                        </div>
+                      )}
+
+                      {service && ['MASTER', 'DEV', 'ENGENHEIRO'].includes(user?.role || '') && (
+                        <div className="pt-2">
+                          <AlertDialog
+                            open={showRoleSelector}
+                            onOpenChange={(next) => {
+                              setShowRoleSelector(next);
+                              if (!next) { setSelectedTargetRole(null); setSelectedAssigneeId(''); }
+                            }}
+                          >
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="secondary"
+                                disabled={sendingToRole}
+                                className="w-full h-10 rounded-2xl font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-lg text-xs"
+                              >
+                                {sendingToRole ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Send className="h-4 w-4 mr-2" />}
+                                ENVIAR PARA CARGO
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent className="max-w-md z-[200]">
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Enviar OS Drone para qual cargo?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Selecione o cargo de destino para esta ordem de serviço.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+
+                              <div className="py-4 space-y-2">
+                                {OS_ROLE_OPTIONS.map(({ role, label, description }) => (
+                                  <button
+                                    key={role}
+                                    onClick={() => { setSelectedTargetRole(role); setSelectedAssigneeId(''); }}
+                                    className={`w-full flex items-center justify-between p-3 rounded-lg border transition-all text-left ${
+                                      selectedTargetRole === role
+                                        ? 'border-blue-500 bg-blue-500/10 text-blue-700'
+                                        : 'border-border hover:bg-muted'
+                                    }`}
+                                  >
+                                    <div>
+                                      <p className="font-medium">{label}</p>
+                                      <p className="text-xs text-muted-foreground">{description}</p>
+                                    </div>
+                                    {selectedTargetRole === role && <CheckCircle2 className="h-5 w-5 text-blue-500" />}
+                                  </button>
+                                ))}
+
+                                {isTechnicianSelected && (
+                                  <div className="mt-3 space-y-2">
+                                    <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                                      <User className="h-3 w-3 inline mr-1" />Piloto responsável
+                                    </Label>
+                                    <Select value={selectedAssigneeId} onValueChange={setSelectedAssigneeId}>
+                                      <SelectTrigger className="h-10 rounded-xl">
+                                        <SelectValue placeholder="Selecione um piloto" />
+                                      </SelectTrigger>
+                                      <SelectContent className="z-[210]">
+                                        {pilots.map(p => (
+                                          <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                    <p className="text-[10px] text-muted-foreground">Obrigatório para envio ao piloto.</p>
+                                  </div>
+                                )}
+                              </div>
+
+                              <AlertDialogFooter>
+                                <AlertDialogCancel onClick={() => { setSelectedTargetRole(null); setSelectedAssigneeId(''); }}>
+                                  Cancelar
+                                </AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={handleSendToRole}
+                                  disabled={!canConfirmSend || sendingToRole}
+                                  className="bg-blue-600 hover:bg-blue-700"
+                                >
+                                  {sendingToRole ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                                  Confirmar Envio
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </div>
                       )}
                     </div>

@@ -370,7 +370,8 @@ export default function ServiceOrders() {
                       return (
                         <TableRow 
                           key={order.id} 
-                          className={overdue ? 'bg-destructive/5 hover:bg-destructive/10' : ''}
+                          className={`cursor-pointer transition-colors ${overdue ? 'bg-destructive/5 hover:bg-destructive/10' : 'hover:bg-muted/50'}`}
+                          onClick={() => handleEdit(order)}
                         >
                           <TableCell className="font-bold text-primary">
                             {order.display_code || '-'}
@@ -390,7 +391,7 @@ export default function ServiceOrders() {
                             {getDeadlineBadge(order)}
                           </TableCell>
                           <TableCell>{getStatusBadge(order.status)}</TableCell>
-                          <TableCell className="text-right">
+                          <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" size="sm">

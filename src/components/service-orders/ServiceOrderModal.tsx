@@ -215,7 +215,17 @@ export function ServiceOrderModal({
         } as any);
         toast({ title: "Sucesso", description: "Ordem de serviço atualizada." });
       } else {
-        await serviceOrderService.create(payload as any);
+        const created = await serviceOrderService.create(payload as any);
+        
+        // Log inicial com a descrição da OS
+        await serviceOrderLogService.create({
+          service_order_id: created.id,
+          description: `OS Criada - Descrição: ${formData.notes || 'Sem observações'}`,
+          sector: 'GERAL',
+          created_by_name: user?.name || 'Sistema',
+          created_by_role: user?.role || 'VENDEDOR'
+        });
+
         toast({ title: "Sucesso", description: "Ordem de serviço criada." });
       }
       onSave();

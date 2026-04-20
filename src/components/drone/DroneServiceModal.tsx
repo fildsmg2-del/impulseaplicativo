@@ -420,7 +420,11 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
         created_by: user?.id || null
       });
 
-      await droneLogService.create(newService.id, 'OS Drone criada no sistema', user?.name || 'Sistema');
+      await droneLogService.create(
+        newService.id, 
+        `OS Drone criada - Descrição: ${formData.service_description || 'Sem descrição'}`, 
+        user?.name || 'Sistema'
+      );
       
       // Note: We can't easily use hooks inside async functions, so we rely on the onSave refetch passed as prop
       

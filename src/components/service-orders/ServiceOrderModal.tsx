@@ -100,6 +100,19 @@ export function ServiceOrderModal({
     checklist_state: []
   });
 
+  const canEdit = useMemo(() => {
+    if (!user) return false;
+    if (['MASTER', 'ENGENHEIRO', 'DEV'].includes(user.role)) return true;
+    if (!serviceOrder) return true;
+    
+    const currentRole = serviceOrder.assigned_role;
+    const isAssignedToMe = serviceOrder.assigned_to === user.id;
+    const isInMyRole = currentRole === user.role;
+    
+    if (user.role === 'TECNICO') return isAssignedToMe || isInMyRole;
+    return isInMyRole || (!currentRole && user.role === 'VENDEDOR'); // Vendedor pode editar se não houver role (OS nova/antiga)
+  }, [user, serviceOrder]);
+
   const safeFormatDate = (dateStr: string | null | undefined, fmt: string = "dd/MM/yyyy") => {
     if (!dateStr) return "";
     try {
@@ -149,9 +162,10 @@ export function ServiceOrderModal({
       setSendingToRole(true);
       const targetRole = OS_ROLE_OPTIONS.find(r => r.role === selectedTargetRole);
 
-      // Se TECNICO, atualiza o assigned_to; senão mantém
+      // Atualiza status e o cargo responsável
       const updatePayload: Record<string, unknown> = {
         status: 'EM_TRATAMENTO',
+        assigned_role: selectedTargetRole,
       };
       if (isTechnicianSelected && selectedAssigneeId) {
         updatePayload.assigned_to = selectedAssigneeId;
@@ -215,13 +229,16 @@ export function ServiceOrderModal({
         } as any);
         toast({ title: "Sucesso", description: "Ordem de serviço atualizada." });
       } else {
-        const created = await serviceOrderService.create(payload as any);
+        const created = await serviceOrderService.create({
+          ...payload,
+          assigned_role: user?.role || 'VENDEDOR' // Inicia no cargo de quem criou
+        } as any);
         
         // Log inicial com a descrição da OS
         await serviceOrderLogService.create({
           service_order_id: created.id,
           description: `OS Criada - Descrição: ${formData.notes || 'Sem observações'}`,
-          sector: 'GERAL',
+          sector: user?.role || 'GERAL',
           created_by_name: user?.name || 'Sistema',
           created_by_role: user?.role || 'VENDEDOR'
         });
@@ -334,7 +351,7 @@ export function ServiceOrderModal({
                       value={formData.client_id || ''} 
                       onValueChange={(val) => setFormData({ ...formData, client_id: val })}
                     >
-                      <SelectTrigger className="h-12 rounded-2xl border-border bg-card">
+                      <SelectTrigger disabled={!canEdit} className="h-12 rounded-2xl border-border bg-card">
                         <SelectValue placeholder="Selecione o cliente" />
                       </SelectTrigger>
                       <SelectContent className="rounded-2xl">
@@ -360,8 +377,8 @@ export function ServiceOrderModal({
                         setFormData({ ...formData, ...updates });
                       }}
                     >
-                      <SelectTrigger className="h-12 rounded-2xl border-border bg-card">
-                        <SelectValue placeholder="Selecione o tipo" />
+                      <SelectTrigger disabled={!canEdit} className="h-12 rounded-2xl border-border bg-card">
+                        <SelectValue placeholder="Selecione o tipo de serviço" />
                       </SelectTrigger>
                       <SelectContent className="rounded-2xl">
                         {serviceTypes.map(type => (
@@ -376,6 +393,7 @@ export function ServiceOrderModal({
                       Técnico Designado
                     </Label>
                     <Select 
+                      disabled={!canEdit}
                       value={formData.assigned_to || ''} 
                       onValueChange={(val) => setFormData({ ...formData, assigned_to: val })}
                     >
@@ -396,19 +414,21 @@ export function ServiceOrderModal({
                     <div className="space-y-2">
                       <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Data Abertura</Label>
                       <Input 
+                        disabled={!canEdit}
                         type="date" 
                         value={formData.opening_date || ''} 
                         onChange={(e) => setFormData({ ...formData, opening_date: e.target.value })}
-                        className="h-12 rounded-2xl"
+                        className="h-12 rounded-2xl border-border bg-card"
                       />
                     </div>
                     <div className="space-y-2">
                       <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Prazo Final</Label>
                       <Input 
+                        disabled={!canEdit}
                         type="date" 
                         value={formData.deadline_date || ''} 
                         onChange={(e) => setFormData({ ...formData, deadline_date: e.target.value })}
-                        className="h-12 rounded-2xl"
+                        className="h-12 rounded-2xl border-border bg-card"
                       />
                     </div>
                   </div>
@@ -418,6 +438,7 @@ export function ServiceOrderModal({
                       <Clock className="h-3 w-3" /> Status do Processo
                     </Label>
                     <Select 
+                      disabled={!canEdit}
                       value={formData.status || 'EM_ABERTO'} 
                       onValueChange={(val) => setFormData({ ...formData, status: val })}
                     >
@@ -437,10 +458,11 @@ export function ServiceOrderModal({
                   <div className="space-y-2">
                     <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Data de Execução</Label>
                     <Input 
+                      disabled={!canEdit}
                       type="date" 
                       value={formData.execution_date || ''} 
                       onChange={(e) => setFormData({ ...formData, execution_date: e.target.value })}
-                      className="h-12 rounded-2xl"
+                      className="h-12 rounded-2xl border-border bg-card"
                     />
                   </div>
                 </div>
@@ -449,6 +471,7 @@ export function ServiceOrderModal({
               <div className="space-y-2 pt-2">
                 <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Descrição / Notas do Serviço</Label>
                 <Textarea 
+                  disabled={!canEdit}
                   value={formData.notes || ''} 
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                   placeholder="Descreva detalhes importantes sobre o serviço ou especificações do cliente..."
@@ -545,9 +568,11 @@ export function ServiceOrderModal({
                   </AlertDialog>
                 )}
 
-                <Button onClick={handleSave} disabled={loading} className="flex-[2] h-12 rounded-2xl font-bold bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20">
-                  {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Salvar Alterações'}
-                </Button>
+                {canEdit && (
+                  <Button onClick={handleSave} disabled={loading} className="flex-[2] h-12 rounded-2xl font-bold bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20">
+                    {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Salvar Alterações'}
+                  </Button>
+                )}
               </div>
             </TabsContent>
 

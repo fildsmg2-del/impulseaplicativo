@@ -20,6 +20,7 @@ export interface DroneService {
   estimated_start_date?: string;
   estimated_completion_date?: string;
   negotiated_conditions?: string;
+  assigned_role?: string | null;
   created_at: string;
   updated_at: string;
   display_code?: string;

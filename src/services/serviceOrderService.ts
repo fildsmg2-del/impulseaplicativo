@@ -16,6 +16,7 @@ export interface ServiceOrder {
   created_by: string | null;
   assigned_to: string | null;
   checklist_state: ServiceOrderChecklistItem[];
+  assigned_role: string | null;
   created_at: string;
   updated_at: string;
   display_code?: string;
@@ -49,6 +50,7 @@ export interface CreateServiceOrderData {
   attachments?: ServiceOrderAttachmentDraft[];
   notes?: string | null;
   assigned_to?: string | null;
+  assigned_role?: string | null;
   checklist_state?: ServiceOrderChecklistItem[];
   display_code?: string;
 }

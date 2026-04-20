@@ -84,7 +84,9 @@ export default function ServiceOrders() {
 
   const visibleOrders = canViewAllOrders || !user
     ? serviceOrders
-    : serviceOrders.filter((order) => order.assigned_to === user.id);
+    : user.role === 'TECNICO'
+      ? serviceOrders.filter((order) => order.assigned_to === user.id || order.assigned_role === 'TECNICO')
+      : serviceOrders; // Todos os outros podem ver todas as OS Solar conforme solicitado.
 
   const filteredOrders = visibleOrders.filter((order) => {
     const matchesSearch =

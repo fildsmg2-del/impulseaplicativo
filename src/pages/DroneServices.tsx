@@ -78,8 +78,8 @@ export default function DroneServices() {
   const filteredServices = services.filter((s) => {
     const isPilot = user?.role === 'PILOTO';
 
-    // Regra: Piloto vê apenas o que foi designado a ele OU o que ele criou
-    if (isPilot && s.technician_id !== user.id && s.created_by !== user.id) {
+    // Regra: Piloto vê apenas o que foi designado a ele OU o que ele criou OU o que foi enviado para o cargo PILOTO
+    if (isPilot && s.technician_id !== user.id && s.created_by !== user.id && s.assigned_role !== 'PILOTO') {
       return false;
     }
 

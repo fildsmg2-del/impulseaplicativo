@@ -101,6 +101,19 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
   const isTechnicianSelected = selectedTargetRole === 'PILOTO';
   const canConfirmSend = Boolean(selectedTargetRole) && (!isTechnicianSelected || Boolean(selectedAssigneeId));
 
+  const canEdit = useMemo(() => {
+    if (!user) return false;
+    if (['MASTER', 'ENGENHEIRO', 'DEV'].includes(user.role)) return true;
+    if (!service) return true;
+    
+    const currentRole = service.assigned_role;
+    const isAssignedToMe = service.technician_id === user.id;
+    const isInMyRole = currentRole === user.role;
+    
+    if (user.role === 'PILOTO') return isAssignedToMe || isInMyRole;
+    return isInMyRole || (!currentRole && user.role === 'VENDEDOR');
+  }, [user, service]);
+
   const isPilot = user?.role === 'PILOTO';
   const canSeeNegotiated = ['MASTER', 'DEV', 'FINANCEIRO', 'CONSULTOR_TEC_DRONE'].includes(user?.role || '');
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -336,7 +349,8 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
       const targetRole = OS_ROLE_OPTIONS.find(r => r.role === selectedTargetRole);
 
       const updatePayload: Partial<DroneService> = {
-        status: (selectedTargetRole === 'PILOTO' ? 'TECNICO' : 'PENDENTE') as DroneServiceStatus
+        status: (selectedTargetRole === 'PILOTO' ? 'TECNICO' : 'PENDENTE') as DroneServiceStatus,
+        assigned_role: selectedTargetRole
       };
 
       if (isTechnicianSelected && selectedAssigneeId) {
@@ -417,7 +431,8 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
         estimated_start_date: formData.estimated_start_date || null,
         estimated_completion_date: formData.estimated_completion_date || null,
         negotiated_conditions: formData.negotiated_conditions || null,
-        created_by: user?.id || null
+        created_by: user?.id || null,
+        assigned_role: user?.role || 'VENDEDOR'
       });
 
       await droneLogService.create(
@@ -459,6 +474,7 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
                       <Select 
                         value={status} 
                         onValueChange={(val) => handleStatusChange(val as DroneServiceStatus)}
+                        disabled={!canEdit}
                       >
                         <SelectTrigger className="h-7 w-fit px-3 text-[10px] font-black uppercase tracking-widest rounded-lg border-primary/20 bg-primary/5 text-primary">
                           <SelectValue />
@@ -538,7 +554,7 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
                             <Select 
                               value={service.technician_id || ''} 
                               onValueChange={handleUpdatePilot}
-                              disabled={isPilot}
+                              disabled={isPilot || !canEdit}
                             >
                               <SelectTrigger className={cn(
                                 "h-7 p-0 border-none bg-transparent shadow-none hover:bg-transparent focus:ring-0 text-sm font-bold text-foreground",
@@ -562,7 +578,7 @@ export function DroneServiceModal({ service, open, onOpenChange, onSave }: Drone
                             <Settings2 className="h-4 w-4" />
                             <span>Detalhes Técnicos</span>
                           </div>
-                          {(!isEditing && !isPilot) && (
+                          {(!isEditing && !isPilot && canEdit) && (
                             <Button variant="ghost" size="sm" onClick={() => setIsEditing(true)} className="h-7 px-2 text-[10px] font-bold text-primary hover:bg-primary/10">EDITAR</Button>
                           )}
                         </div>

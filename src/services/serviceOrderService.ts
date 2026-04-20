@@ -192,14 +192,28 @@ export const serviceOrderService = {
     const openingDate = serviceOrder.opening_date || new Date().toISOString().split('T')[0];
     const { attachments, ...serviceOrderData } = serviceOrder;
 
+    // Sanitize data: remove joined objects and convert empty strings to null
+    const sanitizedData = Object.entries(serviceOrderData).reduce((acc, [key, value]) => {
+      // Skip joined objects/arrays that are not part of the table
+      if (['client', 'technician', 'service_type_info'].includes(key)) return acc;
+      
+      // Convert empty strings to null for UUID and Date fields
+      if (typeof value === 'string' && value.trim() === '') {
+        acc[key] = null;
+      } else {
+        acc[key] = value;
+      }
+      return acc;
+    }, {} as any);
+
     const { data, error } = await supabase
       .from('service_orders')
       .insert({
-        ...serviceOrderData,
+        ...sanitizedData,
         opening_date: openingDate,
         created_by: userData.user?.id,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        checklist_state: serviceOrderData.checklist_state as any,
+        checklist_state: (sanitizedData.checklist_state || []) as any,
       })
       .select(`
         *,
@@ -225,13 +239,27 @@ export const serviceOrderService = {
 
   async update(serviceOrder: UpdateServiceOrderData): Promise<ServiceOrder> {
     const { id, checklist_state, attachments, ...updateData } = serviceOrder;
-    
+
+    // Sanitize data: remove joined objects and convert empty strings to null
+    const sanitizedData = Object.entries(updateData).reduce((acc, [key, value]) => {
+      // Skip joined objects/arrays that are not part of the table
+      if (['client', 'technician', 'service_type_info', 'created_at', 'updated_at', 'display_code'].includes(key)) return acc;
+      
+      // Convert empty strings to null for optional UUID and Date fields
+      if (typeof value === 'string' && value.trim() === '') {
+        acc[key] = null;
+      } else {
+        acc[key] = value;
+      }
+      return acc;
+    }, {} as any);
+
     const { data, error } = await supabase
       .from('service_orders')
       .update({
-        ...updateData,
+        ...sanitizedData,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        checklist_state: checklist_state as any,
+        checklist_state: (checklist_state || []) as any,
       })
       .eq('id', id)
       .select(`

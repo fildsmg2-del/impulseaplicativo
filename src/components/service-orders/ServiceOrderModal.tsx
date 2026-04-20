@@ -141,6 +141,9 @@ export function ServiceOrderModal({
       const payload = {
         ...formData,
         service_type: selectedType?.name || '',
+        execution_date: formData.execution_date || null,
+        deadline_date: formData.deadline_date || null,
+        assigned_to: formData.assigned_to || null,
       };
 
       if (serviceOrder) {

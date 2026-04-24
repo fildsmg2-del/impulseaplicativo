@@ -13,6 +13,7 @@ import { IS_NATIVE_APP } from "@/lib/platform";
 import { createIDBPersister } from "@/lib/offline-persister";
 import { syncService } from "@/services/syncService";
 import { sqliteService } from "@/services/sqliteService";
+import { useNotifications } from "@/hooks/use-notifications";
 
 // ── Lazy-loaded pages (code splitting) ──────────────────────────
 const Index = lazy(() => import("./pages/Index"));
@@ -67,6 +68,8 @@ const PageLoader = ({ message }: { message?: string }) => (
 const AppContent = () => {
   const [isDbReady, setIsDbReady] = React.useState(!IS_NATIVE_APP);
   const [syncStatus, setSyncStatus] = React.useState<string>("");
+
+  useNotifications();
 
   React.useEffect(() => {
     const initApp = async () => {

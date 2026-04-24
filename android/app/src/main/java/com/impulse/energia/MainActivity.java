@@ -1,4 +1,4 @@
-package com.impulse.energetica;
+package com.impulse.energia;
 
 import com.getcapacitor.BridgeActivity;
 

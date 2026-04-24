@@ -122,7 +122,7 @@ export function PwaSettings() {
               <div className="space-y-3">
                 <div className="flex flex-col gap-1">
                   <span className="text-xs text-muted-foreground">Nome de Exibição</span>
-                  <span className="font-medium">Impulse Energetica</span>
+                  <span className="font-medium">Impulse Energia</span>
                 </div>
                 <div className="flex flex-col gap-1">
                   <span className="text-xs text-muted-foreground">URL Inicial</span>

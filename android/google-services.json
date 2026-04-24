@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "266625006353",
+    "project_id": "impulse-1920b",
+    "storage_bucket": "impulse-1920b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:266625006353:android:0e747a20d43c5bb42d2ab0",
+        "android_client_info": {
+          "package_name": "com.impulse.energi"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAhZvum7Y59xjJYQwdYMFZ7OuWvNh58pOQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

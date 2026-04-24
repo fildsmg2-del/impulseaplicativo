@@ -1,10 +1,10 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace = "com.impulse.energetica"
+    namespace = "com.impulse.energia"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.impulse.energetica"
+        applicationId "com.impulse.energia"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

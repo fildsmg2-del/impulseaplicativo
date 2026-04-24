@@ -105,7 +105,7 @@ const AppContent = () => {
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
-              <Route path="/orcamento/:token" element={<QuoteSignature />} />
+              <Route path="/orcamento/:token?" element={<QuoteSignature />} />
 
               <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
                 <Route path="/dashboard" element={<Dashboard />} />

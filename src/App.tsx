@@ -76,12 +76,18 @@ const AppContent = () => {
   React.useEffect(() => {
     const initApp = async () => {
       if (IS_NATIVE_APP) {
-        setSyncStatus("Inicializando banco de dados nativo...");
-        const db = await sqliteService.init();
-        if (db) {
-          setIsDbReady(true);
-          setSyncStatus("Banco de dados pronto.");
+        try {
+          setSyncStatus("Inicializando banco de dados nativo...");
+          // Timeout de 3s para o banco
+          const db = await Promise.race([
+            sqliteService.init(),
+            new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 3000))
+          ]);
+          console.log('[SQLite] Banco inicializado:', !!db);
+        } catch (e) {
+          console.warn("[SQLite] Falha ou timeout ao iniciar banco:", e);
         }
+        setIsDbReady(true);
       }
 
       // Initialize offline sync listener

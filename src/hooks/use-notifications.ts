@@ -32,13 +32,13 @@ export const useNotifications = () => {
         return;
       }
 
+      // IMPORTANT: Add listeners BEFORE calling register()
+      await addListeners();
+
       console.log('Push: Registering device...');
       // Register with Apple / Google to receive push via APNS/FCM
       await PushNotifications.register();
       console.log('Push: Registration command sent');
-
-      // On success, we should be able to receive notifications
-      await addListeners();
     } catch (error) {
       console.error('Push: Error in registerPush:', error);
     }
@@ -47,12 +47,12 @@ export const useNotifications = () => {
   const addListeners = async () => {
     await PushNotifications.addListener('registration', (token: Token) => {
       console.log('Push registration success, token:', token.value);
-      // You can copy this token from the console to test in Firebase
-      // Future: Send this token to your backend/Supabase
+      alert('TOKEN GERADO: ' + token.value);
     });
 
     await PushNotifications.addListener('registrationError', (error: any) => {
-      console.error('Error on registration:', JSON.stringify(error));
+      console.error('Push: Error on registration:', JSON.stringify(error));
+      alert('ERRO NO REGISTRO: ' + JSON.stringify(error));
     });
 
     await PushNotifications.addListener(

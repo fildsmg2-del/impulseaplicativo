@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:266625006353:android:0e747a20d43c5bb42d2ab0",
+        "mobilesdk_app_id": "1:266625006353:android:c4e41af17d5784da2d2ab0",
         "android_client_info": {
-          "package_name": "com.impulse.energi"
+          "package_name": "com.impulse.energia"
         }
       },
       "oauth_client": [],

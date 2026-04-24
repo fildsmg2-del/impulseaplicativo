@@ -11,12 +11,17 @@ import { DirectMessageWatcher } from './DirectMessageWatcher';
 import { MobileHeader } from './MobileHeader';
 import { BottomNav } from './BottomNav';
 import { ChatWidget } from '../chat/ChatWidget';
+import { useOneSignal } from "@/hooks/use-onesignal";
+import { useRealtimeNotifications } from "@/hooks/use-realtime-notifications";
 
 interface AppLayoutProps {
   children?: ReactNode;
 }
 
 export function AppLayout({ children }: AppLayoutProps) {
+  useOneSignal();
+  useRealtimeNotifications();
+
   return (
     <div className="flex h-screen bg-background font-sans overflow-hidden">
       {/* Desktop Sidebar */}

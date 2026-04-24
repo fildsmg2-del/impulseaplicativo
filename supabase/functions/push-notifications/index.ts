@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
 const ONESIGNAL_APP_ID = "999c9123-d911-4715-b49c-4d9814772dd5";
-const ONESIGNAL_REST_API_KEY = Deno.env.get("onesignal_rest_api_key");
+const ONESIGNAL_REST_API_KEY = Deno.env.get("ONESIGNAL_REST_API_KEY");
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',

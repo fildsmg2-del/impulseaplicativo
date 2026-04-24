@@ -1,11 +1,14 @@
 import { useEffect } from 'react';
 import OneSignal from 'onesignal-cordova-plugin';
 import { Capacitor } from '@capacitor/core';
+import { useAuth } from '@/contexts/AuthContext';
 
 // COLOQUE SEU ONESIGNAL APP ID AQUI
 const ONESIGNAL_APP_ID = '999c9123-d911-4715-b49c-4d9814772dd5';
 
 export const useOneSignal = () => {
+  const { user } = useAuth();
+
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return;
 
@@ -21,10 +24,20 @@ export const useOneSignal = () => {
           console.log('OneSignal: Permissão de notificação:', success);
         });
 
+        // Vincular Usuário e Cargo se estiver logado
+        if (user) {
+          console.log(`OneSignal: Vinculando usuário ${user.id} e cargo ${user.role}`);
+          
+          // No SDK v5+, usamos login para setar o external_id
+          OneSignal.login(user.id);
+          
+          // Define a tag de cargo para envios em grupo
+          OneSignal.User.addTag('cargo', user.role);
+        }
+
         // Ouvinte para quando uma notificação é recebida (app aberto)
         OneSignal.Notifications.addEventListener('foregroundWillDisplay', (event) => {
           console.log('OneSignal: Notificação em foreground:', event);
-          // O OneSignal já mostra a notificação automaticamente se configurado
         });
 
         // Ouvinte para quando o usuário clica na notificação
@@ -39,14 +52,7 @@ export const useOneSignal = () => {
     };
 
     initOneSignal();
-  }, []);
+  }, [user]); // Re-executa se o usuário mudar (login/logout)
 
-  // Função para associar o cargo do usuário (Tags)
-  const setCargoTag = (cargo: string) => {
-    if (!Capacitor.isNativePlatform()) return;
-    console.log(`OneSignal: Definindo tag de cargo: ${cargo}`);
-    OneSignal.User.addTag('cargo', cargo);
-  };
-
-  return { setCargoTag };
+  return {};
 };

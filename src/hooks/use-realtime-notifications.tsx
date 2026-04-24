@@ -20,10 +20,11 @@ export const useRealtimeNotifications = () => {
     // 1. Canal para Ordens de Serviço e Drone
     const osChannel = supabase
       .channel('realtime-os-notifications')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'service_orders' }, (payload) => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'service_orders' }, (payload) => {
         const item = payload.new;
         if (item.assigned_to === user.id || item.assigned_role === user.role) {
-          toast.info('Nova OS!', {
+          const isNew = payload.eventType === 'INSERT';
+          toast.info(isNew ? 'Nova OS!' : 'OS Atualizada!', {
             description: `Uma nova OS de ${item.service_type || 'Serviço'} foi designada para você.`,
             icon: <Bell className="h-4 w-4" />,
             action: { label: 'Ver', onClick: () => window.location.href = '/service-orders' }
@@ -31,10 +32,11 @@ export const useRealtimeNotifications = () => {
           playNotificationSound();
         }
       })
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'drone_services' }, (payload) => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'drone_services' }, (payload) => {
         const item = payload.new;
         if (item.technician_id === user.id || item.assigned_role === user.role) {
-          toast.info('Nova OS de Drone!', {
+          const isNew = payload.eventType === 'INSERT';
+          toast.info(isNew ? 'Nova OS de Drone!' : 'OS de Drone Atualizada!', {
             description: 'Um novo serviço de drone foi designado para você.',
             icon: <Plane className="h-4 w-4" />,
             action: { label: 'Ver', onClick: () => window.location.href = '/drone' }

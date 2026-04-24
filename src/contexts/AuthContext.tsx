@@ -2,6 +2,8 @@ import React, { useState, useEffect, ReactNode } from 'react';
 import { Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { UserRole } from '@/types';
+import { Capacitor } from '@capacitor/core';
+import OneSignal from 'onesignal-cordova-plugin';
 import { AuthContext, UserProfile } from '@/hooks/use-auth';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -146,6 +148,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // Sync user role with OneSignal tags for push targeting
+  useEffect(() => {
+    if (user?.role && Capacitor.isNativePlatform()) {
+      try {
+        console.log(`[OneSignal] Sincronizando tag de cargo: ${user.role}`);
+        OneSignal.User.addTag('cargo', user.role);
+        
+        // Também vamos associar o ID do usuário para facilitar o rastreio
+        if (user.id) {
+          OneSignal.User.setExternalId(user.id);
+        }
+      } catch (e) {
+        console.error('[OneSignal] Erro ao sincronizar tags:', e);
+      }
+    }
+  }, [user?.role, user?.id]);
 
   const login = async (email: string, password: string): Promise<{ error: Error | null }> => {
     try {

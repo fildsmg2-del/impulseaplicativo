@@ -66,9 +66,11 @@ const PageLoader = ({ message }: { message?: string }) => (
 );
 
 const AppContent = () => {
+  console.log('Push: AppContent mounting...');
   const [isDbReady, setIsDbReady] = React.useState(!IS_NATIVE_APP);
   const [syncStatus, setSyncStatus] = React.useState<string>("");
 
+  console.log('Push: Calling useNotifications hook...');
   useNotifications();
 
   React.useEffect(() => {

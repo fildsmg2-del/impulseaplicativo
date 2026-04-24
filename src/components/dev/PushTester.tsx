@@ -88,7 +88,7 @@ export function PushTester() {
 
     setSending(true);
     try {
-      const { data, error } = await supabase.functions.invoke('push-notifications', {
+      const { data, error: functionError } = await supabase.functions.invoke('push-notifications', {
         body: {
           type: 'MANUAL',
           table: 'manual',
@@ -101,7 +101,14 @@ export function PushTester() {
         }
       });
 
-      if (error) throw error;
+      if (functionError) {
+        let errorMsg = functionError.message;
+        try {
+          const body = await functionError.context?.json();
+          if (body?.error) errorMsg = `${body.error}: ${JSON.stringify(body.details)}`;
+        } catch (e) {}
+        throw new Error(errorMsg);
+      }
 
       toast({ title: "Mensagem enviada!", description: "O OneSignal processou o envio." });
       setMessage("");

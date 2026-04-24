@@ -16,8 +16,9 @@ import {
   Plane,
   Settings,
   Code,
-  User
-} from "lucide-react";
+  User,
+  LogOut
+ } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Sheet,
@@ -53,7 +54,7 @@ const allOtherItems = [
 
 export function BottomNav() {
   const location = useLocation();
-  const { user, hasRole } = useAuth();
+  const { user, hasRole, logout } = useAuth();
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 h-16 gradient-impulse border-t border-white/10 z-50 flex items-center justify-around px-2 md:hidden safe-area-bottom shadow-[0_-4px_10px_rgba(0,0,0,0.15)]">
@@ -95,9 +96,6 @@ export function BottomNav() {
               <NavLink
                 key={item.href}
                 to={item.href}
-                onClick={() => {
-                  // Sheet will close on click because it's in a drawer
-                }}
                 className={cn(
                   "flex flex-col items-center gap-2 group transition-all",
                   location.pathname === item.href ? "text-impulse-gold" : "text-white/70"
@@ -112,6 +110,17 @@ export function BottomNav() {
                 <span className="text-[11px] font-medium text-center leading-tight">{item.title}</span>
               </NavLink>
             ))}
+
+            {/* Botão de Sair no Celular */}
+            <button
+              onClick={() => logout()}
+              className="flex flex-col items-center gap-2 group transition-all text-red-400"
+            >
+              <div className="p-3 rounded-2xl bg-red-500/10 border border-red-500/20 group-active:scale-95 transition-transform">
+                <LogOut className="h-6 w-6" />
+              </div>
+              <span className="text-[11px] font-medium text-center leading-tight">Sair</span>
+            </button>
           </div>
         </SheetContent>
       </Sheet>

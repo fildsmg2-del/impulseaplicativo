@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { User, Lock, Save, Loader2, Camera, Trash2 } from 'lucide-react';
+import { User, Lock, Save, Loader2, Camera, Trash2, LogOut } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,7 +11,7 @@ import { storageService } from '@/services/storageService';
 
 export default function MyProfile() {
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [savingName, setSavingName] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -183,9 +183,19 @@ export default function MyProfile() {
 
   return (
     <>
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-foreground">Meu Perfil</h1>
-        <p className="text-muted-foreground mt-1">Gerencie suas informações pessoais</p>
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Meu Perfil</h1>
+          <p className="text-muted-foreground mt-1">Gerencie suas informações pessoais</p>
+        </div>
+        <Button 
+          variant="destructive" 
+          className="w-full sm:w-auto bg-red-500/10 hover:bg-red-500/20 text-red-500 border-red-500/20"
+          onClick={logout}
+        >
+          <LogOut className="h-4 w-4 mr-2" />
+          Encerrar Sessão
+        </Button>
       </div>
 
       <div className="grid gap-6 max-w-2xl">

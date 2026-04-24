@@ -5,9 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Send, Loader2, User, Shield } from "lucide-react";
+import { Send, Loader2, User, Shield, RefreshCw, CheckCircle2, XCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import OneSignal from 'onesignal-cordova-plugin';
+import { Capacitor } from '@capacitor/core';
 
 interface UserProfile {
   id: string;
@@ -19,6 +21,8 @@ export function PushTester() {
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [sending, setSending] = useState(false);
+  const [registering, setRegistering] = useState(false);
+  const [osStatus, setOsStatus] = useState<'loading' | 'ok' | 'fail'>('loading');
   const [targetId, setTargetId] = useState("");
   const [targetCargo, setTargetCargo] = useState("");
   const [title, setTitle] = useState("");
@@ -38,9 +42,43 @@ export function PushTester() {
       
       setUsers(combined);
       setLoadingUsers(false);
+
+      if (Capacitor.isNativePlatform()) {
+        try {
+          const id = await OneSignal.User.getExternalId();
+          setOsStatus(id ? 'ok' : 'fail');
+        } catch (e) {
+          setOsStatus('fail');
+        }
+      } else {
+        setOsStatus('ok'); // Simular OK na web para teste de fluxo
+      }
     }
     fetchUsers();
   }, []);
+
+  const handleManualRegister = async () => {
+    if (!Capacitor.isNativePlatform()) return;
+    setRegistering(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        OneSignal.login(user.id);
+        const { data: roleData } = await supabase.from('user_roles').select('role').eq('user_id', user.id).maybeSingle();
+        if (roleData) OneSignal.User.addTag('cargo', roleData.role);
+        
+        toast({ title: "Registro solicitado", description: "Verificando status em 3 segundos..." });
+        setTimeout(async () => {
+          const id = await OneSignal.User.getExternalId();
+          setOsStatus(id ? 'ok' : 'fail');
+        }, 3000);
+      }
+    } catch (e: any) {
+      toast({ title: "Erro no registro", description: e.message, variant: "destructive" });
+    } finally {
+      setRegistering(false);
+    }
+  };
 
   const handleSend = async () => {
     if (!title || !message || (!targetId && !targetCargo)) {
@@ -77,6 +115,29 @@ export function PushTester() {
 
   return (
     <div className="space-y-6">
+      {/* Status do OneSignal */}
+      <Card className="bg-muted/50">
+        <CardContent className="pt-6 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            {osStatus === 'loading' && <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />}
+            {osStatus === 'ok' && <CheckCircle2 className="h-5 w-5 text-green-500" />}
+            {osStatus === 'fail' && <XCircle className="h-5 w-5 text-destructive" />}
+            <div>
+              <p className="font-medium text-sm">
+                Status OneSignal: {osStatus === 'ok' ? 'Conectado' : osStatus === 'fail' ? 'Não Identificado' : 'Verificando...'}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {osStatus === 'ok' ? 'Seu dispositivo está pronto para receber push.' : 'Clique em Sincronizar para vincular seu celular.'}
+              </p>
+            </div>
+          </div>
+          <Button variant="outline" size="sm" onClick={handleManualRegister} disabled={registering}>
+            <RefreshCw className={`h-4 w-4 mr-2 ${registering ? 'animate-spin' : ''}`} />
+            Sincronizar
+          </Button>
+        </CardContent>
+      </Card>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Destinatário Específico */}
         <Card>

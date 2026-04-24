@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import OneSignal from 'onesignal-cordova-plugin';
 import { Capacitor } from '@capacitor/core';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/use-auth';
 
 // COLOQUE SEU ONESIGNAL APP ID AQUI
 const ONESIGNAL_APP_ID = '999c9123-d911-4715-b49c-4d9814772dd5';

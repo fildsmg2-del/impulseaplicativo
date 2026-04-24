@@ -1,5 +1,3 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-
 const ONESIGNAL_APP_ID = "999c9123-d911-4715-b49c-4d9814772dd5";
 const ONESIGNAL_REST_API_KEY = Deno.env.get("ONESIGNAL_REST_API_KEY");
 
@@ -8,7 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -59,7 +57,9 @@ serve(async (req) => {
         message = `${record.description}: R$ ${record.amount}`;
         targetCargo = "FINANCEIRO";
       } else {
-        return new Response(JSON.stringify({ message: "Update financeiro sem relevância para push." }));
+        return new Response(JSON.stringify({ message: "Update financeiro sem relevância para push." }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
       }
     }
 
@@ -78,7 +78,9 @@ serve(async (req) => {
         { field: "tag", key: "cargo", relation: "=", value: targetCargo }
       ];
     } else {
-      return new Response(JSON.stringify({ message: "Sem destinatário definido." }));
+      return new Response(JSON.stringify({ message: "Sem destinatário definido." }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     const response = await fetch("https://onesignal.com/api/v1/notifications", {
@@ -91,6 +93,18 @@ serve(async (req) => {
     });
 
     const result = await response.json();
+    
+    // Se o OneSignal retornar erro (ex: chave inválida), repassa o erro
+    if (result.errors || response.status >= 400) {
+      return new Response(JSON.stringify({ 
+        error: "Erro no OneSignal", 
+        details: result.errors || result 
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400,
+      });
+    }
+
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,

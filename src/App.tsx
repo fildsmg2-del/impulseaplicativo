@@ -13,7 +13,7 @@ import { IS_NATIVE_APP } from "@/lib/platform";
 import { createIDBPersister } from "@/lib/offline-persister";
 import { syncService } from "@/services/syncService";
 import { sqliteService } from "@/services/sqliteService";
-import { useNotifications } from "@/hooks/use-notifications";
+import { useOneSignal } from "@/hooks/use-onesignal";
 
 // ── Lazy-loaded pages (code splitting) ──────────────────────────
 const Index = lazy(() => import("./pages/Index"));
@@ -70,8 +70,8 @@ const AppContent = () => {
   const [isDbReady, setIsDbReady] = React.useState(!IS_NATIVE_APP);
   const [syncStatus, setSyncStatus] = React.useState<string>("");
 
-  console.log('Push: Calling useNotifications hook...');
-  useNotifications();
+  console.log('OneSignal: Calling hook...');
+  useOneSignal();
 
   React.useEffect(() => {
     const initApp = async () => {

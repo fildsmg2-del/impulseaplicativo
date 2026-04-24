@@ -14,6 +14,7 @@ import { createIDBPersister } from "@/lib/offline-persister";
 import { syncService } from "@/services/syncService";
 import { sqliteService } from "@/services/sqliteService";
 import { useOneSignal } from "@/hooks/use-onesignal";
+import { useRealtimeNotifications } from "@/hooks/use-realtime-notifications";
 
 // ── Lazy-loaded pages (code splitting) ──────────────────────────
 const Index = lazy(() => import("./pages/Index"));
@@ -72,6 +73,7 @@ const AppContent = () => {
 
   console.log('OneSignal: Calling hook...');
   useOneSignal();
+  useRealtimeNotifications();
 
   React.useEffect(() => {
     const initApp = async () => {

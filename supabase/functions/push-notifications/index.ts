@@ -15,9 +15,9 @@ serve(async (req) => {
 
   try {
     const payload = await req.json();
-    const { record, table, type } = payload; 
+    const { record, table, type, manual_data } = payload; 
 
-    console.log(`[Push] Evento ${type} na tabela ${table} para ID:`, record.id);
+    console.log(`[Push] Evento ${type} na tabela ${table}`);
 
     if (!ONESIGNAL_REST_API_KEY) {
       throw new Error("ONESIGNAL_REST_API_KEY não configurada nas Secrets do Supabase");
@@ -28,9 +28,15 @@ serve(async (req) => {
     let targetCargo = null;
     let targetUserId = null;
 
-    // --- LÓGICA POR TABELA ---
-
-    if (table === 'service_orders') {
+    // --- LÓGICA MANUAL (Enviada pelo Painel DEV) ---
+    if (type === 'MANUAL' || table === 'manual') {
+      title = manual_data?.title || "Mensagem do Sistema";
+      message = manual_data?.message || "Teste de notificação push.";
+      targetUserId = manual_data?.user_id;
+      targetCargo = manual_data?.cargo;
+    } 
+    // --- LÓGICA AUTOMÁTICA POR TABELA ---
+    else if (table === 'service_orders') {
       title = "Nova Ordem de Serviço";
       message = `Uma nova OS de ${record.service_type || 'Serviço'} foi designada para você.`;
       targetUserId = record.assigned_to;
@@ -45,7 +51,7 @@ serve(async (req) => {
     else if (table === 'projects') {
       title = "Projeto no seu Setor";
       message = `Um projeto chegou para o setor ${record.status}.`;
-      targetCargo = record.status; // No projeto, o status é o cargo responsável
+      targetCargo = record.status;
     }
     else if (table === 'transactions') {
       if (type === 'INSERT' || record.status === 'ATRASADO') {
@@ -58,12 +64,11 @@ serve(async (req) => {
     }
 
     // --- CONSTRUÇÃO DO PAYLOAD ONESIGNAL ---
-
     let notificationPayload: any = {
       app_id: ONESIGNAL_APP_ID,
       headings: { pt: title, en: title },
       contents: { pt: message, en: message },
-      data: { id: record.id, table: table }
+      data: { id: record?.id || 'manual', table: table || 'manual' }
     };
 
     if (targetUserId) {

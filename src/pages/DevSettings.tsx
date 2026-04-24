@@ -21,6 +21,7 @@ import { PwaSettings } from "@/components/dev/PwaSettings";
 import { DevUpdateManager } from "@/components/dev/DevUpdateManager";
 import { PermissionMatrix } from "@/components/dev/PermissionMatrix";
 import { UserPermissionEditor } from "@/components/dev/UserPermissionEditor";
+import { PushTester } from "@/components/dev/PushTester";
 import { apiSettingsService, ApiSetting, ApiSettingInput } from "@/services/apiSettingsService";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -184,6 +185,7 @@ export default function DevSettings() {
               <TabsTrigger value="pwa" className="data-[state=active]:bg-background text-xs sm:text-sm">📱 PWA</TabsTrigger>
               <TabsTrigger value="updates" className="data-[state=active]:bg-background">🚀 Novidades</TabsTrigger>
               <TabsTrigger value="access" className="data-[state=active]:bg-background">🛡️ Acessos</TabsTrigger>
+              <TabsTrigger value="push" className="data-[state=active]:bg-background">🔔 Push Test</TabsTrigger>
               <TabsTrigger value="impersonate" className="data-[state=active]:bg-background">Simulação</TabsTrigger>
               {CATEGORIES.map((cat) => (
                 <TabsTrigger key={cat.value} value={cat.value} className="data-[state=active]:bg-background">
@@ -266,6 +268,18 @@ export default function DevSettings() {
               </CardHeader>
               <CardContent>
                 <UserImpersonator />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="push">
+            <Card>
+              <CardHeader>
+                <CardTitle>Disparo Manual de Push</CardTitle>
+                <CardDescription>Envie notificações personalizadas para usuários ou cargos</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <PushTester />
               </CardContent>
             </Card>
           </TabsContent>

@@ -109,8 +109,8 @@ export function PwaHandler() {
   // Intercept the native install prompt event globally based on the flag
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: Event) => {
-      // If we know explicitly it's disabled, kill the event entirely
-      if (isEnabled === false) {
+      // If it's explicitly disabled OR still loading, block the prompt
+      if (isEnabled !== true) {
         e.preventDefault();
       }
     };

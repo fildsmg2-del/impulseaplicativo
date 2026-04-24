@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Sun, Mail, Lock, LogIn, Loader2 } from 'lucide-react';
+import { Sun, Mail, Lock, LogIn, Loader2, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import logoImpulse from '@/assets/logo-impulse.png';
@@ -8,6 +8,7 @@ import logoImpulse from '@/assets/logo-impulse.png';
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isPageLoading, setIsPageLoading] = useState(true);
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -212,13 +213,24 @@ export default function Login() {
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground transition-colors duration-300 group-focus-within:text-impulse-gold" />
                 <input
                   id="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   required
-                  className="w-full pl-12 pr-4 py-3 bg-muted rounded-xl border border-border focus:outline-none focus:ring-2 focus:ring-impulse-gold focus:border-transparent transition-all duration-300 hover:border-impulse-gold/50"
+                  className="w-full pl-12 pr-12 py-3 bg-muted rounded-xl border border-border focus:outline-none focus:ring-2 focus:ring-impulse-gold focus:border-transparent transition-all duration-300 hover:border-impulse-gold/50"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-impulse-gold transition-colors duration-200"
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5" />
+                  ) : (
+                    <Eye className="h-5 w-5" />
+                  )}
+                </button>
               </div>
             </div>
 

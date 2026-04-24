@@ -3,7 +3,7 @@ import OneSignal from 'onesignal-cordova-plugin';
 import { Capacitor } from '@capacitor/core';
 
 // COLOQUE SEU ONESIGNAL APP ID AQUI
-const ONESIGNAL_APP_ID = 'SEU_ID_AQUI';
+const ONESIGNAL_APP_ID = '999c9123-d911-4715-b49c-4d9814772dd5';
 
 export const useOneSignal = () => {
   useEffect(() => {

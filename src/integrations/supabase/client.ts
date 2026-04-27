@@ -14,7 +14,7 @@ const customOfflineFetch = async (url: RequestInfo | URL, options?: RequestInit)
 
   // --- MUTATIONS (POST/PATCH/PUT/DELETE) ---
   // If offline and it's a mutation, enqueue immediately without trying
-  if (method !== 'GET' && !window.navigator.onLine) {
+  if (method !== 'GET' && !window.navigator.onLine && !urlString.includes('/auth/v1/')) {
     console.log('[Offline] Enfileirando mutação offline:', method, urlString);
     return enqueueAndMock(url, options);
   }
@@ -26,7 +26,7 @@ const customOfflineFetch = async (url: RequestInfo | URL, options?: RequestInit)
   } catch (error) {
     if (error instanceof TypeError) {
       // Network error on a mutation: enqueue for later sync
-      if (method !== 'GET') {
+      if (method !== 'GET' && !urlString.includes('/auth/v1/')) {
         console.log('[Offline] Erro de rede, enfileirando mutação:', method, urlString);
         return enqueueAndMock(url, options);
       }

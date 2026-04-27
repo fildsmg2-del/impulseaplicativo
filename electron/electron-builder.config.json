@@ -1,0 +1,33 @@
+{
+  "appId": "com.impulse.energia",
+  "productName": "Impulse APP",
+  "npmRebuild": false,
+  "directories": {
+    "output": "dist",
+    "buildResources": "resources"
+  },
+  "files": [
+    "assets/**/*",
+    "build/**/*",
+    "capacitor.config.*",
+    "app/**/*",
+    "node_modules/**/*"
+  ],
+  "publish": {
+    "provider": "github",
+    "owner": "GraficaImPlotter",
+    "repo": "impulse-app-desktop"
+  },
+  "win": {
+    "target": "nsis",
+    "icon": "assets/appIcon.png",
+    "publish": ["github"]
+  },
+  "nsis": {
+    "allowElevation": true,
+    "oneClick": false,
+    "allowToChangeInstallationDirectory": true,
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": true
+  }
+}

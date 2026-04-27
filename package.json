@@ -1,14 +1,17 @@
 {
   "name": "vite_react_shadcn_ts",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.10",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "electron:start": "npm run build && npx cap copy @capacitor-community/electron && npx cap open @capacitor-community/electron",
+    "electron:make": "npm run build && npx cap copy @capacitor-community/electron && cd electron && npm run electron:make",
+    "electron:publish": "npm run build && npx cap copy @capacitor-community/electron && cd electron && npm run electron:make -- -p always"
   },
   "dependencies": {
     "@capacitor-community/sqlite": "^8.1.0",
@@ -82,6 +85,7 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@capacitor-community/electron": "^5.0.1",
     "@capacitor/assets": "^3.0.5",
     "@capacitor/cli": "^8.3.0",
     "@capacitor/core": "^8.3.0",
